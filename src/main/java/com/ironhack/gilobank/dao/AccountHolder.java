@@ -20,6 +20,12 @@ import java.util.Set;
 @NoArgsConstructor
 public class AccountHolder extends User{
 
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private Role role = Role.ACCOUNTHOLDER;
+
     @NotNull
     private String firstName;
 
@@ -44,33 +50,8 @@ public class AccountHolder extends User{
     @OneToMany(mappedBy = "secondaryHolder", fetch = FetchType.LAZY)
     private Set<Account> accountSecondaryHolder;
 
-    public AccountHolder(Long id, String username, String password, Role role, String firstName, String surname, LocalDate dateOfBirth, Address primaryAddress) {
-        super(id, username, password, role);
-        this.firstName = firstName;
-        this.surname = surname;
-        this.dateOfBirth = dateOfBirth;
-        this.primaryAddress = primaryAddress;
-    }
-
-    public AccountHolder(String username, String password, Role role, String firstName, String surname, LocalDate dateOfBirth, Address primaryAddress) {
-        super(username, password, role);
-        this.firstName = firstName;
-        this.surname = surname;
-        this.dateOfBirth = dateOfBirth;
-        this.primaryAddress = primaryAddress;
-    }
-
-    public AccountHolder(Long id, String username, String password, Role role, String firstName, String surname, LocalDate dateOfBirth, Address primaryAddress, Address mailingAddress) {
-        super(id, username, password, role);
-        this.firstName = firstName;
-        this.surname = surname;
-        this.dateOfBirth = dateOfBirth;
-        this.primaryAddress = primaryAddress;
-        this.mailingAddress = mailingAddress;
-    }
-
-    public AccountHolder(String username, String password, Role role, String firstName, String surname, LocalDate dateOfBirth, Address primaryAddress, Address mailingAddress) {
-        super(username, password, role);
+    public AccountHolder(LoginDetails loginDetails, String firstName, String surname, LocalDate dateOfBirth, Address primaryAddress, Address mailingAddress) {
+        super(loginDetails);
         this.firstName = firstName;
         this.surname = surname;
         this.dateOfBirth = dateOfBirth;

@@ -19,6 +19,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class CreditCard extends Account{
 
+
     @NotNull
     private BigDecimal creditLimit;
 

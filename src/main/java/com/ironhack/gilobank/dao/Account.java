@@ -11,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Digits;
+import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 public abstract class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accnum")
+    @Min(1223344)
     private Long accountNumber;
 
     @NotNull

@@ -2,15 +2,21 @@ package com.ironhack.gilobank.dao;
 
 import com.ironhack.gilobank.enums.Role;
 import com.sun.istack.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 
 @Entity
 @Setter
 @Getter
-public class ThirdParty extends User{
+@AllArgsConstructor
+@NoArgsConstructor
+public class ThirdParty extends User {
 
     @NotNull
     private String name;
@@ -18,14 +24,11 @@ public class ThirdParty extends User{
     @NotNull
     private String hashedKey;
 
-    public ThirdParty(Long id, String username, String password, Role role, String name, String hashedKey) {
-        super(id, username, password, role);
-        this.name = name;
-        this.hashedKey = hashedKey;
-    }
+    @Enumerated(EnumType.STRING)
+    private final Role role = Role.THIRDPARTY;
 
-    public ThirdParty(String username, String password, Role role, String name, String hashedKey) {
-        super(username, password, role);
+    public ThirdParty(LoginDetails loginDetails, String name, String hashedKey) {
+        super(loginDetails);
         this.name = name;
         this.hashedKey = hashedKey;
     }

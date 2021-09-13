@@ -13,20 +13,20 @@ import javax.persistence.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public abstract class User {
+public class LoginDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name="loginDetails")
-    private LoginDetails loginDetails;
+    private String username;
+    private String password;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    @OneToOne(mappedBy = "loginDetails")
+    private User user;
 
-    public User(LoginDetails loginDetails) {
-        this.loginDetails = loginDetails;
+    public LoginDetails(String username, String password) {
+        this.username = username;
+        this.password = password;
     }
 }
