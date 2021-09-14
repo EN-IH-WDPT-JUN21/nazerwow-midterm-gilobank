@@ -8,6 +8,8 @@ public class GilobankApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(GilobankApplication.class, args);
+
+
 	}
 
 }

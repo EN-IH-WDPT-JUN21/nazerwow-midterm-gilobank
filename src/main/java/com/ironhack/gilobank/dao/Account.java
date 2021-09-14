@@ -1,7 +1,9 @@
 package com.ironhack.gilobank.dao;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ironhack.gilobank.enums.Status;
+import com.ironhack.gilobank.utils.Money;
 import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +17,8 @@ import javax.validation.constraints.Digits;
 import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @AllArgsConstructor
@@ -39,6 +43,9 @@ public abstract class Account {
     @JoinColumn(name="secondaryHolder", referencedColumnName = "id")
     @JsonManagedReference
     private AccountHolder secondaryHolder;
+
+    @OneToMany(mappedBy = "account")
+    private List<Transaction> transaction;
 
     @NotNull
     private BigDecimal balance;
@@ -101,4 +108,27 @@ public abstract class Account {
         this.openDate = openDate;
         this.status = status;
     }
+
+    public Account(Long accountNumber, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
+        this.accountNumber = accountNumber;
+        this.primaryHolder = primaryHolder;
+        this.secondaryHolder = secondaryHolder;
+        this.balance = balance;
+        this.penaltyFee = penaltyFee;
+        this.openDate = openDate;
+        this.status = status;
+    }
+
+    public Money getBalanceAsMoney(){
+        return new Money(balance);
+    }
+
+    public void credit(BigDecimal amount){
+        this.balance = getBalanceAsMoney().increaseAmount(amount);
+    }
+
+    public void debit(BigDecimal amount){
+        this.balance = getBalanceAsMoney().decreaseAmount(amount);
+    }
+
 }

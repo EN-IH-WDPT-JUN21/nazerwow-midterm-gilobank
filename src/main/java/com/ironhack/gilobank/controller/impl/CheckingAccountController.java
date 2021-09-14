@@ -28,4 +28,8 @@ public class CheckingAccountController implements ICheckingAccountController {
     public List<CheckingAccount> getAll() {
         return checkingAccountService.findAll();
     }
+
+//    @PatchMapping("/{id}")
+//    @ResponseStatus(HttpStatus.ACCEPTED)
+//    public void
 }
