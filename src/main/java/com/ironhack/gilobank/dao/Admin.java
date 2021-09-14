@@ -25,6 +25,11 @@ public class Admin extends User {
     private final Role role = Role.ADMIN;
 
 
+    public Admin(Long id, LoginDetails loginDetails, Role role, String name) {
+        super(id, loginDetails, role);
+        this.name = name;
+    }
+
     public Admin(LoginDetails loginDetails, String name) {
         super(loginDetails);
         this.name = name;

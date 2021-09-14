@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.dao;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ironhack.gilobank.enums.Status;
 import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
@@ -23,18 +24,20 @@ import java.time.LocalDate;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @SequenceGenerator(name="accnum", initialValue= 11223344, allocationSize=1)
 public abstract class Account {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accnum")
-    @Min(1223344)
     private Long accountNumber;
 
     @NotNull
     @ManyToOne
     @JoinColumn(name="primaryHolder", referencedColumnName = "id")
+    @JsonManagedReference
     private AccountHolder primaryHolder;
 
     @ManyToOne
     @JoinColumn(name="secondaryHolder", referencedColumnName = "id")
+    @JsonManagedReference
     private AccountHolder secondaryHolder;
 
     @NotNull
@@ -70,5 +73,32 @@ public abstract class Account {
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;
         this.balance = balance;
+    }
+
+    public Account(AccountHolder primaryHolder, BigDecimal balance, LocalDate openDate) {
+        this.primaryHolder = primaryHolder;
+        this.balance = balance;
+        this.openDate = openDate;
+    }
+
+    public Account(AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, LocalDate openDate) {
+        this.primaryHolder = primaryHolder;
+        this.secondaryHolder = secondaryHolder;
+        this.balance = balance;
+        this.openDate = openDate;
+    }
+
+    public Account(AccountHolder primaryHolder, BigDecimal balance) {
+        this.primaryHolder = primaryHolder;
+        this.balance = balance;
+    }
+
+    public Account(Long accountNumber, AccountHolder primaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
+        this.accountNumber = accountNumber;
+        this.primaryHolder = primaryHolder;
+        this.balance = balance;
+        this.penaltyFee = penaltyFee;
+        this.openDate = openDate;
+        this.status = status;
     }
 }

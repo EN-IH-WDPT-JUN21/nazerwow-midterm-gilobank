@@ -1,5 +1,7 @@
 package com.ironhack.gilobank.dao;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,9 +34,11 @@ public class Address {
     private String postcode;
 
     @OneToMany(mappedBy = "primaryAddress", fetch = FetchType.LAZY)
+    @JsonBackReference
     private Set<AccountHolder> primaryAddressAH;
 
     @OneToMany(mappedBy = "mailingAddress", fetch = FetchType.LAZY)
+    @JsonBackReference
     private Set<AccountHolder> mailingAddressAH;
 
     public Address(String houseNumber, String street, String town, String city, String postcode) {

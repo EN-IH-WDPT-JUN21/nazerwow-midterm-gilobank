@@ -1,5 +1,8 @@
 package com.ironhack.gilobank.dao;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ironhack.gilobank.enums.Role;
 import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
@@ -10,7 +13,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Set;
 
 @Entity
@@ -39,15 +41,20 @@ public class AccountHolder extends User{
     @NotNull
     @ManyToOne
     @JoinColumn(name = "primary_address", referencedColumnName = "id")
+    @JsonManagedReference
     private Address primaryAddress;
+
     @ManyToOne
     @JoinColumn(name = "mailing_address", referencedColumnName = "id")
+    @JsonManagedReference
     private Address mailingAddress;
 
     @OneToMany(mappedBy = "primaryHolder", fetch = FetchType.LAZY)
+    @JsonBackReference
     private Set<Account> accountPrimaryHolder;
 
     @OneToMany(mappedBy = "secondaryHolder", fetch = FetchType.LAZY)
+    @JsonBackReference
     private Set<Account> accountSecondaryHolder;
 
     public AccountHolder(LoginDetails loginDetails, String firstName, String surname, LocalDate dateOfBirth, Address primaryAddress, Address mailingAddress) {

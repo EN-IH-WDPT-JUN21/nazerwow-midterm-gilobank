@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.dao;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.ironhack.gilobank.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,6 +24,7 @@ public class LoginDetails {
     private String password;
 
     @OneToOne(mappedBy = "loginDetails")
+    @JsonBackReference
     private User user;
 
     public LoginDetails(String username, String password) {

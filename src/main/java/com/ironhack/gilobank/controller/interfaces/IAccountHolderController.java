@@ -7,6 +7,7 @@ import java.util.Optional;
 
 public interface IAccountHolderController {
 
-    List<AccountHolder> getAllAccountHolders();
-    Optional<AccountHolder> getAccountHolderById(Long id);
+    List<AccountHolder> getAll();
+    Optional<AccountHolder> getById(Long id);
+
 }

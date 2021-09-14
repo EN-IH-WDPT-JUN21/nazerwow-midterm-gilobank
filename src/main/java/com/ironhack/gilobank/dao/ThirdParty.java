@@ -27,6 +27,12 @@ public class ThirdParty extends User {
     @Enumerated(EnumType.STRING)
     private final Role role = Role.THIRDPARTY;
 
+    public ThirdParty(Long id, LoginDetails loginDetails, Role role, String name, String hashedKey) {
+        super(id, loginDetails, role);
+        this.name = name;
+        this.hashedKey = hashedKey;
+    }
+
     public ThirdParty(LoginDetails loginDetails, String name, String hashedKey) {
         super(loginDetails);
         this.name = name;

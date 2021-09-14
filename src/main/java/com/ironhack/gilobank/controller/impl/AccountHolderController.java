@@ -2,9 +2,7 @@ package com.ironhack.gilobank.controller.impl;
 
 import com.ironhack.gilobank.controller.interfaces.IAccountHolderController;
 import com.ironhack.gilobank.dao.AccountHolder;
-import com.ironhack.gilobank.repositories.AccountHolderRepository;
-import com.ironhack.gilobank.repositories.AddressRepository;
-import com.ironhack.gilobank.repositories.LoginDetailsRepository;
+import com.ironhack.gilobank.service.interfaces.IAccountHolderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,22 +15,18 @@ import java.util.Optional;
 public class AccountHolderController implements IAccountHolderController {
 
     @Autowired
-    private AccountHolderRepository accountHolderRepository;
-    @Autowired
-    private LoginDetailsRepository loginDetailsRepository;
-    @Autowired
-    private AddressRepository addressRepository;
+    private IAccountHolderService accountHolderService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<AccountHolder> getAllAccountHolders() {
-        return accountHolderRepository.findAll();
+    public List<AccountHolder> getAll() {
+        return accountHolderService.findAll();
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<AccountHolder> getAccountHolderById(@PathVariable(name="id") Long id) {
-        return accountHolderRepository.findById(id);
+    public Optional<AccountHolder> getById(@PathVariable(name="id") Long id) {
+        return accountHolderService.findById(id);
     }
 
 }
