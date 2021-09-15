@@ -66,24 +66,29 @@ class StudentAccountControllerTest {
         testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2,testAddress2, null);
 
         testAccount1 = new StudentAccount(
+                "secretKey1",
                 testHolder1,                    // Primary Holder
                 testHolder2,                    // Secondary Holder
                 new BigDecimal("1000"),     // balance
                 new BigDecimal("10"),       // penaltyFee
                 LocalDate.parse("2011-01-01"),  // open date
-                Status.ACTIVE);                  // Status
+                Status.ACTIVE);                 // Status
         testAccount2 = new StudentAccount(
+                "secretKey2",
                 testHolder1,                    // Primary Holder
+                null,
                 new BigDecimal("2000"),     // balance
                 new BigDecimal("20"),       // penaltyFee
                 LocalDate.parse("2012-02-02"),  // open date
-                Status.ACTIVE);                  // Status
+                Status.ACTIVE);                 // Status
         testAccount3 = new StudentAccount(
+                "secretKey3",
                 testHolder2,                    // Primary Holder
+                null,
                 new BigDecimal("3000"),     // balance
                 new BigDecimal("30"),       // penaltyFee
                 LocalDate.parse("2013-03-03"),  // open date
-                Status.ACTIVE);                  // Status
+                Status.ACTIVE);                 // Status
 
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));

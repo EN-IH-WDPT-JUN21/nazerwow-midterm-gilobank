@@ -23,11 +23,10 @@ public class CheckingAccountService implements ICheckingAccountService {
     @Autowired
     private TransactionService transactionService;
 
-    public Optional<CheckingAccount> findByAccountNumber(AccountDTO accountDTO) {
-        Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(accountDTO.getAccountNumber());
+    public Optional<CheckingAccount> findByAccountNumber(Long accountNumber) {
+        Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(accountNumber);
         if(!checkingAccount.isPresent())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Checking Account found with Account Number: " + accountDTO.getAccountNumber());
-
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Checking Account found with Account Number: " + accountNumber);
         return checkingAccount;
     }
 

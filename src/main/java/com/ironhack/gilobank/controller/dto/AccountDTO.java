@@ -1,16 +1,12 @@
 package com.ironhack.gilobank.controller.dto;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ironhack.gilobank.dao.AccountHolder;
 import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.enums.Status;
-import com.sun.istack.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,6 +18,8 @@ public class AccountDTO {
 
     private Long accountNumber;
 
+    private String secretKey;
+
     private AccountHolder primaryHolder;
 
     private AccountHolder secondaryHolder;
@@ -32,9 +30,9 @@ public class AccountDTO {
 
     private BigDecimal penaltyFee;
 
-    private LocalDate openDate = LocalDate.now();
+    private LocalDate openDate;
 
-    private Status status = Status.ACTIVE;
+    private Status status;
 
 
     public AccountDTO(Long accountNumber) {
@@ -50,4 +48,7 @@ public class AccountDTO {
         this.openDate = openDate;
         this.status = status;
     }
+
+
+
 }

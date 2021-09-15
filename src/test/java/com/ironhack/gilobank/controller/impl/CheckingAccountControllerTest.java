@@ -12,7 +12,6 @@ import com.ironhack.gilobank.repositories.AccountHolderRepository;
 import com.ironhack.gilobank.repositories.AddressRepository;
 import com.ironhack.gilobank.repositories.CheckingAccountRepository;
 import com.ironhack.gilobank.repositories.LoginDetailsRepository;
-import com.ironhack.gilobank.service.interfaces.ICheckingAccountService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,30 +78,35 @@ class CheckingAccountControllerTest {
         testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2,testAddress2, null);
 
         testAccount1 = new CheckingAccount(
-                testHolder1,                    // Primary Holder
-                testHolder2,                    // Secondary Holder
-                new BigDecimal("1000.00"),     // balance
-                new BigDecimal("10.00"),       // penaltyFee
-                LocalDate.parse("2011-01-01"),  // open date
-                Status.ACTIVE,                  // Status
-                new BigDecimal("11.00"),       // Monthly Maintenance Fee
-                new BigDecimal("100.00") );    // Minimum Balance
+                "secretKey1",
+                testHolder1,                        // Primary Holder
+                testHolder2,                        // Secondary Holder
+                new BigDecimal("1000.00"),      // balance
+                new BigDecimal("10.00"),        // penaltyFee
+                LocalDate.parse("2011-01-01"),      // open date
+                Status.ACTIVE,                      // Status
+                new BigDecimal("11.00"),        // Monthly Maintenance Fee
+                new BigDecimal("100.00") );     // Minimum Balance
         testAccount2 = new CheckingAccount(
-                testHolder1,                    // Primary Holder
-                new BigDecimal("2000.00"),     // balance
-                new BigDecimal("20.00"),       // penaltyFee
-                LocalDate.parse("2012-02-02"),  // open date
-                Status.ACTIVE,                  // Status
-                new BigDecimal("22.00"),       // Monthly Maintenance Fee
-                new BigDecimal("200.00") );    // Minimum Balance
+                "secretKey2",
+                testHolder1,                        // Primary Holder
+                null,
+                new BigDecimal("2000.00"),      // balance
+                new BigDecimal("20.00"),        // penaltyFee
+                LocalDate.parse("2012-02-02"),      // open date
+                Status.ACTIVE,                      // Status
+                new BigDecimal("22.00"),        // Monthly Maintenance Fee
+                new BigDecimal("200.00") );     // Minimum Balance
         testAccount3 = new CheckingAccount(
-                testHolder2,                    // Primary Holder
-                new BigDecimal("3000.00"),     // balance
-                new BigDecimal("30.00"),       // penaltyFee
-                LocalDate.parse("2013-03-03"),  // open date
-                Status.ACTIVE,                  // Status
-                new BigDecimal("33.00"),       // Monthly Maintenance Fee
-                new BigDecimal("300.00") );    // Minimum Balance
+                "secretKey3",
+                testHolder2,                        // Primary Holder
+                null,
+                new BigDecimal("3000.00"),      // balance
+                new BigDecimal("30.00"),        // penaltyFee
+                LocalDate.parse("2013-03-03"),      // open date
+                Status.ACTIVE,                      // Status
+                new BigDecimal("33.00"),        // Monthly Maintenance Fee
+                new BigDecimal("300.00") );     // Minimum Balance
 
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
@@ -120,12 +124,8 @@ class CheckingAccountControllerTest {
 
     @Test
     void getByAccountNumber_TestValid() throws Exception {
-        AccountDTO accountDTO = new AccountDTO(testAccount1.getAccountNumber());
-        String body = objectMapper.writeValueAsString(accountDTO);
         MvcResult result = mockMvc.perform(
-                get("/account/checking/id")
-                        .content(body)
-                        .contentType(MediaType.APPLICATION_JSON))
+                get("/account/checking/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getMinimumBalance())));

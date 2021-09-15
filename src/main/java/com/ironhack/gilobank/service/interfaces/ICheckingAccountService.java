@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface ICheckingAccountService {
 
-    Optional<CheckingAccount> findByAccountNumber(AccountDTO accountDTO);
+    Optional<CheckingAccount> findByAccountNumber(Long accountNumber);
     List<CheckingAccount> findAll();
     void creditFunds(TransactionDTO transactionDTO);
     void debitFunds(TransactionDTO transactionDTO);

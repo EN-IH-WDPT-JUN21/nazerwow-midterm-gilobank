@@ -70,7 +70,7 @@ class CheckingAccountRepositoryTest {
         @Test
         void CheckingAccountCreation_TEST_PositiveSingleAccount() throws ParseException {
             var repoSizeBefore = checkingAccountRepository.findAll().size();
-            CheckingAccount testAccount = new CheckingAccount(testHolder1, new BigDecimal("150"), new BigDecimal("150"), LocalDate.parse("2021-09-01"), Status.ACTIVE);
+            CheckingAccount testAccount = new CheckingAccount("secretKey1", testHolder1, new BigDecimal("150"));
             checkingAccountRepository.save(testAccount);
             var repoSizeAfter = checkingAccountRepository.findAll().size();
             assertEquals(repoSizeAfter, repoSizeBefore + 1);
@@ -81,7 +81,7 @@ class CheckingAccountRepositoryTest {
     @Test
     void CheckingAccountCreation_TEST_PositiveJointAccount() throws ParseException {
         var repoSizeBefore = checkingAccountRepository.findAll().size();
-        CheckingAccount testAccount = new CheckingAccount(testHolder1, testHolder2, new BigDecimal("150"), new BigDecimal("150"), LocalDate.parse("2021-09-01"), Status.ACTIVE);
+        CheckingAccount testAccount = new CheckingAccount("secretKeyJoint", testHolder1, testHolder2, new BigDecimal("150"));
         checkingAccountRepository.save(testAccount);
         var repoSizeAfter = checkingAccountRepository.findAll().size();
         assertEquals(repoSizeAfter, repoSizeBefore + 1);
@@ -92,7 +92,7 @@ class CheckingAccountRepositoryTest {
     @Test
     void CheckingAccountCreation_TEST_PositiveOnlyHoldersAndBalance() throws ParseException {
         var repoSizeBefore = checkingAccountRepository.findAll().size();
-        CheckingAccount testAccount = new CheckingAccount(testHolder1, testHolder2, new BigDecimal("150"));
+        CheckingAccount testAccount = new CheckingAccount("secretKeyJoint", testHolder1, testHolder2, new BigDecimal("150"));
         checkingAccountRepository.save(testAccount);
         var repoSizeAfter = checkingAccountRepository.findAll().size();
         assertEquals(repoSizeAfter, repoSizeBefore + 1);

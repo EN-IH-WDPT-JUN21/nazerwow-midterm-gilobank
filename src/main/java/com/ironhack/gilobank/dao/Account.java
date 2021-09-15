@@ -29,6 +29,9 @@ public abstract class Account {
     private Long accountNumber;
 
     @NotNull
+    private String secretKey;
+
+    @NotNull
     @ManyToOne
     @JoinColumn(name="primaryHolder", referencedColumnName = "id")
     @JsonManagedReference
@@ -55,58 +58,36 @@ public abstract class Account {
     private Status status = Status.ACTIVE;
 
 
-    public Account(AccountHolder primaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
+    public Account(String secretKey, AccountHolder primaryHolder, BigDecimal balance) {
+        this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.balance = balance;
-        this.penaltyFee = penaltyFee;
-        this.openDate = openDate;
-        this.status = status;
     }
 
-    public Account(AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
-        this.primaryHolder = primaryHolder;
-        this.secondaryHolder = secondaryHolder;
-        this.balance = balance;
-        this.penaltyFee = penaltyFee;
-        this.openDate = openDate;
-        this.status = status;
-    }
-
-    public Account(AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance) {
+    public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance) {
+        this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;
         this.balance = balance;
     }
 
-    public Account(AccountHolder primaryHolder, BigDecimal balance, LocalDate openDate) {
-        this.primaryHolder = primaryHolder;
-        this.balance = balance;
-        this.openDate = openDate;
-    }
-
-    public Account(AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, LocalDate openDate) {
+    public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, LocalDate openDate) {
+        this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;
         this.balance = balance;
         this.openDate = openDate;
     }
 
-    public Account(AccountHolder primaryHolder, BigDecimal balance) {
+    public Account(String secretKey, AccountHolder primaryHolder, BigDecimal balance, LocalDate openDate) {
+        this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.balance = balance;
-    }
-
-    public Account(Long accountNumber, AccountHolder primaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
-        this.accountNumber = accountNumber;
-        this.primaryHolder = primaryHolder;
-        this.balance = balance;
-        this.penaltyFee = penaltyFee;
         this.openDate = openDate;
-        this.status = status;
     }
 
-    public Account(Long accountNumber, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
-        this.accountNumber = accountNumber;
+    public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
+        this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;
         this.balance = balance;

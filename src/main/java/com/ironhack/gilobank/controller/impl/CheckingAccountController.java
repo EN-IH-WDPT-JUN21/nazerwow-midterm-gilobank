@@ -21,10 +21,10 @@ public class CheckingAccountController implements ICheckingAccountController {
     @Autowired
     private ICheckingAccountService checkingAccountService;
 
-    @GetMapping("/id")
+    @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<CheckingAccount> getByAccountNumber(@RequestBody AccountDTO accountDTO) {
-        return checkingAccountService.findByAccountNumber(accountDTO);
+    public Optional<CheckingAccount> getByAccountNumber(@PathVariable(name = "id") Long accountNumber) {
+        return checkingAccountService.findByAccountNumber(accountNumber);
     }
 
     @GetMapping

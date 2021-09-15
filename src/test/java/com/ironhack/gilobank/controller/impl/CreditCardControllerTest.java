@@ -66,30 +66,35 @@ class CreditCardControllerTest {
         testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2,testAddress2, null);
 
         testAccount1 = new CreditCard(
+                "secretKey1",
                 testHolder1,                    // Primary Holder
                 testHolder2,                    // Secondary Holder
-                new BigDecimal("100"),     // balance
+                new BigDecimal("100"),      // balance
                 new BigDecimal("10"),       // penaltyFee
                 LocalDate.parse("2011-01-01"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("1000"),       // Credit Limit Balance
-                new BigDecimal("11") );    // interestRate
+                new BigDecimal("1000"),     // Credit Limit Balance
+                new BigDecimal("11") );     // interestRate
         testAccount2 = new CreditCard(
+                "secretKey2",
                 testHolder1,                    // Primary Holder
-                new BigDecimal("200"),     // balance
+                null,
+                new BigDecimal("200"),      // balance
                 new BigDecimal("20"),       // penaltyFee
                 LocalDate.parse("2012-02-02"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("2000"),       // Credit Limit Balance
-                new BigDecimal("22") );    // Interest Rate
+                new BigDecimal("2000"),     // Credit Limit Balance
+                new BigDecimal("22") );     // Interest Rate
         testAccount3 = new CreditCard(
+                "secretKey3",
                 testHolder2,                    // Primary Holder
-                new BigDecimal("300"),     // balance
+                null,
+                new BigDecimal("300"),      // balance
                 new BigDecimal("30"),       // penaltyFee
                 LocalDate.parse("2013-03-03"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("3000"),      // Credit Limit Balance
-                new BigDecimal("33") );      // Interest Rate
+                new BigDecimal("3000"),     // Credit Limit Balance
+                new BigDecimal("33") );     // Interest Rate
 
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));

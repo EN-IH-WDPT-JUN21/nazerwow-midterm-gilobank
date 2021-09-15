@@ -7,44 +7,30 @@ import lombok.Setter;
 import javax.persistence.Entity;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+
 
 @Entity
 @Getter
 @Setter
 public class StudentAccount extends Account{
 
-    public StudentAccount(Long accountNumber, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
-        super(accountNumber, primaryHolder, secondaryHolder, balance, penaltyFee, openDate, status);
-    }
-
     public StudentAccount() {
     }
 
-    public StudentAccount(AccountHolder primaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
-        super(primaryHolder, balance, penaltyFee, openDate, status);
+    public StudentAccount(Long accountNumber, String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, List<Transaction> transaction, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
+        super(accountNumber, secretKey, primaryHolder, secondaryHolder, transaction, balance, penaltyFee, openDate, status);
     }
 
-    public StudentAccount(AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
-        super(primaryHolder, secondaryHolder, balance, penaltyFee, openDate, status);
+    public StudentAccount(String secretKey, AccountHolder primaryHolder, BigDecimal balance) {
+        super(secretKey, primaryHolder, balance);
     }
 
-    public StudentAccount(AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance) {
-        super(primaryHolder, secondaryHolder, balance);
+    public StudentAccount(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance) {
+        super(secretKey, primaryHolder, secondaryHolder, balance);
     }
 
-    public StudentAccount(AccountHolder primaryHolder, BigDecimal balance, LocalDate openDate) {
-        super(primaryHolder, balance, openDate);
-    }
-
-    public StudentAccount(AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, LocalDate openDate) {
-        super(primaryHolder, secondaryHolder, balance, openDate);
-    }
-
-    public StudentAccount(AccountHolder primaryHolder, BigDecimal balance) {
-        super(primaryHolder, balance);
-    }
-
-    public StudentAccount(Long accountNumber, AccountHolder primaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
-        super(accountNumber, primaryHolder, balance, penaltyFee, openDate, status);
+    public StudentAccount(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
+        super(secretKey, primaryHolder, secondaryHolder, balance, penaltyFee, openDate, status);
     }
 }

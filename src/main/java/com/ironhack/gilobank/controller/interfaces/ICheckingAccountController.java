@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface ICheckingAccountController {
 
-    Optional<CheckingAccount> getByAccountNumber(AccountDTO accountDTO);
+    Optional<CheckingAccount> getByAccountNumber(Long accountNumber);
     List<CheckingAccount> getAll();
 
     void creditFunds(TransactionDTO transactionDTO);
