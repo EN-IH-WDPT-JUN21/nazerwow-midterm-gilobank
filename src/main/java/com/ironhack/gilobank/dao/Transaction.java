@@ -1,6 +1,6 @@
 package com.ironhack.gilobank.dao;
 
-import com.ironhack.gilobank.utils.Money;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,25 +31,29 @@ public class Transaction {
 
     @ManyToOne
     @JoinColumn(name="account_id", referencedColumnName = "accountNumber")
+    @JsonManagedReference
     private Account account;
     private String name;
     private BigDecimal amount;
+    private BigDecimal balanceAfterTransaction;
     private LocalDate date = LocalDate.now();
 
     public Transaction(Account account) {
         this.account = account;
     }
 
-    public Transaction(Account account, String name, BigDecimal amount, LocalDate date) {
+    public Transaction(Account account, String name, BigDecimal amount, BigDecimal balanceAfterTransaction) {
         this.account = account;
         this.name = name;
         this.amount = amount;
-        this.date = date;
+        this.balanceAfterTransaction = balanceAfterTransaction;
     }
 
-    public Transaction(Account account, String name, BigDecimal amount) {
+    public Transaction(Account account, String name, BigDecimal amount, BigDecimal balanceAfterTransaction, LocalDate date) {
         this.account = account;
         this.name = name;
         this.amount = amount;
+        this.balanceAfterTransaction = balanceAfterTransaction;
+        this.date = date;
     }
 }

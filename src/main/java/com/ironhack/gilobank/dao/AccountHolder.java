@@ -22,10 +22,6 @@ import java.util.Set;
 @NoArgsConstructor
 public class AccountHolder extends User{
 
-    @Id
-    @GeneratedValue
-    private Long id;
-
     private Role role = Role.ACCOUNTHOLDER;
 
     @NotNull

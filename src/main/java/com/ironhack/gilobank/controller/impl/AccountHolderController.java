@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/accholder")
+@RequestMapping("/user/accholder")
 public class AccountHolderController implements IAccountHolderController {
 
     @Autowired

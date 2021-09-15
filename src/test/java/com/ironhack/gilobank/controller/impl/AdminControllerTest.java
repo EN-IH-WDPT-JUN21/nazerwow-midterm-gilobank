@@ -23,28 +23,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-class AccountHolderControllerTest {
+class AdminControllerTest {
 
     @Autowired
-    private AddressRepository addressRepository;
-    @Autowired
-    private AccountHolderRepository accountHolderRepository;
+    private AdminRepository adminRepository;
     @Autowired
     private LoginDetailsRepository loginDetailsRepository;
-    @Autowired
-    private CheckingAccountRepository checkingAccountRepository;
-    @Autowired
-    private SavingsAccountRepository savingsAccountRepository;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
 
     private MockMvc mockMvc;
 
-    private Address testAddress1;
-    private Address testAddress2;
-    private AccountHolder testHolder1;
-    private AccountHolder testHolder2;
+    private Admin testAdmin1;
+    private Admin testAdmin2;
     private LoginDetails loginDetails1;
     private LoginDetails loginDetails2;
 
@@ -54,49 +46,29 @@ class AccountHolderControllerTest {
     void setUp() throws ParseException {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
-        LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
-
         loginDetails1 = new LoginDetails("hackerman", "ihackthings");
         loginDetails2 = new LoginDetails("testusername2", "testpass2");
 
-        testAddress1 = new Address("1", "Primary Road", "Primary", "PRIMA1");
-        testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
+        testAdmin1 = new Admin(loginDetails1, "Test1");
+        testAdmin2 = new Admin(loginDetails2, "Test2");
 
-        testHolder1 = new AccountHolder(loginDetails1, "Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
-        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2,testAddress2, null);
-        
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
-        addressRepository.saveAll(List.of(testAddress1, testAddress2));
-        accountHolderRepository.saveAll(List.of(testHolder1,testHolder2));
+        adminRepository.saveAll(List.of(testAdmin1, testAdmin2));
     }
 
     @AfterEach
     void tearDown() {
-        savingsAccountRepository.deleteAll();
-        accountHolderRepository.deleteAll();
+        adminRepository.deleteAll();
         loginDetailsRepository.deleteAll();
-        addressRepository.deleteAll();
     }
 
     @Test
-    void getAllAccountHolders_ValidTest() throws Exception {
+    void getAll_ValidTest() throws Exception {
         MvcResult result = mockMvc.perform(
-                get("/user/accholder"))
+                        get("/user/admin"))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("TestSur1"));
-        assertTrue(result.getResponse().getContentAsString().contains("TestSur2"));
-    }
-
-    @Test
-    void getAccountHolderById() throws Exception {
-        MvcResult result = mockMvc.perform(
-                get("/user/accholder/" + testHolder1.getId()))
-                .andExpect(status().isOk())
-                .andReturn();
-
         assertTrue(result.getResponse().getContentAsString().contains("Test1"));
-        assertFalse(result.getResponse().getContentAsString().contains("Test2"));
+        assertTrue(result.getResponse().getContentAsString().contains("Test2"));
     }
 }

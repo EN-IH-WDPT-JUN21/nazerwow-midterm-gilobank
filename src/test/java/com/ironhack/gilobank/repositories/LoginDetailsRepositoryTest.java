@@ -27,6 +27,7 @@ class LoginDetailsRepositoryTest {
     @Autowired
     private LoginDetailsRepository loginDetailsRepository;
 
+
     private Address testAddress1;
     private Address testAddress2;
     private AccountHolder testHolder1;

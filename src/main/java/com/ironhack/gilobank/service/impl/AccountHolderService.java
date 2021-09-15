@@ -1,19 +1,13 @@
 package com.ironhack.gilobank.service.impl;
 
-import com.ironhack.gilobank.dao.Account;
 import com.ironhack.gilobank.dao.AccountHolder;
-import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.repositories.AccountHolderRepository;
-import com.ironhack.gilobank.repositories.AddressRepository;
-import com.ironhack.gilobank.repositories.LoginDetailsRepository;
 import com.ironhack.gilobank.service.interfaces.IAccountHolderService;
-import com.ironhack.gilobank.utils.Money;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 

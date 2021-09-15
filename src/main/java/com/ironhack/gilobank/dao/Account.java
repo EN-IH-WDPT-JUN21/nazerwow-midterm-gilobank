@@ -9,16 +9,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @AllArgsConstructor
@@ -45,6 +40,7 @@ public abstract class Account {
     private AccountHolder secondaryHolder;
 
     @OneToMany(mappedBy = "account")
+    @JsonBackReference
     private List<Transaction> transaction;
 
     @NotNull

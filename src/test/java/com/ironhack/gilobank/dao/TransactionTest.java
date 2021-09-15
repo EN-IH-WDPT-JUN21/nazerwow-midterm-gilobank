@@ -106,12 +106,12 @@ class TransactionTest {
         loginDetailsRepository.deleteAll();
         addressRepository.deleteAll();
     }
-    @Test
-            void testTransactionIdCreation(){
-    testTransaction1 = new Transaction(testAccount1);
-    transactionRepository.save(testTransaction1);
-    testTransaction2 = new Transaction(testAccount1);
-    transactionRepository.save(testTransaction2);
-    }
+//    @Test
+//    void testTransactionIdCreation(){
+//    testTransaction1 = new Transaction(testAccount1);
+//    transactionRepository.save(testTransaction1);
+//    testTransaction2 = new Transaction(testAccount1);
+//    transactionRepository.save(testTransaction2);
+//    }
 
 }

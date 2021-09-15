@@ -29,12 +29,6 @@ class CheckingAccountRepositoryTest {
         @Autowired
         private CheckingAccountRepository checkingAccountRepository;
         @Autowired
-        private StudentAccountRepository studentAccountRepository;
-        @Autowired
-        private CreditCardRepository creditCardRepository;
-        @Autowired
-        private SavingsAccountRepository savingsAccountRepository;
-        @Autowired
         private LoginDetailsRepository loginDetailsRepository;
 
         private Address testAddress1;
