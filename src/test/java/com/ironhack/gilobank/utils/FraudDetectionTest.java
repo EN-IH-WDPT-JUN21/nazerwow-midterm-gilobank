@@ -1,8 +1,9 @@
-package com.ironhack.gilobank.repositories;
+package com.ironhack.gilobank.utils;
 
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.enums.TransactionType;
+import com.ironhack.gilobank.repositories.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-class TransactionRepositoryTest {
+class FraudDetectionTest {
 
     @Autowired
     private AddressRepository addressRepository;
@@ -33,6 +34,8 @@ class TransactionRepositoryTest {
     private SavingsAccountRepository savingsAccountRepository;
     @Autowired
     private TransactionRepository transactionRepository;
+    @Autowired
+    private FraudDetection fraudDetection;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -83,16 +86,19 @@ class TransactionRepositoryTest {
                 new BigDecimal("100"),      // Minimum Balance
                 new BigDecimal("1") );      // interestRate
 
-
-        testTransaction1 = new Transaction(testAccount1, "Test1",new BigDecimal("250.00"),testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-01-03T10:15:30"));
-        testTransaction2 = new Transaction(testAccount1,"Test2", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-02-03T10:15:30"));
-        testTransaction3 = new Transaction(testAccount1,"Test2", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.TRANSFER_DEBIT, LocalDateTime.parse("2020-03-03T10:15:30"));
-        testTransaction4 = new Transaction(testAccount1,"Test3", new BigDecimal("250.00"), testAccount1.getBalance(),TransactionType.TRANSFER_DEBIT, LocalDateTime.parse("2020-04-03T10:15:30"));
-        testTransaction5 = new Transaction(testAccount1,"Test4", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.parse("2020-05-03T10:15:30"));
-        testTransaction6 = new Transaction(testAccount1, "Test5",new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.parse("2020-06-03T10:15:30"));
-        testTransaction7 = new Transaction(testAccount1, "Test6",new BigDecimal("250.00"), testAccount1.getBalance(),TransactionType.TRANSFER_CREDIT, LocalDateTime.parse("2020-07-03T10:15:30"));
-        testTransaction8 = new Transaction(testAccount1,"Test7", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.TRANSFER_CREDIT, LocalDateTime.parse("2020-08-03T10:15:30"));
-        testTransaction9 = new Transaction(testAccount1, "Test8",new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.parse("2020-09-03T10:15:30"));
+        // Total 500 in 1 day
+        testTransaction1 = new Transaction(testAccount1, "Test1",new BigDecimal("500.00"),testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-01-03T10:15:30"));
+        testTransaction2 = new Transaction(testAccount1,"Test2", new BigDecimal("500.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-01-03T10:15:30"));
+        // Total 400 in 1 day
+        testTransaction3 = new Transaction(testAccount1,"Test2", new BigDecimal("200.00"), testAccount1.getBalance(), TransactionType.TRANSFER_DEBIT, LocalDateTime.parse("2020-04-03T10:15:30"));
+        testTransaction4 = new Transaction(testAccount1,"Test3", new BigDecimal("200.00"), testAccount1.getBalance(),TransactionType.TRANSFER_DEBIT, LocalDateTime.parse("2020-04-03T10:15:30"));
+        // Total 3000 in 1 day
+        testTransaction5 = new Transaction(testAccount1,"Test4", new BigDecimal("1500.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-06-03T10:15:30"));
+        testTransaction6 = new Transaction(testAccount1, "Test5",new BigDecimal("1500.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-06-03T10:15:30"));
+        // Total 750 in 1 day
+        testTransaction7 = new Transaction(testAccount1, "Test6",new BigDecimal("250.00"), testAccount1.getBalance(),TransactionType.DEBIT, LocalDateTime.parse("2020-07-03T10:15:30"));
+        testTransaction8 = new Transaction(testAccount1,"Test7", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-08-03T10:15:30"));
+        testTransaction9 = new Transaction(testAccount1, "Test8",new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-09-03T10:15:30"));
 
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
@@ -112,40 +118,39 @@ class TransactionRepositoryTest {
     }
 
     @Test
-    void findByTimeOfTrnsBetween_Valid() {
-        var transactionList = transactionRepository.findByTimeOfTrnsBetween(testAccount1, LocalDateTime.parse("2020-01-03T10:15:20"), LocalDateTime.parse("2020-04-03T10:30:30"));
-        assertEquals(4, transactionList.size());
-    }
-
-    @Test
-    void findByTimeOfTrnsBetween_Find_None() {
-        var transactionList = transactionRepository.findByTimeOfTrnsBetween(testAccount1, LocalDateTime.parse("1980-01-03T10:15:20"), LocalDateTime.parse("2000-04-03T10:30:30"));
-        assertEquals(0, transactionList.size());
-    }
-
-    @Test
-    void debitsFromLast24Hour(){
-        Transaction test1 = new Transaction(testAccount1, "Test6",new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2021-09-16T10:15:30"));
-        Transaction test2 = new Transaction(testAccount1,"Test7", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2021-09-16T10:45:30"));
-        Transaction test3 = new Transaction(testAccount1, "Test8",new BigDecimal("250.00"),  testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.parse("2021-09-16T10:30:30"));
+    void current24Spend() {
+        Transaction test1 = new Transaction(testAccount1, "Test6",new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
+        Transaction test2 = new Transaction(testAccount1,"Test7", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
+        Transaction test3 = new Transaction(testAccount1, "Test8",new BigDecimal("250.00"),  testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
         transactionRepository.saveAll(List.of(test1,test2,test3));
-        var transactionList = transactionRepository.allDebitsFromLast24Hour(testAccount1);
-        assertEquals(2,transactionList.size());
+        var transactionTotal = fraudDetection.current24Spend(testAccount1, new BigDecimal("250.00"));
+        assertEquals(new BigDecimal("1000.00"), transactionTotal);
     }
 
     @Test
-    void totalDebitsOfLast24Hours(){
-        Transaction test1 = new Transaction(testAccount1, "Test6",new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2021-09-16T10:15:30"));
-        Transaction test2 = new Transaction(testAccount1,"Test7", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2021-09-16T10:45:30"));
-        Transaction test3 = new Transaction(testAccount1, "Test8",new BigDecimal("250.00"),  testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.parse("2021-09-16T10:30:30"));
+    void getHighestEver24Spend() {
+        var transactionTotal = fraudDetection.getHighestEver24Spend(testAccount1);
+        assertEquals(new BigDecimal("3000.00"), transactionTotal);
+    }
+
+    @Test
+    void fraudDetector_Test_Fraud_Detected() {
+        Transaction test1 = new Transaction(testAccount1, "Test6",new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
+        Transaction test2 = new Transaction(testAccount1,"Test7", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
+        Transaction test3 = new Transaction(testAccount1, "Test8",new BigDecimal("250.00"),  testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
         transactionRepository.saveAll(List.of(test1,test2,test3));
-        var total = transactionRepository.totalOfAllDebitsFromLast24Hours(testAccount1);
-        assertEquals(new BigDecimal("500.00"), total);
+        var transactionTotal = fraudDetection.fraudDetector(testAccount1, new BigDecimal("2500000.00"));
+        assertEquals(true, transactionTotal);
     }
 
     @Test
-    void historicDailyTotals_Test(){
-        var total = transactionRepository.historicDailyTotals(testAccount1);
-        assertEquals(4, total.size());
+    void fraudDetector_Test_No_Fraud_Detected() {
+        Transaction test1 = new Transaction(testAccount1, "Test6",new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
+        Transaction test2 = new Transaction(testAccount1,"Test7", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
+        Transaction test3 = new Transaction(testAccount1, "Test8",new BigDecimal("250.00"),  testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
+        transactionRepository.saveAll(List.of(test1,test2,test3));
+        var transactionTotal = fraudDetection.fraudDetector(testAccount1, new BigDecimal("250.00"));
+        assertEquals(false, transactionTotal);
     }
+
 }

@@ -1,12 +1,12 @@
 package com.ironhack.gilobank.service.impl;
 
-import com.ironhack.gilobank.controller.dto.AccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
+import com.ironhack.gilobank.dao.Account;
 import com.ironhack.gilobank.dao.CheckingAccount;
 import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.repositories.CheckingAccountRepository;
 import com.ironhack.gilobank.service.interfaces.ICheckingAccountService;
-import com.ironhack.gilobank.service.interfaces.ITransactionService;
+import com.ironhack.gilobank.utils.FraudDetection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,6 +24,8 @@ public class CheckingAccountService implements ICheckingAccountService {
     private CheckingAccountRepository checkingAccountRepository;
     @Autowired
     private TransactionService transactionService;
+    @Autowired
+    private FraudDetection fraudDetection;
 
     public Optional<CheckingAccount> findByAccountNumber(Long accountNumber) {
         Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(accountNumber);
@@ -80,4 +82,14 @@ public class CheckingAccountService implements ICheckingAccountService {
         }
         return transactionService.findByDateTimeBetween(checkingAccount.get(), startDate, endDate);
     }
+
+    public void checkForFraud(TransactionDTO transactionDTO){
+        Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(transactionDTO.getDebitAccountNumber());
+        if(fraudDetection.fraudDetector(checkingAccount.get(), transactionDTO.getAmount())){
+            checkingAccount.get().freezeAccount();
+            checkingAccountRepository.save(checkingAccount.get());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
+        }
+    }
+
 }

@@ -18,4 +18,5 @@ public interface ICheckingAccountService {
     void debitFunds(TransactionDTO transactionDTO);
     void transferBetweenAccounts(TransactionDTO transactionDTO);
     List<Transaction> findTransactionBetween(Long accountNumber, LocalDateTime startDate, LocalDateTime endDate);
+    void checkForFraud(TransactionDTO transactionDTO);
 }

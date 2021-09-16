@@ -108,4 +108,12 @@ public abstract class Account {
         this.balance = getBalanceAsMoney().decreaseAmount(amount);
     }
 
+    public void freezeAccount(){
+        this.status = Status.FROZEN;
+    }
+
+    public void unfreezeAccount(){
+        this.status = Status.ACTIVE;
+    }
+
 }

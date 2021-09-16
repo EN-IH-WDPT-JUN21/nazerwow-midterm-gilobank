@@ -19,13 +19,13 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
                                               @Param("startDate") LocalDateTime startPoint,
                                               @Param("endDate") LocalDateTime endPoint);
 
-    @Query(value = "SELECT * FROM transaction WHERE account_id = :account AND time_of_trns > DATE_SUB(NOW(), INTERVAL 24 HOUR)", nativeQuery = true)
-    List<Transaction> findTrnsInLast24Hour(@Param("account") Account account);
+    @Query(value = "SELECT * FROM transaction WHERE account_id = :account AND type LIKE '%DEBIT%' AND time_of_trns > DATE_SUB(NOW(), INTERVAL 24 HOUR)", nativeQuery = true)
+    List<Transaction> allDebitsFromLast24Hour(@Param("account") Account account);
 
-    @Query(value = "SELECT SUM(amount) FROM transaction WHERE account_id = :account AND time_of_trns > DATE_SUB(NOW(), INTERVAL 24 HOUR)", nativeQuery = true)
-    BigDecimal getValueOfLast24Hour(@Param("account") Account account);
+    @Query(value = "SELECT SUM(amount) FROM transaction WHERE account_id = :account AND type LIKE '%debit%' AND time_of_trns > DATE_SUB(NOW(), INTERVAL 24 HOUR)", nativeQuery = true)
+    BigDecimal totalOfAllDebitsFromLast24Hours(@Param("account") Account account);
 
-//    @Query(value = "SELECT amount, time_of_trns, account_id FROM transaction WHERE account_id = :account", nativeQuery = true)
-//    List<Transaction> getTotalValueGroupByDay(@Param("account") Account account);
+    @Query(value = "SELECT SUM(amount) FROM transaction WHERE account_id = :account AND type LIKE '%debit%' GROUP BY DATE(time_of_trns)", nativeQuery = true)
+    List<BigDecimal> historicDailyTotals(@Param("account") Account account);
 
 }

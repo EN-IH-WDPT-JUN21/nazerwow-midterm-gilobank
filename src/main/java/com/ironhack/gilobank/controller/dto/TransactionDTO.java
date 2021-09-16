@@ -1,9 +1,12 @@
 package com.ironhack.gilobank.controller.dto;
 
+import com.ironhack.gilobank.enums.TransactionType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -19,6 +22,9 @@ public class TransactionDTO {
     private Long debitAccountNumber;
 
     private LocalDateTime timeOfTrns;
+
+    @Enumerated(EnumType.STRING)
+    private TransactionType type;
 
     private Long accountNumber;
     private LocalDateTime dateFrom;

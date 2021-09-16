@@ -2,8 +2,10 @@ package com.ironhack.gilobank.service.impl;
 
 import com.ironhack.gilobank.dao.Account;
 import com.ironhack.gilobank.dao.Transaction;
+import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.TransactionRepository;
 import com.ironhack.gilobank.service.interfaces.ITransactionService;
+import com.ironhack.gilobank.utils.FraudDetection;
 import com.ironhack.gilobank.utils.Money;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,8 @@ public class TransactionService implements ITransactionService {
 
     @Autowired
     private TransactionRepository transactionRepository;
+    @Autowired
+    private FraudDetection fraudDetection;
 
 //    public void createTransactionLog(Account account, BigDecimal amount, Optional<LocalDate> date) {
 //        LocalDate transactionDate;
@@ -43,7 +47,7 @@ public class TransactionService implements ITransactionService {
         String transactionName;
         Money moneyAmount = new Money(amount);
         transactionName = moneyAmount + " credit";
-        Transaction transaction = new Transaction(account, transactionName, amount, account.getBalance(), transactionDate);
+        Transaction transaction = new Transaction(account, transactionName, amount, account.getBalance(), TransactionType.CREDIT, transactionDate);
         transactionRepository.save(transaction);
         return transaction;
     }
@@ -52,7 +56,7 @@ public class TransactionService implements ITransactionService {
         Money moneyAmount = new Money(amount);
         String transactionName;
         transactionName = moneyAmount + " credit";
-        Transaction transaction = new Transaction(account, transactionName, amount, account.getBalance(), date);
+        Transaction transaction = new Transaction(account, transactionName, amount, account.getBalance(), TransactionType.CREDIT, date);
         transactionRepository.save(transaction);
         return transaction;
     }
@@ -62,7 +66,7 @@ public class TransactionService implements ITransactionService {
         String transactionName;
         Money moneyAmount = new Money(amount);
         transactionName = moneyAmount + " debit";
-        Transaction transaction = new Transaction(account, transactionName, amount, account.getBalance(), transactionDate);
+        Transaction transaction = new Transaction(account, transactionName, amount, account.getBalance(), TransactionType.DEBIT, transactionDate);
         transactionRepository.save(transaction);
         return transaction;
     }
@@ -71,7 +75,7 @@ public class TransactionService implements ITransactionService {
         Money moneyAmount = new Money(amount);
         String transactionName;
         transactionName = moneyAmount + " debit";
-        Transaction transaction = new Transaction(account, transactionName, amount, account.getBalance(), date);
+        Transaction transaction = new Transaction(account, transactionName, amount, account.getBalance(), TransactionType.DEBIT, date);
         transactionRepository.save(transaction);
         return transaction;
     }
@@ -81,8 +85,8 @@ public class TransactionService implements ITransactionService {
         Money moneyAmount = new Money(amount);
         String debitName = moneyAmount + " Transfer to Account Number: " + creditAccount.getAccountNumber();
         String creditName = moneyAmount + " Transfer from Account Number: " + debitAccount.getAccountNumber();
-        Transaction debit = new Transaction(debitAccount, debitName, amount, debitAccount.getBalance(), transactionDate);
-        Transaction credit = new Transaction(debitAccount, debitName, amount, debitAccount.getBalance(), transactionDate);
+        Transaction debit = new Transaction(debitAccount, debitName, amount, debitAccount.getBalance(), TransactionType.TRANSFER_DEBIT, transactionDate);
+        Transaction credit = new Transaction(debitAccount, debitName, amount, debitAccount.getBalance(), TransactionType.TRANSFER_CREDIT, transactionDate);
         transactionRepository.saveAll(List.of(debit, credit));
         return List.of(debit, credit);
     }
@@ -91,13 +95,12 @@ public class TransactionService implements ITransactionService {
         Money moneyAmount = new Money(amount);
         String debitName = moneyAmount + " Transfer to Account Number: " + creditAccount.getAccountNumber();
         String creditName = moneyAmount + " Transfer from Account Number: " + debitAccount.getAccountNumber();
-        Transaction debit = new Transaction(debitAccount, debitName, amount, debitAccount.getBalance(), transactionDate);
-        Transaction credit = new Transaction(debitAccount, debitName, amount, debitAccount.getBalance(), transactionDate);
+        Transaction debit = new Transaction(debitAccount, debitName, amount, debitAccount.getBalance(),TransactionType.TRANSFER_DEBIT, transactionDate);
+        Transaction credit = new Transaction(creditAccount, creditName, amount, creditAccount.getBalance(), TransactionType.TRANSFER_CREDIT, transactionDate);
         transactionRepository.saveAll(List.of(debit, credit));
         return List.of(debit, credit);
     }
 
-    @Override
     public List<Transaction> findByDateTimeBetween(Account accountNumber, LocalDateTime startPoint, LocalDateTime endPoint) throws ResponseStatusException {
         List<Transaction> transactionList =  transactionRepository.findByTimeOfTrnsBetween(accountNumber, startPoint, endPoint);
         if(transactionList.isEmpty())

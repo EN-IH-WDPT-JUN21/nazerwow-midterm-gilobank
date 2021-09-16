@@ -42,12 +42,14 @@ public class CheckingAccountController implements ICheckingAccountController {
     @PutMapping("/debit")
     @ResponseStatus(HttpStatus.OK)
     public void debitFunds(@RequestBody TransactionDTO transactionDTO) {
+        checkingAccountService.checkForFraud(transactionDTO);
         checkingAccountService.debitFunds(transactionDTO);
     }
 
     @PutMapping("/transfer")
     @ResponseStatus(HttpStatus.OK)
     public void transferFunds(@RequestBody TransactionDTO transactionDTO) {
+        checkingAccountService.checkForFraud(transactionDTO);
         checkingAccountService.transferBetweenAccounts(transactionDTO);
     }
 
