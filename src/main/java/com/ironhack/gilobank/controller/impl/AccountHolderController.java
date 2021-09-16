@@ -2,6 +2,7 @@ package com.ironhack.gilobank.controller.impl;
 
 import com.ironhack.gilobank.controller.interfaces.IAccountHolderController;
 import com.ironhack.gilobank.dao.AccountHolder;
+import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.service.interfaces.IAccountHolderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,5 +29,6 @@ public class AccountHolderController implements IAccountHolderController {
     public Optional<AccountHolder> getById(@PathVariable(name="id") Long id) {
         return accountHolderService.findById(id);
     }
+
 
 }

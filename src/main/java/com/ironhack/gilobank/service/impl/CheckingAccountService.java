@@ -3,6 +3,7 @@ package com.ironhack.gilobank.service.impl;
 import com.ironhack.gilobank.controller.dto.AccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.CheckingAccount;
+import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.repositories.CheckingAccountRepository;
 import com.ironhack.gilobank.service.interfaces.ICheckingAccountService;
 import com.ironhack.gilobank.service.interfaces.ITransactionService;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,5 +71,13 @@ public class CheckingAccountService implements ICheckingAccountService {
             checkingAccountRepository.saveAll(List.of(debitAccount.get(), creditAccount.get()));
             transactionService.createTransactionLogTransfer(debitAccount.get(), transactionDTO.getAmount(), creditAccount.get());
         }
+    }
+
+    public List<Transaction> findTransactionBetween(Long accountNumber, LocalDateTime startDate, LocalDateTime endDate){
+        Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(accountNumber);
+        if(!checkingAccount.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Checking Account found with Account Number: " + accountNumber);
+        }
+        return transactionService.findByDateTimeBetween(checkingAccount.get(), startDate, endDate);
     }
 }

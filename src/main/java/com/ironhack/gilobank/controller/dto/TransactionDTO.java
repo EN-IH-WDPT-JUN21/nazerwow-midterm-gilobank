@@ -1,14 +1,11 @@
 package com.ironhack.gilobank.controller.dto;
 
-
-import com.ironhack.gilobank.dao.Account;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -20,6 +17,12 @@ public class TransactionDTO {
     private BigDecimal amount;
 
     private Long debitAccountNumber;
+
+    private LocalDateTime timeOfTrns;
+
+    private Long accountNumber;
+    private LocalDateTime dateFrom;
+    private LocalDateTime dateTo;
 
     public TransactionDTO(Long creditAccountNumber, BigDecimal amount) {
         this.creditAccountNumber = creditAccountNumber;
@@ -35,5 +38,11 @@ public class TransactionDTO {
         this.creditAccountNumber = creditAccountNumber;
         this.amount = amount;
         this.debitAccountNumber = debitAccountNumber;
+    }
+
+    public TransactionDTO(Long accountNumber, LocalDateTime dateFrom, LocalDateTime dateTo) {
+        this.accountNumber = accountNumber;
+        this.dateFrom = dateFrom;
+        this.dateTo = dateTo;
     }
 }

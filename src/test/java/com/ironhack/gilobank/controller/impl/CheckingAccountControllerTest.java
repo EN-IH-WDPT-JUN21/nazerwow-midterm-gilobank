@@ -3,15 +3,10 @@ package com.ironhack.gilobank.controller.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ironhack.gilobank.controller.dto.AccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
-import com.ironhack.gilobank.dao.AccountHolder;
-import com.ironhack.gilobank.dao.Address;
-import com.ironhack.gilobank.dao.CheckingAccount;
-import com.ironhack.gilobank.dao.LoginDetails;
+import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
-import com.ironhack.gilobank.repositories.AccountHolderRepository;
-import com.ironhack.gilobank.repositories.AddressRepository;
-import com.ironhack.gilobank.repositories.CheckingAccountRepository;
-import com.ironhack.gilobank.repositories.LoginDetailsRepository;
+import com.ironhack.gilobank.repositories.*;
+import com.ironhack.gilobank.service.interfaces.ITransactionService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +21,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,6 +40,8 @@ class CheckingAccountControllerTest {
     private LoginDetailsRepository loginDetailsRepository;
     @Autowired
     private CheckingAccountRepository checkingAccountRepository;
+    @Autowired
+    private TransactionRepository transactionRepository;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -116,6 +114,7 @@ class CheckingAccountControllerTest {
 
     @AfterEach
     void tearDown() {
+        transactionRepository.deleteAll();
         checkingAccountRepository.deleteAll();
         accountHolderRepository.deleteAll();
         loginDetailsRepository.deleteAll();
@@ -188,4 +187,37 @@ class CheckingAccountControllerTest {
         assertEquals(testAccount1.getBalance().add(new BigDecimal("250.00")), creditedAccount.getBalance());
     }
 
+    @Test
+    void getTransactionsByDateBetween() throws Exception {
+
+        Transaction testTransaction1 = new Transaction(testAccount1, "Test1", new BigDecimal("250.00"), testAccount1.getBalance(),  LocalDateTime.parse("2020-01-03T10:15:30"));
+        Transaction testTransaction2 = new Transaction(testAccount1, "Test2", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
+        Transaction testTransaction3 = new Transaction(testAccount1, "Test2", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-03-03T10:15:30"));
+        Transaction testTransaction4 = new Transaction(testAccount1, "Test3", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-04-03T10:15:30"));
+        Transaction testTransaction5 = new Transaction(testAccount1, "Test4", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-05-03T10:15:30"));
+        Transaction testTransaction6 = new Transaction(testAccount1, "Test5", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-06-03T10:15:30"));
+        Transaction testTransaction7 = new Transaction(testAccount1, "Test6", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-07-03T10:15:30"));
+        Transaction testTransaction8 = new Transaction(testAccount1, "Test7", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-08-03T10:15:30"));
+        Transaction testTransaction9 = new Transaction(testAccount1, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-09-03T10:15:30"));
+
+        Transaction testTransaction10 = new Transaction(testAccount2, "Test7", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
+        Transaction testTransaction11 = new Transaction(testAccount2, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
+
+        transactionRepository.saveAll(List.of(testTransaction1, testTransaction2, testTransaction3, testTransaction4,
+                testTransaction5, testTransaction6, testTransaction7, testTransaction8, testTransaction9));
+
+        MvcResult result = mockMvc.perform(
+                        get("/account/checking/"
+                                + testAccount1.getAccountNumber()
+                                + "/2020-01-0310:15:20/2020-05-0310:55:30"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertTrue(result.getResponse().getContentAsString().contains("Test1"));
+        assertTrue(result.getResponse().getContentAsString().contains("Test2"));
+        assertTrue(result.getResponse().getContentAsString().contains("Test3"));
+        assertTrue(result.getResponse().getContentAsString().contains("Test4"));
+        assertFalse(result.getResponse().getContentAsString().contains("Test5"));
+        assertFalse(result.getResponse().getContentAsString().contains("Test7"));
+    }
 }

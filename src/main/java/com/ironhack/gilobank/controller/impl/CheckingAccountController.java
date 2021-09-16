@@ -1,17 +1,17 @@
 package com.ironhack.gilobank.controller.impl;
 
-import com.ironhack.gilobank.controller.dto.AccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.controller.interfaces.ICheckingAccountController;
 import com.ironhack.gilobank.dao.CheckingAccount;
+import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.service.interfaces.ICheckingAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -49,6 +49,18 @@ public class CheckingAccountController implements ICheckingAccountController {
     @ResponseStatus(HttpStatus.OK)
     public void transferFunds(@RequestBody TransactionDTO transactionDTO) {
         checkingAccountService.transferBetweenAccounts(transactionDTO);
+    }
+
+    @GetMapping("/{id}/{dateFrom}/{dateTo}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Transaction> getTransactionsByDateBetween(
+            @PathVariable(name="id") Long accountNumber,
+            @PathVariable(name="dateFrom")
+            @DateTimeFormat(pattern = "yyyy-MM-ddHH:mm:ss")LocalDateTime startPoint,
+            @PathVariable(name="dateTo")
+            @DateTimeFormat(pattern = "yyyy-MM-ddHH:mm:ss")LocalDateTime endPoint)
+    {
+        return checkingAccountService.findTransactionBetween(accountNumber, startPoint, endPoint);
     }
 
 }

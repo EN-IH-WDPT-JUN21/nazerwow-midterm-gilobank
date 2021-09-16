@@ -47,8 +47,6 @@ class TransactionTest {
     private SavingsAccount testAccount1;
     private SavingsAccount testAccount2;
     private SavingsAccount testAccount3;
-    private Transaction testTransaction1;
-    private Transaction testTransaction2;
 
     @BeforeEach
     void setUp() throws ParseException {
@@ -96,6 +94,8 @@ class TransactionTest {
                 Status.ACTIVE,                  // Status
                 new BigDecimal("300"),      // Minimum Balance
                 new BigDecimal("3") );      // Interest Rate
+
+
 
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));

@@ -1,14 +1,16 @@
 package com.ironhack.gilobank.dao;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -36,7 +38,8 @@ public class Transaction {
     private String name;
     private BigDecimal amount;
     private BigDecimal balanceAfterTransaction;
-    private LocalDate date = LocalDate.now();
+
+    private LocalDateTime timeOfTrns = LocalDateTime.now();
 
     public Transaction(Account account) {
         this.account = account;
@@ -49,11 +52,11 @@ public class Transaction {
         this.balanceAfterTransaction = balanceAfterTransaction;
     }
 
-    public Transaction(Account account, String name, BigDecimal amount, BigDecimal balanceAfterTransaction, LocalDate date) {
+    public Transaction(Account account, String name, BigDecimal amount, BigDecimal balanceAfterTransaction, LocalDateTime timeOfTrns) {
         this.account = account;
         this.name = name;
         this.amount = amount;
         this.balanceAfterTransaction = balanceAfterTransaction;
-        this.date = date;
+        this.timeOfTrns = timeOfTrns;
     }
 }

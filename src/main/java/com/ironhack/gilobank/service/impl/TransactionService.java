@@ -5,12 +5,13 @@ import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.repositories.TransactionRepository;
 import com.ironhack.gilobank.service.interfaces.ITransactionService;
 import com.ironhack.gilobank.utils.Money;
-import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -38,7 +39,7 @@ public class TransactionService implements ITransactionService {
 
 
     public Transaction createTransactionLogCredit(Account account, BigDecimal amount) {
-        LocalDate transactionDate = LocalDate.now();
+        LocalDateTime transactionDate = LocalDateTime.now();
         String transactionName;
         Money moneyAmount = new Money(amount);
         transactionName = moneyAmount + " credit";
@@ -47,7 +48,7 @@ public class TransactionService implements ITransactionService {
         return transaction;
     }
 
-    public Transaction createTransactionLogCredit(Account account, BigDecimal amount, LocalDate date) {
+    public Transaction createTransactionLogCredit(Account account, BigDecimal amount, LocalDateTime date) {
         Money moneyAmount = new Money(amount);
         String transactionName;
         transactionName = moneyAmount + " credit";
@@ -57,7 +58,7 @@ public class TransactionService implements ITransactionService {
     }
 
     public Transaction createTransactionLogDebit(Account account, BigDecimal amount) {
-        LocalDate transactionDate = LocalDate.now();
+        LocalDateTime transactionDate = LocalDateTime.now();
         String transactionName;
         Money moneyAmount = new Money(amount);
         transactionName = moneyAmount + " debit";
@@ -66,7 +67,7 @@ public class TransactionService implements ITransactionService {
         return transaction;
     }
 
-    public Transaction createTransactionLogDebit(Account account, BigDecimal amount, LocalDate date) {
+    public Transaction createTransactionLogDebit(Account account, BigDecimal amount, LocalDateTime date) {
         Money moneyAmount = new Money(amount);
         String transactionName;
         transactionName = moneyAmount + " debit";
@@ -76,7 +77,7 @@ public class TransactionService implements ITransactionService {
     }
 
     public List<Transaction> createTransactionLogTransfer(Account debitAccount, BigDecimal amount, Account creditAccount) {
-        LocalDate transactionDate = LocalDate.now();
+        LocalDateTime transactionDate = LocalDateTime.now();
         Money moneyAmount = new Money(amount);
         String debitName = moneyAmount + " Transfer to Account Number: " + creditAccount.getAccountNumber();
         String creditName = moneyAmount + " Transfer from Account Number: " + debitAccount.getAccountNumber();
@@ -86,7 +87,7 @@ public class TransactionService implements ITransactionService {
         return List.of(debit, credit);
     }
 
-    public List<Transaction> createTransactionLogTransfer(Account debitAccount, BigDecimal amount, Account creditAccount, LocalDate transactionDate) {
+    public List<Transaction> createTransactionLogTransfer(Account debitAccount, BigDecimal amount, Account creditAccount, LocalDateTime transactionDate) {
         Money moneyAmount = new Money(amount);
         String debitName = moneyAmount + " Transfer to Account Number: " + creditAccount.getAccountNumber();
         String creditName = moneyAmount + " Transfer from Account Number: " + debitAccount.getAccountNumber();
@@ -94,6 +95,15 @@ public class TransactionService implements ITransactionService {
         Transaction credit = new Transaction(debitAccount, debitName, amount, debitAccount.getBalance(), transactionDate);
         transactionRepository.saveAll(List.of(debit, credit));
         return List.of(debit, credit);
+    }
+
+    @Override
+    public List<Transaction> findByDateTimeBetween(Account accountNumber, LocalDateTime startPoint, LocalDateTime endPoint) throws ResponseStatusException {
+        List<Transaction> transactionList =  transactionRepository.findByTimeOfTrnsBetween(accountNumber, startPoint, endPoint);
+        if(transactionList.isEmpty())
+            throw new ResponseStatusException
+                    (HttpStatus.NOT_FOUND,  "No transactions found between: " + startPoint + " and " + endPoint);
+        return transactionList;
     }
 
 }
