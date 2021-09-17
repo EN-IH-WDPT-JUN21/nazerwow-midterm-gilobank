@@ -6,6 +6,7 @@ import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.*;
 import com.ironhack.gilobank.service.interfaces.ICheckingAccountService;
+import com.ironhack.gilobank.service.interfaces.ITransactionService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,8 @@ class CheckingAccountServiceTest {
     private TransactionRepository transactionRepository;
     @Autowired
     private ICheckingAccountService checkingAccountService;
+    @Autowired
+    private ITransactionService transactionService;
 
 
     private Address testAddress1;
@@ -120,121 +123,4 @@ class CheckingAccountServiceTest {
         var listOfAccount = checkingAccountRepository.findAll();
         assertEquals(3, listOfAccount.size());
     }
-
-    @Test
-    void creditFunds() {
-        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250"));
-        checkingAccountService.creditFunds(transactionDTO);
-        var updatedAccount = checkingAccountRepository.findById(transactionDTO.getCreditAccountNumber());
-        assertEquals(testAccount1.getBalance().add(new BigDecimal("250")), updatedAccount.get().getBalance());
-    }
-
-    @Test
-    void debitFunds() {
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250"), testAccount1.getAccountNumber());
-        checkingAccountService.debitFunds(transactionDTO);
-        var updatedAccount = checkingAccountRepository.findById(transactionDTO.getDebitAccountNumber());
-        assertEquals(testAccount1.getBalance().subtract(new BigDecimal("250")), updatedAccount.get().getBalance());
-    }
-
-    @Test
-    void transferBetweenAccounts() {
-        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250"), testAccount2.getAccountNumber());
-        checkingAccountService.transferBetweenAccounts(transactionDTO);
-        var updatedDebitedAccount = checkingAccountRepository.findById(transactionDTO.getDebitAccountNumber());
-        var updatedCreditAccount = checkingAccountRepository.findById(transactionDTO.getCreditAccountNumber());
-        assertEquals(testAccount2.getBalance().subtract(new BigDecimal("250.00")), updatedDebitedAccount.get().getBalance());
-        assertEquals(testAccount1.getBalance().add(new BigDecimal("250.00")), updatedCreditAccount.get().getBalance());
-    }
-
-    @Test
-    void findTransactionBetween() {
-        // should contain
-        Transaction testTransaction1 = new Transaction(testAccount1, "Test1", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
-        Transaction testTransaction2 = new Transaction(testAccount1, "Test2", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
-        Transaction testTransaction3 = new Transaction(testAccount1, "Test2", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-03-03T10:15:30"));
-        Transaction testTransaction4 = new Transaction(testAccount1, "Test3", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-04-03T10:15:30"));
-        Transaction testTransaction5 = new Transaction(testAccount1, "Test4", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-05-03T10:15:30"));
-        // Will not contain
-        Transaction testTransaction6 = new Transaction(testAccount1, "Test5", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-06-03T10:15:30"));
-        Transaction testTransaction10 = new Transaction(testAccount2, "Test7", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
-
-        transactionRepository.saveAll(List.of(testTransaction1, testTransaction2, testTransaction3, testTransaction4,
-                testTransaction5, testTransaction6, testTransaction10));
-
-        var listOfTransactions = checkingAccountService.findTransactionBetween(testAccount1.getAccountNumber(),
-                LocalDate.parse("2020-01-03"), LocalDate.parse("2020-05-03"));
-
-        assertEquals(5, listOfTransactions.size());
-        assertFalse(listOfTransactions.contains(testTransaction10));
-        assertFalse(listOfTransactions.contains(testTransaction6));
-    }
-
-    @Test
-    void checkForFraud_Test_No_Fraud_Detected() {
-        Transaction test1 = new Transaction(testAccount1, "Test6", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
-        Transaction test2 = new Transaction(testAccount1, "Test7", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(3));
-        Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(5));
-        transactionRepository.saveAll(List.of(test1, test2, test3));
-
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250"), testAccount1.getAccountNumber());
-
-        assertDoesNotThrow(() -> checkingAccountService.checkForFraud(transactionDTO));
-    }
-
-    @Test
-    void checkForFraud_Test_1Second_Fraud_Detected() {
-        Transaction test1 = new Transaction(testAccount1, "Test6", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
-        Transaction test2 = new Transaction(testAccount1, "Test7", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
-        Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(5));
-        transactionRepository.saveAll(List.of(test1, test2, test3));
-
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250"), testAccount1.getAccountNumber());
-
-        assertThrows(ResponseStatusException.class, () -> checkingAccountService.checkForFraud(transactionDTO));
-    }
-
-    @Test
-    void checkForFraud_Test_24Hour_Fraud_Detected() {
-        Transaction test1 = new Transaction(testAccount1, "Test6", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
-        Transaction test2 = new Transaction(testAccount1, "Test7", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(3));
-        Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(5));
-        transactionRepository.saveAll(List.of(test1, test2, test3));
-
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("2500000"), testAccount1.getAccountNumber());
-        assertThrows(ResponseStatusException.class, () -> checkingAccountService.checkForFraud(transactionDTO));
-    }
-
-    @Test
-    void checkForFraud_Test_Account_Frozen() {
-        Transaction test1 = new Transaction(testAccount1, "Test6", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
-        Transaction test2 = new Transaction(testAccount1, "Test7", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(3));
-        Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(5));
-        transactionRepository.saveAll(List.of(test1, test2, test3));
-
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("2500000"), testAccount1.getAccountNumber());
-        Optional<CheckingAccount> optionalCheckingAccount =
-                checkingAccountRepository.findById(transactionDTO.getDebitAccountNumber());
-        assertEquals(Status.ACTIVE, optionalCheckingAccount.get().getStatus());
-        try {
-            checkingAccountService.checkForFraud(transactionDTO);
-        } catch (ResponseStatusException e) {
-            optionalCheckingAccount = checkingAccountRepository.findById(transactionDTO.getDebitAccountNumber());
-            assertEquals(Status.FROZEN, optionalCheckingAccount.get().getStatus());
-        }
-    }
-
-
-    @Test
-    void checkAccountStatus_Active() {
-        assertDoesNotThrow(() -> checkingAccountService.checkAccountStatus(testAccount1));
-    }
-
-    @Test
-    void checkAccountStatus_Frozen() {
-        testAccount1.setStatus(Status.FROZEN);
-        checkingAccountRepository.save(testAccount1);
-        assertThrows(ResponseStatusException.class, () -> checkingAccountService.checkAccountStatus(testAccount1));
-    }
-
 }

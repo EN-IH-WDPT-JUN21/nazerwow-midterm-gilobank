@@ -13,15 +13,15 @@ public interface ICheckingAccountService {
 
     List<CheckingAccount> findAll();
 
-    void creditFunds(TransactionDTO transactionDTO);
+    Transaction creditFunds(TransactionDTO transactionDTO);
 
-    void debitFunds(TransactionDTO transactionDTO);
+    Transaction debitFunds(TransactionDTO transactionDTO);
 
-    void transferBetweenAccounts(TransactionDTO transactionDTO);
+    Transaction transferBetweenAccounts(TransactionDTO transactionDTO);
 
     List<Transaction> findTransactionBetween(Long accountNumber, LocalDate startDate, LocalDate endDate);
 
-    void checkForFraud(TransactionDTO transactionDTO);
-
-    void checkAccountStatus(CheckingAccount checkingAccount);
+//    void checkForFraud(TransactionDTO transactionDTO);
+//
+//    void checkAccountStatus(CheckingAccount checkingAccount);
 }

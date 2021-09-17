@@ -2,7 +2,10 @@ package com.ironhack.gilobank.controller.interfaces;
 
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.CheckingAccount;
+import com.ironhack.gilobank.dao.Transaction;
+import org.apache.tomcat.jni.Local;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ICheckingAccountController {
@@ -11,9 +14,11 @@ public interface ICheckingAccountController {
 
     List<CheckingAccount> getAll();
 
-    void creditFunds(TransactionDTO transactionDTO);
+    Transaction creditFunds(TransactionDTO transactionDTO);
 
-    void debitFunds(TransactionDTO transactionDTO);
+    Transaction debitFunds(TransactionDTO transactionDTO);
 
-    void transferFunds(TransactionDTO transactionDTO);
+    Transaction transferFunds(TransactionDTO transactionDTO);
+
+    List<Transaction> getTransactionsByDateBetween(Long accountNumber, LocalDate startDate, LocalDate endDate);
 }

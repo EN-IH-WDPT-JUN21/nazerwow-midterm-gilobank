@@ -34,20 +34,20 @@ public class CheckingAccountController implements ICheckingAccountController {
 
     @PutMapping("/credit")
     @ResponseStatus(HttpStatus.OK)
-    public void creditFunds(@RequestBody TransactionDTO transactionDTO) {
-        checkingAccountService.creditFunds(transactionDTO);
+    public Transaction creditFunds(@RequestBody TransactionDTO transactionDTO) {
+        return checkingAccountService.creditFunds(transactionDTO);
     }
 
     @PutMapping("/debit")
     @ResponseStatus(HttpStatus.OK)
-    public void debitFunds(@RequestBody TransactionDTO transactionDTO) {
-        checkingAccountService.debitFunds(transactionDTO);
+    public Transaction debitFunds(@RequestBody TransactionDTO transactionDTO) {
+        return checkingAccountService.debitFunds(transactionDTO);
     }
 
     @PutMapping("/transfer")
     @ResponseStatus(HttpStatus.OK)
-    public void transferFunds(@RequestBody TransactionDTO transactionDTO) {
-        checkingAccountService.transferBetweenAccounts(transactionDTO);
+    public Transaction transferFunds(@RequestBody TransactionDTO transactionDTO) {
+        return checkingAccountService.transferBetweenAccounts(transactionDTO);
     }
 
     // Allows you to pass dates without time for enhanced customer experience

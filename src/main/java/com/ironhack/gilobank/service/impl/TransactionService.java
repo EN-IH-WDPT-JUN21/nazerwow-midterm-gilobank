@@ -1,9 +1,10 @@
 package com.ironhack.gilobank.service.impl;
 
-import com.ironhack.gilobank.dao.Account;
-import com.ironhack.gilobank.dao.Transaction;
+import com.ironhack.gilobank.controller.dto.TransactionDTO;
+import com.ironhack.gilobank.dao.*;
+import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.enums.TransactionType;
-import com.ironhack.gilobank.repositories.TransactionRepository;
+import com.ironhack.gilobank.repositories.*;
 import com.ironhack.gilobank.service.interfaces.ITransactionService;
 import com.ironhack.gilobank.utils.FraudDetection;
 import com.ironhack.gilobank.utils.Money;
@@ -13,14 +14,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TransactionService implements ITransactionService {
 
     @Autowired
     private TransactionRepository transactionRepository;
+    @Autowired
+    private CheckingAccountRepository checkingAccountRepository;
+    @Autowired
+    private SavingsAccountRepository savingsAccountRepository;
+    @Autowired
+    private StudentAccountRepository studentAccountRepository;
+    @Autowired
+    private CreditCardRepository creditCardRepository;
+
     @Autowired
     private FraudDetection fraudDetection;
 
@@ -109,4 +121,107 @@ public class TransactionService implements ITransactionService {
         return transactionList;
     }
 
+        public Transaction creditFunds(TransactionDTO transactionDTO) {
+        Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
+        checkAccountStatus(creditAccount);
+        creditAccount.credit(transactionDTO.getAmount());
+        findAccountTypeAndSave(creditAccount);
+        return createTransactionLogCredit(creditAccount, transactionDTO.getAmount());
+    }
+
+
+    public Transaction debitFunds(TransactionDTO transactionDTO) {
+        Account debitAccount = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
+        checkForFraud(transactionDTO);
+        checkAccountStatus(debitAccount);
+        debitAccount.debit(transactionDTO.getAmount());
+        findAccountTypeAndSave(debitAccount);
+        return createTransactionLogDebit(debitAccount, transactionDTO.getAmount());
+    }
+
+
+    public Transaction transferBetweenAccounts(TransactionDTO transactionDTO) {
+        Account debitAccount = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
+        Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
+        checkForFraud(transactionDTO);
+        checkAccountStatus(debitAccount);
+        checkAccountStatus(creditAccount);
+        debitAccount.debit(transactionDTO.getAmount());
+        creditAccount.credit(transactionDTO.getAmount());
+        findAccountTypeAndSave(debitAccount);
+        findAccountTypeAndSave(creditAccount);
+        return createTransactionLogTransfer(debitAccount, transactionDTO.getAmount(), creditAccount).get(0);
+    }
+
+    // Converts LocalDate to LocalDateTime - Gets transaction from start of startDate to end of endDate
+    public List<Transaction> findTransactionBetween(Long accountNumber, LocalDate startDate, LocalDate endDate) {
+        Account checkingAccount = findAccountTypeAndReturn(accountNumber);
+        LocalDateTime convertedStartDate = startDate.atStartOfDay();
+        LocalDateTime convertedEndDate = endDate.atTime(23, 59, 59);
+        return findByDateTimeBetween(checkingAccount, convertedStartDate, convertedEndDate);
+    }
+
+    public void checkForFraud(TransactionDTO transactionDTO) {
+        Account account = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
+        if (fraudDetection.fraudDetector(account, transactionDTO.getAmount())) {
+            account.freezeAccount();
+            findAccountTypeAndSave(account);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
+        }
+    }
+
+    public void checkAccountStatus(Account checkingAccount) {
+        if (checkingAccount.getStatus() == Status.FROZEN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
+        }
+    }
+
+    public void findAccountTypeAndSave(Account account) {
+        Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(account.getAccountNumber());
+        if (checkingAccount.isPresent()) {
+            checkingAccount.get().setBalance(account.getBalance());
+            checkingAccount.get().setStatus(account.getStatus());
+            checkingAccountRepository.save(checkingAccount.get());
+        }
+        Optional<SavingsAccount> savingsAccount = savingsAccountRepository.findById(account.getAccountNumber());
+        if (savingsAccount.isPresent()) {
+            savingsAccount.get().setBalance(account.getBalance());
+            savingsAccount.get().setStatus(account.getStatus());
+            savingsAccountRepository.save(savingsAccount.get());
+        }
+        Optional<StudentAccount> studentAccount = studentAccountRepository.findById(account.getAccountNumber());
+        if (studentAccount.isPresent()) {
+            studentAccount.get().setBalance(account.getBalance());
+            studentAccount.get().setStatus(account.getStatus());
+            studentAccountRepository.save(studentAccount.get());
+        }
+        Optional<CreditCard> creditCard = creditCardRepository.findById(account.getAccountNumber());
+        if (creditCard.isPresent()) {
+            creditCard.get().setBalance(account.getBalance());
+            creditCard.get().setStatus(account.getStatus());
+            creditCardRepository.save(creditCard.get());
+        }
+    }
+
+    public Account findAccountTypeAndReturn(Long accountNumber) {
+        Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(accountNumber);
+        if (checkingAccount.isPresent()) {
+            return checkingAccount.get();
+        }
+        Optional<SavingsAccount> savingsAccount = savingsAccountRepository.findById(accountNumber);
+        if (savingsAccount.isPresent()) {
+            return savingsAccount.get();
+        }
+        Optional<StudentAccount> studentAccount = studentAccountRepository.findById(accountNumber);
+        if (studentAccount.isPresent()) {
+            return studentAccount.get();
+        }
+
+        Optional<CreditCard> creditCard = creditCardRepository.findById(accountNumber);
+        if (creditCard.isPresent()) {
+            return creditCard.get();
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Checking Account found with Account Number: " + accountNumber);
+        }
+    }
 }

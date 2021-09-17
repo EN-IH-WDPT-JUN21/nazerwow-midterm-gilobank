@@ -3,7 +3,6 @@ package com.ironhack.gilobank.service.impl;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.CheckingAccount;
 import com.ironhack.gilobank.dao.Transaction;
-import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.repositories.CheckingAccountRepository;
 import com.ironhack.gilobank.service.interfaces.ICheckingAccountService;
 import com.ironhack.gilobank.utils.FraudDetection;
@@ -38,35 +37,19 @@ public class CheckingAccountService implements ICheckingAccountService {
         return checkingAccountRepository.findAll();
     }
 
-    public void creditFunds(TransactionDTO transactionDTO) {
-        CheckingAccount checkingAccount = findByAccountNumber(transactionDTO.getCreditAccountNumber());
-        checkAccountStatus(checkingAccount);
-        checkingAccount.credit(transactionDTO.getAmount());
-        checkingAccountRepository.save(checkingAccount);
-        transactionService.createTransactionLogCredit(checkingAccount, transactionDTO.getAmount());
+
+    public Transaction creditFunds(TransactionDTO transactionDTO) {
+        return transactionService.creditFunds(transactionDTO);
     }
 
 
-    public void debitFunds(TransactionDTO transactionDTO) {
-        CheckingAccount checkingAccount = findByAccountNumber(transactionDTO.getDebitAccountNumber());
-        checkAccountStatus(checkingAccount);
-        checkForFraud(transactionDTO);
-        checkingAccount.debit(transactionDTO.getAmount());
-        checkingAccountRepository.save(checkingAccount);
-        transactionService.createTransactionLogDebit(checkingAccount, transactionDTO.getAmount());
+    public Transaction debitFunds(TransactionDTO transactionDTO) {
+        return transactionService.debitFunds(transactionDTO);
     }
 
 
-    public void transferBetweenAccounts(TransactionDTO transactionDTO) {
-        CheckingAccount debitAccount = findByAccountNumber(transactionDTO.getDebitAccountNumber());
-        CheckingAccount creditAccount = findByAccountNumber(transactionDTO.getCreditAccountNumber());
-        checkAccountStatus(debitAccount);
-        checkAccountStatus(creditAccount);
-        checkForFraud(transactionDTO);
-        debitAccount.debit(transactionDTO.getAmount());
-        creditAccount.credit(transactionDTO.getAmount());
-        checkingAccountRepository.saveAll(List.of(debitAccount, creditAccount));
-        transactionService.createTransactionLogTransfer(debitAccount, transactionDTO.getAmount(), creditAccount);
+    public Transaction transferBetweenAccounts(TransactionDTO transactionDTO) {
+        return transactionService.transferBetweenAccounts(transactionDTO);
     }
 
     // Converts LocalDate to LocalDateTime - Gets transaction from start of startDate to end of endDate
@@ -75,21 +58,6 @@ public class CheckingAccountService implements ICheckingAccountService {
         LocalDateTime convertedStartDate = startDate.atStartOfDay();
         LocalDateTime convertedEndDate = endDate.atTime(23, 59, 59);
         return transactionService.findByDateTimeBetween(checkingAccount, convertedStartDate, convertedEndDate);
-    }
-
-    public void checkForFraud(TransactionDTO transactionDTO) {
-        CheckingAccount checkingAccount = findByAccountNumber(transactionDTO.getDebitAccountNumber());
-        if (fraudDetection.fraudDetector(checkingAccount, transactionDTO.getAmount())) {
-            checkingAccount.freezeAccount();
-            checkingAccountRepository.save(checkingAccount);
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
-        }
-    }
-
-    public void checkAccountStatus(CheckingAccount checkingAccount) {
-        if (checkingAccount.getStatus() == Status.FROZEN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
-        }
     }
 
 
