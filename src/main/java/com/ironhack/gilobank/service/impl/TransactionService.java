@@ -95,17 +95,17 @@ public class TransactionService implements ITransactionService {
         Money moneyAmount = new Money(amount);
         String debitName = moneyAmount + " Transfer to Account Number: " + creditAccount.getAccountNumber();
         String creditName = moneyAmount + " Transfer from Account Number: " + debitAccount.getAccountNumber();
-        Transaction debit = new Transaction(debitAccount, debitName, amount, debitAccount.getBalance(),TransactionType.TRANSFER_DEBIT, transactionDate);
+        Transaction debit = new Transaction(debitAccount, debitName, amount, debitAccount.getBalance(), TransactionType.TRANSFER_DEBIT, transactionDate);
         Transaction credit = new Transaction(creditAccount, creditName, amount, creditAccount.getBalance(), TransactionType.TRANSFER_CREDIT, transactionDate);
         transactionRepository.saveAll(List.of(debit, credit));
         return List.of(debit, credit);
     }
 
     public List<Transaction> findByDateTimeBetween(Account accountNumber, LocalDateTime startPoint, LocalDateTime endPoint) throws ResponseStatusException {
-        List<Transaction> transactionList =  transactionRepository.findByTimeOfTrnsBetween(accountNumber, startPoint, endPoint);
-        if(transactionList.isEmpty())
+        List<Transaction> transactionList = transactionRepository.findByTimeOfTrnsBetween(accountNumber, startPoint, endPoint);
+        if (transactionList.isEmpty())
             throw new ResponseStatusException
-                    (HttpStatus.NOT_FOUND,  "No transactions found between: " + startPoint + " and " + endPoint);
+                    (HttpStatus.NOT_FOUND, "No transactions found between: " + startPoint + " and " + endPoint);
         return transactionList;
     }
 

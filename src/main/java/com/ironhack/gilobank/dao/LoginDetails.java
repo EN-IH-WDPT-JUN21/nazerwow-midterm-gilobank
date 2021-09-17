@@ -1,7 +1,6 @@
 package com.ironhack.gilobank.dao;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.ironhack.gilobank.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

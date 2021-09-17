@@ -1,7 +1,7 @@
 package com.ironhack.gilobank.utils;
 
-import java.math.RoundingMode;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Currency;
 
 public class Money {

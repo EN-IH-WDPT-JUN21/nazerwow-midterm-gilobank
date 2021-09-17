@@ -31,7 +31,7 @@ public class Transaction {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name="account_id", referencedColumnName = "accountNumber")
+    @JoinColumn(name = "account_id", referencedColumnName = "accountNumber")
     @JsonManagedReference
     private Account account;
     private String name;

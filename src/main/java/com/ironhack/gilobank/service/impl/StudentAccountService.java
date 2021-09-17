@@ -24,7 +24,7 @@ public class StudentAccountService implements IStudentAccountService {
     @Override
     public Optional<StudentAccount> findByAccountNumber(Long accountNumber) {
         Optional<StudentAccount> optionalStudentAccount = studentAccountRepository.findById(accountNumber);
-        if(optionalStudentAccount.isEmpty())
+        if (optionalStudentAccount.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Student Account Found with Account Number :" + accountNumber);
 
         return optionalStudentAccount;

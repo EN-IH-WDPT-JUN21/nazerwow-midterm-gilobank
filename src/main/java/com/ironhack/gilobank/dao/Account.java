@@ -21,7 +21,7 @@ import java.util.List;
 @Getter
 @Setter
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@SequenceGenerator(name="accnum", initialValue= 11223344, allocationSize=1)
+@SequenceGenerator(name = "accnum", initialValue = 11223344, allocationSize = 1)
 public abstract class Account {
 
     @Id
@@ -33,12 +33,12 @@ public abstract class Account {
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name="primaryHolder", referencedColumnName = "id")
+    @JoinColumn(name = "primaryHolder", referencedColumnName = "id")
     @JsonManagedReference
     private AccountHolder primaryHolder;
 
     @ManyToOne
-    @JoinColumn(name="secondaryHolder", referencedColumnName = "id")
+    @JoinColumn(name = "secondaryHolder", referencedColumnName = "id")
     @JsonManagedReference
     private AccountHolder secondaryHolder;
 
@@ -96,23 +96,23 @@ public abstract class Account {
         this.status = status;
     }
 
-    public Money getBalanceAsMoney(){
+    public Money getBalanceAsMoney() {
         return new Money(balance);
     }
 
-    public void credit(BigDecimal amount){
+    public void credit(BigDecimal amount) {
         this.balance = getBalanceAsMoney().increaseAmount(amount);
     }
 
-    public void debit(BigDecimal amount){
+    public void debit(BigDecimal amount) {
         this.balance = getBalanceAsMoney().decreaseAmount(amount);
     }
 
-    public void freezeAccount(){
+    public void freezeAccount() {
         this.status = Status.FROZEN;
     }
 
-    public void unfreezeAccount(){
+    public void unfreezeAccount() {
         this.status = Status.ACTIVE;
     }
 

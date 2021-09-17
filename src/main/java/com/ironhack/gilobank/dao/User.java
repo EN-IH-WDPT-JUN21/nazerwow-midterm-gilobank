@@ -1,6 +1,5 @@
 package com.ironhack.gilobank.dao;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ironhack.gilobank.enums.Role;
 import lombok.AllArgsConstructor;
@@ -23,7 +22,7 @@ public abstract class User {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name="loginDetails")
+    @JoinColumn(name = "loginDetails")
     @JsonManagedReference
     private LoginDetails loginDetails;
 

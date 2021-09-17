@@ -10,9 +10,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/account/checking")
@@ -23,7 +22,7 @@ public class CheckingAccountController implements ICheckingAccountController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<CheckingAccount> getByAccountNumber(@PathVariable(name = "id") Long accountNumber) {
+    public CheckingAccount getByAccountNumber(@PathVariable(name = "id") Long accountNumber) {
         return checkingAccountService.findByAccountNumber(accountNumber);
     }
 
@@ -42,26 +41,24 @@ public class CheckingAccountController implements ICheckingAccountController {
     @PutMapping("/debit")
     @ResponseStatus(HttpStatus.OK)
     public void debitFunds(@RequestBody TransactionDTO transactionDTO) {
-        checkingAccountService.checkForFraud(transactionDTO);
         checkingAccountService.debitFunds(transactionDTO);
     }
 
     @PutMapping("/transfer")
     @ResponseStatus(HttpStatus.OK)
     public void transferFunds(@RequestBody TransactionDTO transactionDTO) {
-        checkingAccountService.checkForFraud(transactionDTO);
         checkingAccountService.transferBetweenAccounts(transactionDTO);
     }
 
+    // Allows you to pass dates without time for enhanced customer experience
     @GetMapping("/{id}/{dateFrom}/{dateTo}")
     @ResponseStatus(HttpStatus.OK)
     public List<Transaction> getTransactionsByDateBetween(
-            @PathVariable(name="id") Long accountNumber,
-            @PathVariable(name="dateFrom")
-            @DateTimeFormat(pattern = "yyyy-MM-ddHH:mm:ss")LocalDateTime startPoint,
-            @PathVariable(name="dateTo")
-            @DateTimeFormat(pattern = "yyyy-MM-ddHH:mm:ss")LocalDateTime endPoint)
-    {
+            @PathVariable(name = "id") Long accountNumber,
+            @PathVariable(name = "dateFrom")
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startPoint,
+            @PathVariable(name = "dateTo")
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endPoint) {
         return checkingAccountService.findTransactionBetween(accountNumber, startPoint, endPoint);
     }
 

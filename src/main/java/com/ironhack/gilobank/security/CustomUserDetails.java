@@ -23,7 +23,7 @@ public class CustomUserDetails implements UserDetails {
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities(){
+    public Collection<? extends GrantedAuthority> getAuthorities() {
 
         Collection<GrantedAuthority> authorities = new HashSet<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_" + loginDetails.getUser().getRole()));
@@ -31,11 +31,12 @@ public class CustomUserDetails implements UserDetails {
     }
 
     @Override
-    public String getPassword(){
+    public String getPassword() {
         return loginDetails.getPassword();
     }
+
     @Override
-    public String getUsername(){
+    public String getUsername() {
         return loginDetails.getUsername();
     }
 

@@ -24,7 +24,7 @@ public class AccountHolderService implements IAccountHolderService {
 
     public Optional<AccountHolder> findById(Long id) {
         Optional<AccountHolder> accountHolder = accountHolderRepository.findById(id);
-        if(!accountHolder.isPresent())
+        if (!accountHolder.isPresent())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Account Holder found with id: " + id);
 
         return accountHolder;

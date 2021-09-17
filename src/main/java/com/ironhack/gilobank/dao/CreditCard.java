@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CreditCard extends Account{
+public class CreditCard extends Account {
 
 
     @NotNull

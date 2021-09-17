@@ -1,12 +1,10 @@
 package com.ironhack.gilobank.controller.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ironhack.gilobank.controller.dto.AccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.repositories.*;
-import com.ironhack.gilobank.service.interfaces.ITransactionService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,7 +71,7 @@ class CheckingAccountControllerTest {
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
 
         testHolder1 = new AccountHolder(loginDetails1, "Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
-        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2,testAddress2, null);
+        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
 
         testAccount1 = new CheckingAccount(
                 "secretKey1",
@@ -84,7 +82,7 @@ class CheckingAccountControllerTest {
                 LocalDate.parse("2011-01-01"),      // open date
                 Status.ACTIVE,                      // Status
                 new BigDecimal("11.00"),        // Monthly Maintenance Fee
-                new BigDecimal("100.00") );     // Minimum Balance
+                new BigDecimal("100.00"));     // Minimum Balance
         testAccount2 = new CheckingAccount(
                 "secretKey2",
                 testHolder1,                        // Primary Holder
@@ -94,7 +92,7 @@ class CheckingAccountControllerTest {
                 LocalDate.parse("2012-02-02"),      // open date
                 Status.ACTIVE,                      // Status
                 new BigDecimal("22.00"),        // Monthly Maintenance Fee
-                new BigDecimal("200.00") );     // Minimum Balance
+                new BigDecimal("200.00"));     // Minimum Balance
         testAccount3 = new CheckingAccount(
                 "secretKey3",
                 testHolder2,                        // Primary Holder
@@ -104,11 +102,11 @@ class CheckingAccountControllerTest {
                 LocalDate.parse("2013-03-03"),      // open date
                 Status.ACTIVE,                      // Status
                 new BigDecimal("33.00"),        // Monthly Maintenance Fee
-                new BigDecimal("300.00") );     // Minimum Balance
+                new BigDecimal("300.00"));     // Minimum Balance
 
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
-        accountHolderRepository.saveAll(List.of(testHolder1,testHolder2));
+        accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
         checkingAccountRepository.saveAll(List.of(testAccount1, testAccount2, testAccount3));
     }
 
@@ -124,7 +122,7 @@ class CheckingAccountControllerTest {
     @Test
     void getByAccountNumber_TestValid() throws Exception {
         MvcResult result = mockMvc.perform(
-                get("/account/checking/" + testAccount1.getAccountNumber()))
+                        get("/account/checking/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getMinimumBalance())));
@@ -148,10 +146,10 @@ class CheckingAccountControllerTest {
         TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250"));
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
-                put("/account/checking/credit")
-                        .content(body)
-                        .contentType(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isOk())
+                        put("/account/checking/credit")
+                                .content(body)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
                 .andReturn();
         CheckingAccount updatedAccount = checkingAccountRepository.findById(transactionDTO.getCreditAccountNumber()).get();
         assertEquals(testAccount1.getBalance().add(new BigDecimal("250.00")), updatedAccount.getBalance());
@@ -190,7 +188,7 @@ class CheckingAccountControllerTest {
     @Test
     void getTransactionsByDateBetween() throws Exception {
 
-        Transaction testTransaction1 = new Transaction(testAccount1, "Test1", new BigDecimal("250.00"), testAccount1.getBalance(),  LocalDateTime.parse("2020-01-03T10:15:30"));
+        Transaction testTransaction1 = new Transaction(testAccount1, "Test1", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
         Transaction testTransaction2 = new Transaction(testAccount1, "Test2", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
         Transaction testTransaction3 = new Transaction(testAccount1, "Test2", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-03-03T10:15:30"));
         Transaction testTransaction4 = new Transaction(testAccount1, "Test3", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-04-03T10:15:30"));
@@ -200,16 +198,17 @@ class CheckingAccountControllerTest {
         Transaction testTransaction8 = new Transaction(testAccount1, "Test7", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-08-03T10:15:30"));
         Transaction testTransaction9 = new Transaction(testAccount1, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-09-03T10:15:30"));
 
-        Transaction testTransaction10 = new Transaction(testAccount2, "Test7", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
-        Transaction testTransaction11 = new Transaction(testAccount2, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
+        Transaction testTransaction10 = new Transaction(testAccount2, "Test10", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
+        Transaction testTransaction11 = new Transaction(testAccount2, "Test11", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
 
         transactionRepository.saveAll(List.of(testTransaction1, testTransaction2, testTransaction3, testTransaction4,
-                testTransaction5, testTransaction6, testTransaction7, testTransaction8, testTransaction9));
+                testTransaction5, testTransaction6, testTransaction7, testTransaction8, testTransaction9, testTransaction10,
+                testTransaction11));
 
         MvcResult result = mockMvc.perform(
                         get("/account/checking/"
                                 + testAccount1.getAccountNumber()
-                                + "/2020-01-0310:15:20/2020-05-0310:55:30"))
+                                + "/2020-01-03/2020-05-03"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -219,5 +218,9 @@ class CheckingAccountControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("Test4"));
         assertFalse(result.getResponse().getContentAsString().contains("Test5"));
         assertFalse(result.getResponse().getContentAsString().contains("Test7"));
+        assertFalse(result.getResponse().getContentAsString().contains("Test10"));
+        assertFalse(result.getResponse().getContentAsString().contains("Test11"));
     }
+
+
 }

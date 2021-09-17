@@ -8,5 +8,6 @@ import java.util.Optional;
 public interface ISavingsAccountController {
 
     List<SavingsAccount> getAll();
+
     Optional<SavingsAccount> getByAccountNumber(Long accountNumber);
 }

@@ -25,7 +25,7 @@ public class StudentAccountController implements IStudentAccountController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<StudentAccount> getByAccountNumber(@PathVariable(name="id") Long accountNumber) {
+    public Optional<StudentAccount> getByAccountNumber(@PathVariable(name = "id") Long accountNumber) {
         return studentAccountService.findByAccountNumber(accountNumber);
     }
 

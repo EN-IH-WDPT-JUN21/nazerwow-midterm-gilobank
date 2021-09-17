@@ -14,7 +14,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 class AddressRepositoryTest {
@@ -34,7 +35,6 @@ class AddressRepositoryTest {
     private LoginDetails loginDetails2;
 
 
-
     @BeforeEach
     void setUp() throws ParseException {
         LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
@@ -47,11 +47,11 @@ class AddressRepositoryTest {
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
 
         testHolder1 = new AccountHolder(loginDetails1, "Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
-        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2,testAddress2, null);
+        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
 
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
-        accountHolderRepository.saveAll(List.of(testHolder1,testHolder2));
+        accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
     }
 
     @AfterEach
@@ -62,30 +62,30 @@ class AddressRepositoryTest {
     }
 
     @Test
-    void testAddressExists(){
+    void testAddressExists() {
         Optional<Address> addressOptional = addressRepository.findById(testAddress1.getId());
         assertTrue(addressOptional.isPresent());
     }
 
     @Test
-    void testAddressAssignedCorrectly(){
+    void testAddressAssignedCorrectly() {
         assertEquals(testAddress1.getPostcode(), testHolder1.getPrimaryAddress().getPostcode());
     }
 
     @Test
-    void testAddressAssigningMailingAddress(){
+    void testAddressAssigningMailingAddress() {
         testHolder1.setMailingAddress(testAddress2);
         assertEquals(testAddress2.getPostcode(), testHolder1.getMailingAddress().getPostcode());
     }
 
     @Test
-    void testPrimaryAndMailingCanBeTheSame(){
+    void testPrimaryAndMailingCanBeTheSame() {
         testHolder1.setMailingAddress(testAddress1);
         assertEquals(testAddress1.getPostcode(), testHolder1.getMailingAddress().getPostcode());
     }
 
     @Test
-    void testAddressCanBeUsedOnMoreThan1AccountHolder(){
+    void testAddressCanBeUsedOnMoreThan1AccountHolder() {
         testHolder2.setPrimaryAddress(testAddress1);
         assertEquals(testHolder1.getPrimaryAddress(), testHolder2.getPrimaryAddress());
     }

@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class StudentAccount extends Account{
+public class StudentAccount extends Account {
 
     public StudentAccount() {
     }

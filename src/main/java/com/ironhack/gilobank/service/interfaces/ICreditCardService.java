@@ -8,6 +8,7 @@ import java.util.Optional;
 public interface ICreditCardService {
 
     List<CreditCard> findAll();
+
     Optional<CreditCard> findByAccountNumber(Long accountNumber);
 
 }

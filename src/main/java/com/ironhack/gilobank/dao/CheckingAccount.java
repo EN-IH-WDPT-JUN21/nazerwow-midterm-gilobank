@@ -17,7 +17,7 @@ import java.time.LocalDate;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CheckingAccount extends Account{
+public class CheckingAccount extends Account {
 
 
     @NotNull

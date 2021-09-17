@@ -25,7 +25,7 @@ public class CreditCardController implements ICreditCardController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<CreditCard> getByAccountNumber(@PathVariable(name="id") Long accountNumber) {
+    public Optional<CreditCard> getByAccountNumber(@PathVariable(name = "id") Long accountNumber) {
         return creditCardService.findByAccountNumber(accountNumber);
     }
 }

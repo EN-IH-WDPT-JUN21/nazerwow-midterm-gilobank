@@ -8,5 +8,6 @@ import java.util.Optional;
 public interface IStudentAccountController {
 
     List<StudentAccount> getAll();
+
     Optional<StudentAccount> getByAccountNumber(Long accountNumber);
 }

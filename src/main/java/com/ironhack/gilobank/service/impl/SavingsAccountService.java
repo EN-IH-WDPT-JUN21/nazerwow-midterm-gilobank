@@ -24,7 +24,7 @@ public class SavingsAccountService implements ISavingsAccountService {
     @Override
     public Optional<SavingsAccount> findByAccountNumber(Long accountNumber) {
         Optional<SavingsAccount> optionalSavingsAccount = savingsAccountRepository.findById(accountNumber);
-        if(!optionalSavingsAccount.isPresent())
+        if (!optionalSavingsAccount.isPresent())
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "No Savings Account Found with Account Number: " + accountNumber);
         return optionalSavingsAccount;
     }

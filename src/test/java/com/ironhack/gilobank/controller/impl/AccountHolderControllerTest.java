@@ -1,7 +1,8 @@
 package com.ironhack.gilobank.controller.impl;
 
-import com.ironhack.gilobank.dao.*;
-import com.ironhack.gilobank.enums.Status;
+import com.ironhack.gilobank.dao.AccountHolder;
+import com.ironhack.gilobank.dao.Address;
+import com.ironhack.gilobank.dao.LoginDetails;
 import com.ironhack.gilobank.repositories.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,12 +14,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,7 +50,6 @@ class AccountHolderControllerTest {
     private LoginDetails loginDetails2;
 
 
-
     @BeforeEach
     void setUp() throws ParseException {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
@@ -64,11 +64,11 @@ class AccountHolderControllerTest {
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
 
         testHolder1 = new AccountHolder(loginDetails1, "Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
-        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2,testAddress2, null);
-        
+        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
-        accountHolderRepository.saveAll(List.of(testHolder1,testHolder2));
+        accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
     }
 
     @AfterEach
@@ -82,7 +82,7 @@ class AccountHolderControllerTest {
     @Test
     void getAllAccountHolders_ValidTest() throws Exception {
         MvcResult result = mockMvc.perform(
-                get("/user/accholder"))
+                        get("/user/accholder"))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains("TestSur1"));
@@ -92,7 +92,7 @@ class AccountHolderControllerTest {
     @Test
     void getAccountHolderById() throws Exception {
         MvcResult result = mockMvc.perform(
-                get("/user/accholder/" + testHolder1.getId()))
+                        get("/user/accholder/" + testHolder1.getId()))
                 .andExpect(status().isOk())
                 .andReturn();
 

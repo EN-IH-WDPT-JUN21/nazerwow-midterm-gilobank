@@ -16,7 +16,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SavingsAccount extends Account{
+public class SavingsAccount extends Account {
 
     @NotNull
     @Min(100)

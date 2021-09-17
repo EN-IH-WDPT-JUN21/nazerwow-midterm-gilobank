@@ -1,7 +1,6 @@
 package com.ironhack.gilobank.dao;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ironhack.gilobank.enums.Role;
 import com.sun.istack.NotNull;
@@ -20,7 +19,7 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccountHolder extends User{
+public class AccountHolder extends User {
 
     private Role role = Role.ACCOUNTHOLDER;
 

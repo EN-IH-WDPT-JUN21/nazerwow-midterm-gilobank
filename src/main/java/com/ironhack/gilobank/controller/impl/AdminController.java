@@ -20,7 +20,7 @@ public class AdminController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<Admin> getAll(){
-       return adminService.findAll();
+    public List<Admin> getAll() {
+        return adminService.findAll();
     }
 }

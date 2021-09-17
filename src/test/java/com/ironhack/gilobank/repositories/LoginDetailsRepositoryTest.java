@@ -9,13 +9,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import javax.swing.text.html.Option;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 class LoginDetailsRepositoryTest {
@@ -36,7 +36,6 @@ class LoginDetailsRepositoryTest {
     private LoginDetails loginDetails2;
 
 
-
     @BeforeEach
     void setUp() throws ParseException {
         LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
@@ -49,11 +48,11 @@ class LoginDetailsRepositoryTest {
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
 
         testHolder1 = new AccountHolder(loginDetails1, "Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
-        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2,testAddress2, null);
+        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
 
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
-        accountHolderRepository.saveAll(List.of(testHolder1,testHolder2));
+        accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
     }
 
     @AfterEach
@@ -64,13 +63,13 @@ class LoginDetailsRepositoryTest {
     }
 
     @Test
-    void checkPositiveLoginCreation(){
+    void checkPositiveLoginCreation() {
         Optional<LoginDetails> loginDetails = loginDetailsRepository.findById(loginDetails1.getId());
         assertTrue(loginDetails.isPresent());
     }
 
     @Test
-    void checkUserAssigned(){
+    void checkUserAssigned() {
         assertEquals(loginDetails1.getId(), testHolder1.getLoginDetails().getId());
     }
 }

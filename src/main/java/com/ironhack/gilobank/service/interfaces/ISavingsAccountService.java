@@ -8,5 +8,6 @@ import java.util.Optional;
 public interface ISavingsAccountService {
 
     List<SavingsAccount> findAll();
+
     Optional<SavingsAccount> findByAccountNumber(Long accountNumber);
 }

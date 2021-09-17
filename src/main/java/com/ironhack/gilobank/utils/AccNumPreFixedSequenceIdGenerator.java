@@ -1,6 +1,5 @@
 package com.ironhack.gilobank.utils;
 
-import com.ironhack.gilobank.dao.Account;
 import com.ironhack.gilobank.dao.Transaction;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
@@ -27,7 +26,7 @@ public class AccNumPreFixedSequenceIdGenerator extends SequenceStyleGenerator {
     @Override
     public Serializable generate(SharedSessionContractImplementor session,
                                  Object object) throws HibernateException {
-        return String.format(format, ((Transaction)object).getAccount().getAccountNumber(), super.generate(session, object));
+        return String.format(format, ((Transaction) object).getAccount().getAccountNumber(), super.generate(session, object));
     }
 
     @Override
@@ -36,7 +35,7 @@ public class AccNumPreFixedSequenceIdGenerator extends SequenceStyleGenerator {
         super.configure(LongType.INSTANCE, params, serviceRegistry);
         String codeNumberSeparator = ConfigurationHelper.getString(CODE_NUMBER_SEPARATOR_PARAMETER, params, CODE_NUMBER_SEPARATOR_DEFAULT);
         String numberFormat = ConfigurationHelper.getString(NUMBER_FORMAT_PARAMETER, params, NUMBER_FORMAT_DEFAULT).replace("%", "%2");
-        this.format = "%1$s"+codeNumberSeparator+numberFormat;
+        this.format = "%1$s" + codeNumberSeparator + numberFormat;
     }
 }
 

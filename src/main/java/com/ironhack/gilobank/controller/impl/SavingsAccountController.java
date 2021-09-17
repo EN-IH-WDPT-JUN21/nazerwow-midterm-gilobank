@@ -25,7 +25,7 @@ public class SavingsAccountController implements ISavingsAccountController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<SavingsAccount> getByAccountNumber(@PathVariable(name="id") Long accountNumber) {
+    public Optional<SavingsAccount> getByAccountNumber(@PathVariable(name = "id") Long accountNumber) {
         return savingsAccountService.findByAccountNumber(accountNumber);
     }
 }

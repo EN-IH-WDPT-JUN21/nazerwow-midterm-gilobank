@@ -15,7 +15,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 class AccountHolderRepositoryTest {
@@ -34,7 +35,6 @@ class AccountHolderRepositoryTest {
     private LoginDetails loginDetails2;
 
 
-
     @BeforeEach
     void setUp() throws ParseException {
         LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
@@ -47,11 +47,11 @@ class AccountHolderRepositoryTest {
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
 
         testHolder1 = new AccountHolder(loginDetails1, "Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
-        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2,testAddress2, null);
+        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
 
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
-        accountHolderRepository.saveAll(List.of(testHolder1,testHolder2));
+        accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
     }
 
     @AfterEach
@@ -62,23 +62,23 @@ class AccountHolderRepositoryTest {
     }
 
     @Test
-    void checkPositiveCreation(){
+    void checkPositiveCreation() {
         Optional<AccountHolder> accountHolder = accountHolderRepository.findById(testHolder1.getId());
         assertTrue(accountHolder.isPresent());
     }
 
     @Test
-    void checkPositiveAutoRole(){
+    void checkPositiveAutoRole() {
         assertEquals(Role.ACCOUNTHOLDER, testHolder1.getRole());
     }
 
     @Test
-    void checkUserName(){
+    void checkUserName() {
         assertEquals("hackerman", testHolder1.getLoginDetails().getUsername());
     }
 
     @Test
-    void checkAddressAddedCorrectly(){
+    void checkAddressAddedCorrectly() {
         assertEquals("Primary Road", testHolder1.getPrimaryAddress().getStreet());
         assertEquals(null, testHolder1.getMailingAddress());
     }

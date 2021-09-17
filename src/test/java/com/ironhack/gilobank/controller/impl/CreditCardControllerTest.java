@@ -1,8 +1,14 @@
 package com.ironhack.gilobank.controller.impl;
 
-import com.ironhack.gilobank.dao.*;
+import com.ironhack.gilobank.dao.AccountHolder;
+import com.ironhack.gilobank.dao.Address;
+import com.ironhack.gilobank.dao.CreditCard;
+import com.ironhack.gilobank.dao.LoginDetails;
 import com.ironhack.gilobank.enums.Status;
-import com.ironhack.gilobank.repositories.*;
+import com.ironhack.gilobank.repositories.AccountHolderRepository;
+import com.ironhack.gilobank.repositories.AddressRepository;
+import com.ironhack.gilobank.repositories.CreditCardRepository;
+import com.ironhack.gilobank.repositories.LoginDetailsRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +24,8 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -63,7 +70,7 @@ class CreditCardControllerTest {
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
 
         testHolder1 = new AccountHolder(loginDetails1, "Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
-        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2,testAddress2, null);
+        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
 
         testAccount1 = new CreditCard(
                 "secretKey1",
@@ -74,7 +81,7 @@ class CreditCardControllerTest {
                 LocalDate.parse("2011-01-01"),  // open date
                 Status.ACTIVE,                  // Status
                 new BigDecimal("1000"),     // Credit Limit Balance
-                new BigDecimal("11") );     // interestRate
+                new BigDecimal("11"));     // interestRate
         testAccount2 = new CreditCard(
                 "secretKey2",
                 testHolder1,                    // Primary Holder
@@ -84,7 +91,7 @@ class CreditCardControllerTest {
                 LocalDate.parse("2012-02-02"),  // open date
                 Status.ACTIVE,                  // Status
                 new BigDecimal("2000"),     // Credit Limit Balance
-                new BigDecimal("22") );     // Interest Rate
+                new BigDecimal("22"));     // Interest Rate
         testAccount3 = new CreditCard(
                 "secretKey3",
                 testHolder2,                    // Primary Holder
@@ -94,11 +101,11 @@ class CreditCardControllerTest {
                 LocalDate.parse("2013-03-03"),  // open date
                 Status.ACTIVE,                  // Status
                 new BigDecimal("3000"),     // Credit Limit Balance
-                new BigDecimal("33") );     // Interest Rate
+                new BigDecimal("33"));     // Interest Rate
 
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
-        accountHolderRepository.saveAll(List.of(testHolder1,testHolder2));
+        accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
         creditCardRepository.saveAll(List.of(testAccount1, testAccount2, testAccount3));
     }
 
