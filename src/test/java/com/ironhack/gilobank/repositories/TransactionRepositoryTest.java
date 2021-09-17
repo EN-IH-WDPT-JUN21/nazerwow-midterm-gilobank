@@ -84,15 +84,15 @@ class TransactionRepositoryTest {
                 new BigDecimal("1") );      // interestRate
 
 
-        testTransaction1 = new Transaction(testAccount1, "Test1",new BigDecimal("250.00"),testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-01-03T10:15:30"));
+        testTransaction1 = new Transaction(testAccount1, "Test1",new BigDecimal("250.00"),testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-01-03T10:12:30"));
         testTransaction2 = new Transaction(testAccount1,"Test2", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-02-03T10:15:30"));
-        testTransaction3 = new Transaction(testAccount1,"Test2", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.TRANSFER_DEBIT, LocalDateTime.parse("2020-03-03T10:15:30"));
-        testTransaction4 = new Transaction(testAccount1,"Test3", new BigDecimal("250.00"), testAccount1.getBalance(),TransactionType.TRANSFER_DEBIT, LocalDateTime.parse("2020-04-03T10:15:30"));
-        testTransaction5 = new Transaction(testAccount1,"Test4", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.parse("2020-05-03T10:15:30"));
-        testTransaction6 = new Transaction(testAccount1, "Test5",new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.parse("2020-06-03T10:15:30"));
-        testTransaction7 = new Transaction(testAccount1, "Test6",new BigDecimal("250.00"), testAccount1.getBalance(),TransactionType.TRANSFER_CREDIT, LocalDateTime.parse("2020-07-03T10:15:30"));
+        testTransaction3 = new Transaction(testAccount1,"Test2", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.TRANSFER_DEBIT, LocalDateTime.parse("2020-03-03T10:11:30"));
+        testTransaction4 = new Transaction(testAccount1,"Test3", new BigDecimal("250.00"), testAccount1.getBalance(),TransactionType.TRANSFER_DEBIT, LocalDateTime.parse("2020-04-03T10:12:30"));
+        testTransaction5 = new Transaction(testAccount1,"Test4", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.parse("2020-05-03T10:10:30"));
+        testTransaction6 = new Transaction(testAccount1, "Test5",new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.parse("2020-06-03T10:18:30"));
+        testTransaction7 = new Transaction(testAccount1, "Test6",new BigDecimal("250.00"), testAccount1.getBalance(),TransactionType.TRANSFER_CREDIT, LocalDateTime.parse("2020-07-03T10:10:30"));
         testTransaction8 = new Transaction(testAccount1,"Test7", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.TRANSFER_CREDIT, LocalDateTime.parse("2020-08-03T10:15:30"));
-        testTransaction9 = new Transaction(testAccount1, "Test8",new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.parse("2020-09-03T10:15:30"));
+        testTransaction9 = new Transaction(testAccount1, "Test8",new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.parse("2020-09-03T10:22:30"));
 
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
@@ -147,5 +147,15 @@ class TransactionRepositoryTest {
     void historicDailyTotals_Test(){
         var total = transactionRepository.historicDailyTotals(testAccount1);
         assertEquals(4, total.size());
+    }
+
+    @Test
+    void debitsWithin1Second(){
+        Transaction test1 = new Transaction(testAccount1, "Test6",new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2021-09-16T10:15:30"));
+        Transaction test2 = new Transaction(testAccount1,"Test7", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2021-09-16T10:15:30"));
+        Transaction test3 = new Transaction(testAccount1, "Test8",new BigDecimal("250.00"),  testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.parse("2021-09-16T10:30:30"));
+        transactionRepository.saveAll(List.of(test1,test2,test3));
+        var total = transactionRepository.debitsWithin1Second(testAccount1);
+        assertTrue(total.get(0).toLocalDateTime().isEqual(test1.getTimeOfTrns()));
     }
 }

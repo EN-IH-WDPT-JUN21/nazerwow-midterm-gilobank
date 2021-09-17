@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,5 +28,13 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query(value = "SELECT SUM(amount) FROM transaction WHERE account_id = :account AND type LIKE '%debit%' GROUP BY DATE(time_of_trns)", nativeQuery = true)
     List<BigDecimal> historicDailyTotals(@Param("account") Account account);
+
+    @Query(value = "SELECT time_of_trns as time FROM transaction " +
+            "WHERE account_id = :account " +
+            "AND type LIKE '%debit%' " +
+            "AND time_of_trns > DATE_SUB(NOW(), INTERVAL 24 HOUR) " +
+            "GROUP BY time_of_trns, DATE(time_of_trns), HOUR(time_of_trns), MINUTE(time_of_trns), SECOND(time_of_trns) " +
+            "HAVING COUNT(time_of_trns) > 1 ORDER BY time;", nativeQuery = true)
+    List<Timestamp> debitsWithin1Second(@Param("account") Account account);
 
 }
