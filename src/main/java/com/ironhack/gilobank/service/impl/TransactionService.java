@@ -53,6 +53,15 @@ public class TransactionService implements ITransactionService {
 //        transactionRepository.save(new Transaction(account, transactionName, amount, account.getBalance(), transactionDate));
 //    }
 
+    public Transaction createTransactionLog(Account account, TransactionDTO transactionDTO) {
+        LocalDateTime transactionDate = LocalDateTime.now();
+        if(transactionDTO.getTimeOfTrns() != null) transactionDate = transactionDTO.getTimeOfTrns();
+        Money moneyAmount = new Money(transactionDTO.getAmount());
+        String transactionName = moneyAmount + transactionDTO.getType().toString();
+        Transaction transaction = new Transaction(account, transactionName, transactionDTO.getAmount(), account.getBalance(), transactionDTO.getType(), transactionDate);
+        transactionRepository.save(transaction);
+        return transaction;
+    }
 
     public Transaction createTransactionLogCredit(Account account, BigDecimal amount) {
         LocalDateTime transactionDate = LocalDateTime.now();
@@ -126,7 +135,7 @@ public class TransactionService implements ITransactionService {
         checkAccountStatus(creditAccount);
         creditAccount.credit(transactionDTO.getAmount());
         findAccountTypeAndSave(creditAccount);
-        return createTransactionLogCredit(creditAccount, transactionDTO.getAmount());
+        return createTransactionLog(creditAccount, transactionDTO);
     }
 
 
@@ -136,7 +145,7 @@ public class TransactionService implements ITransactionService {
         checkAccountStatus(debitAccount);
         debitAccount.debit(transactionDTO.getAmount());
         findAccountTypeAndSave(debitAccount);
-        return createTransactionLogDebit(debitAccount, transactionDTO.getAmount());
+        return createTransactionLog(debitAccount, transactionDTO);
     }
 
 
@@ -179,13 +188,17 @@ public class TransactionService implements ITransactionService {
     public void findAccountTypeAndSave(Account account) {
         Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(account.getAccountNumber());
         if (checkingAccount.isPresent()) {
-            checkingAccount.get().setBalance(account.getBalance());
+            checkingAccount.get().setBalance(penaltyCheck(account,
+                    checkingAccount.get().getMinimumBalance(),
+                    checkingAccount.get().getPenaltyFee()));
             checkingAccount.get().setStatus(account.getStatus());
             checkingAccountRepository.save(checkingAccount.get());
         }
         Optional<SavingsAccount> savingsAccount = savingsAccountRepository.findById(account.getAccountNumber());
         if (savingsAccount.isPresent()) {
-            savingsAccount.get().setBalance(account.getBalance());
+            savingsAccount.get().setBalance(penaltyCheck(account,
+                    savingsAccount.get().getMinimumBalance(),
+                    savingsAccount.get().getPenaltyFee()));
             savingsAccount.get().setStatus(account.getStatus());
             savingsAccountRepository.save(savingsAccount.get());
         }
@@ -216,12 +229,31 @@ public class TransactionService implements ITransactionService {
         if (studentAccount.isPresent()) {
             return studentAccount.get();
         }
-
         Optional<CreditCard> creditCard = creditCardRepository.findById(accountNumber);
         if (creditCard.isPresent()) {
             return creditCard.get();
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Checking Account found with Account Number: " + accountNumber);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No account found with Account Number: " + accountNumber);
         }
     }
+
+    public void checkAvailableFunds(Account account, BigDecimal amount){
+        if(account.getBalanceAsMoney().decreaseAmount(amount).compareTo(new BigDecimal("0")) < 0){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Insufficient Funds");
+        }
+    }
+
+    public BigDecimal penaltyCheck(Account account, BigDecimal minimumBalance, BigDecimal penaltyFee){
+        if(account.getBalance().compareTo(minimumBalance) < 0){
+            account.debit(penaltyFee);
+            TransactionDTO transactionDTO = new TransactionDTO(penaltyFee, null, TransactionType.PENALTY_FEE);
+            return account.getBalance();
+        }
+        return account.getBalance();
+    }
+
+//    public BigDecimal interestCheck(Account account, BigDecimal interestRate){
+//        if()
+//    }
+
 }

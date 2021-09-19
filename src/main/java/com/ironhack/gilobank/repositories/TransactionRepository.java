@@ -37,4 +37,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             "HAVING COUNT(time_of_trns) > 1 ORDER BY time;", nativeQuery = true)
     List<Timestamp> debitsWithin1Second(@Param("account") Account account);
 
+
+
 }

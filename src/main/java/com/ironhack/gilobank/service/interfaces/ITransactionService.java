@@ -28,10 +28,20 @@ public interface ITransactionService {
     Transaction creditFunds(TransactionDTO transactionDTO);
 
     Transaction debitFunds(TransactionDTO transactionDTO);
+
     Transaction transferBetweenAccounts(TransactionDTO transactionDTO);
+
     List<Transaction> findTransactionBetween(Long accountNumber, LocalDate startDate, LocalDate endDate);
+
     void checkForFraud(TransactionDTO transactionDTO);
+
     void checkAccountStatus(Account checkingAccount);
+
     void findAccountTypeAndSave(Account account);
+
     Account findAccountTypeAndReturn(Long accountNumber);
+
+    void checkAvailableFunds(Account account, BigDecimal amount);
+
+    BigDecimal penaltyCheck(Account account, BigDecimal minimumBalance, BigDecimal penaltyFee);
 }
