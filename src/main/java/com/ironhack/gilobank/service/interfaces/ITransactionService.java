@@ -11,13 +11,13 @@ import java.util.List;
 
 public interface ITransactionService {
 
-    Transaction createTransactionLogCredit(Account account, BigDecimal amount);
+    Transaction createTransactionLog(Account account, TransactionDTO transactionDTO);
 
-    Transaction createTransactionLogCredit(Account account, BigDecimal amount, LocalDateTime date);
-
-    Transaction createTransactionLogDebit(Account account, BigDecimal amount);
-
-    Transaction createTransactionLogDebit(Account account, BigDecimal amount, LocalDateTime date);
+//    Transaction createTransactionLogCredit(Account account, BigDecimal amount, LocalDateTime date);
+//
+//    Transaction createTransactionLogDebit(Account account, BigDecimal amount);
+//
+//    Transaction createTransactionLogDebit(Account account, BigDecimal amount, LocalDateTime date);
 
     List<Transaction> createTransactionLogTransfer(Account debitAccount, BigDecimal amount, Account creditAccount);
 
@@ -28,10 +28,24 @@ public interface ITransactionService {
     Transaction creditFunds(TransactionDTO transactionDTO);
 
     Transaction debitFunds(TransactionDTO transactionDTO);
+
     Transaction transferBetweenAccounts(TransactionDTO transactionDTO);
+
     List<Transaction> findTransactionBetween(Long accountNumber, LocalDate startDate, LocalDate endDate);
+
     void checkForFraud(TransactionDTO transactionDTO);
+
     void checkAccountStatus(Account checkingAccount);
+
     void findAccountTypeAndSave(Account account);
+
     Account findAccountTypeAndReturn(Long accountNumber);
+
+    void checkAvailableFunds(Account account, BigDecimal amount);
+
+    BigDecimal penaltyCheck(Account account, BigDecimal minimumBalance, BigDecimal penaltyFee);
+    boolean interestMonthlyCheck(Long accountNumber);
+    boolean interestYearlyCheck(Long accountNumber);
+    void applyInterestYearly(Long accountNumber, BigDecimal balance, BigDecimal interestRate);
+    void applyInterestMonthly(Long accountNumber, BigDecimal balance, BigDecimal interestRate);
 }
