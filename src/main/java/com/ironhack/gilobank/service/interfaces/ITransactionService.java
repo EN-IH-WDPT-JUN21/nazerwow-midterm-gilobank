@@ -11,13 +11,13 @@ import java.util.List;
 
 public interface ITransactionService {
 
-    Transaction createTransactionLogCredit(Account account, BigDecimal amount);
+    Transaction createTransactionLog(Account account, TransactionDTO transactionDTO);
 
-    Transaction createTransactionLogCredit(Account account, BigDecimal amount, LocalDateTime date);
-
-    Transaction createTransactionLogDebit(Account account, BigDecimal amount);
-
-    Transaction createTransactionLogDebit(Account account, BigDecimal amount, LocalDateTime date);
+//    Transaction createTransactionLogCredit(Account account, BigDecimal amount, LocalDateTime date);
+//
+//    Transaction createTransactionLogDebit(Account account, BigDecimal amount);
+//
+//    Transaction createTransactionLogDebit(Account account, BigDecimal amount, LocalDateTime date);
 
     List<Transaction> createTransactionLogTransfer(Account debitAccount, BigDecimal amount, Account creditAccount);
 
@@ -44,4 +44,8 @@ public interface ITransactionService {
     void checkAvailableFunds(Account account, BigDecimal amount);
 
     BigDecimal penaltyCheck(Account account, BigDecimal minimumBalance, BigDecimal penaltyFee);
+    boolean interestMonthlyCheck(Long accountNumber);
+    boolean interestYearlyCheck(Long accountNumber);
+    void applyInterestYearly(Long accountNumber, BigDecimal balance, BigDecimal interestRate);
+    void applyInterestMonthly(Long accountNumber, BigDecimal balance, BigDecimal interestRate);
 }

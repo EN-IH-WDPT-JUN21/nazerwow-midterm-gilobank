@@ -52,6 +52,13 @@ public class TransactionDTO {
         this.type = type;
     }
 
+    public TransactionDTO(BigDecimal amount, TransactionType type) {
+        this.amount = amount;
+        this.type = type;
+    }
+
+
+
     public TransactionDTO(Long creditAccountNumber, BigDecimal amount, Long debitAccountNumber) {
         this.creditAccountNumber = creditAccountNumber;
         this.amount = amount;
@@ -64,7 +71,7 @@ public class TransactionDTO {
         this.dateTo = dateTo;
     }
 
-    public TransactionDTO(BigDecimal amount, LocalDateTime timeOfTrns, TransactionType type) {
+    public TransactionDTO(BigDecimal amount, TransactionType type, LocalDateTime timeOfTrns) {
         this.amount = amount;
         this.timeOfTrns = timeOfTrns;
         this.type = type;

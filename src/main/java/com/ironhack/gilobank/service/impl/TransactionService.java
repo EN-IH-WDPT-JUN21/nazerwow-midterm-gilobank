@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -252,8 +253,64 @@ public class TransactionService implements ITransactionService {
         return account.getBalance();
     }
 
-//    public BigDecimal interestCheck(Account account, BigDecimal interestRate){
-//        if()
-//    }
+    public boolean interestMonthlyCheck(Long accountNumber){
+        Account account = findAccountTypeAndReturn(accountNumber);
+        List<Timestamp> interestPayments = transactionRepository.interestMonth(account);
+        if (interestPayments.isEmpty() && account.getOpenDate().isBefore(LocalDate.now().minusMonths(1))){
+            return true;
+        } else if (interestPayments.isEmpty()){
+            return false;
+        }
+        LocalDate timeOfLastPayment = interestPayments.get(interestPayments.size() - 1).toLocalDateTime().toLocalDate();
+        if(timeOfLastPayment.isBefore(LocalDate.now().minusMonths(1))){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    public boolean interestYearlyCheck(Long accountNumber){
+        Account account = findAccountTypeAndReturn(accountNumber);
+        List<Timestamp> interestPayments = transactionRepository.interestYear(account);
+        if (interestPayments.isEmpty() && account.getOpenDate().isBefore(LocalDate.now().minusYears(1))){
+            return true;
+        } else if (interestPayments.isEmpty()){
+            return false;
+        }
+        LocalDate timeOfLastPayment = interestPayments.get(interestPayments.size() - 1).toLocalDateTime().toLocalDate();
+        if(timeOfLastPayment.isBefore(LocalDate.now().minusYears(1))){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    public void applyInterestYearly(Long accountNumber, BigDecimal balance, BigDecimal interestRate){
+        if(interestYearlyCheck(accountNumber)) {
+            Money balanceAsMoney = new Money(balance);
+            Money interestDue = new Money(balanceAsMoney.getAmount().multiply(interestRate));
+            if (balanceAsMoney.getAmount().compareTo(new BigDecimal("0")) > 0) {
+                TransactionDTO transactionDTO = new TransactionDTO(accountNumber, interestDue.getAmount(), TransactionType.INTEREST_CREDIT);
+                creditFunds(transactionDTO);
+            } else if (balanceAsMoney.getAmount().compareTo(new BigDecimal("0")) < 0) {
+                TransactionDTO transactionDTO = new TransactionDTO( interestDue.getAmount().abs(), accountNumber, TransactionType.INTEREST_DEBIT);
+                debitFunds(transactionDTO);
+            }
+        }
+    }
+
+    public void applyInterestMonthly(Long accountNumber, BigDecimal balance, BigDecimal interestRate){
+        if(interestMonthlyCheck(accountNumber)) {
+            Money balanceAsMoney = new Money(balance);
+            Money interestDue = new Money(balanceAsMoney.getAmount().multiply((interestRate.divide(new BigDecimal("12")))));
+            if (balanceAsMoney.getAmount().compareTo(new BigDecimal("0")) > 0) {
+                TransactionDTO transactionDTO = new TransactionDTO(accountNumber, interestDue.getAmount(), TransactionType.INTEREST_CREDIT);
+                creditFunds(transactionDTO);
+            } else if (balanceAsMoney.getAmount().compareTo(new BigDecimal("0")) < 0) {
+                TransactionDTO transactionDTO = new TransactionDTO(interestDue.getAmount().abs(), accountNumber, TransactionType.INTEREST_DEBIT);
+                debitFunds(transactionDTO);
+            }
+        }
+    }
 
 }

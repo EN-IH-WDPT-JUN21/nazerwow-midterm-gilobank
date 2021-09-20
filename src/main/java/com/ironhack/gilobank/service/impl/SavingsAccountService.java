@@ -3,11 +3,13 @@ package com.ironhack.gilobank.service.impl;
 import com.ironhack.gilobank.dao.SavingsAccount;
 import com.ironhack.gilobank.repositories.SavingsAccountRepository;
 import com.ironhack.gilobank.service.interfaces.ISavingsAccountService;
+import com.ironhack.gilobank.service.interfaces.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +18,8 @@ public class SavingsAccountService implements ISavingsAccountService {
 
     @Autowired
     private SavingsAccountRepository savingsAccountRepository;
+    @Autowired
+    private ITransactionService transactionService;
 
     public List<SavingsAccount> findAll() {
         return savingsAccountRepository.findAll();
@@ -28,4 +32,6 @@ public class SavingsAccountService implements ISavingsAccountService {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "No Savings Account Found with Account Number: " + accountNumber);
         return optionalSavingsAccount;
     }
+
+
 }

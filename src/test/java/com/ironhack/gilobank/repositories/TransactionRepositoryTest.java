@@ -158,4 +158,6 @@ class TransactionRepositoryTest {
         var total = transactionRepository.debitsWithin1Second(testAccount1);
         assertEquals(test1.getTimeOfTrns().getSecond(), total.get(0).toLocalDateTime().getSecond());
     }
+
+
 }
