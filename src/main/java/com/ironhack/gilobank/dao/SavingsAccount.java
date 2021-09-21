@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Entity;
-import javax.validation.constraints.Min;
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -19,10 +21,16 @@ import java.time.LocalDate;
 public class SavingsAccount extends Account {
 
     @NotNull
-    @Min(100)
+    @DecimalMin(value = "100.00", message = "Minimum opening balance is $100")
+    @Digits(integer = 30, fraction = 2)
+    private BigDecimal balance;
+
+    @NotNull
     private BigDecimal minimumBalance = new BigDecimal("1000.00");
 
     @NotNull
+    @DecimalMax(value = "0.5")
+    @DecimalMin(value = "0")
     private BigDecimal interestRate = new BigDecimal("0.0025");
 
 

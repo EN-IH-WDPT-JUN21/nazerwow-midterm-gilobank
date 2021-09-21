@@ -26,14 +26,15 @@ class AccountTest {
         LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
         LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
 
-        loginDetails1 = new LoginDetails("hackerman", "ihackthings");
-        loginDetails2 = new LoginDetails("testusername2", "testpass2");
 
         testAddress1 = new Address("1", "Primary Road", "Primary", "PRIMA1");
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
 
-        testHolder1 = new AccountHolder(loginDetails1, "Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
-        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+        testHolder1 = new AccountHolder("Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
+        testHolder2 = new AccountHolder("Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+
+        loginDetails1 = new LoginDetails("hackerman", "ihackthings", testHolder1);
+        loginDetails2 = new LoginDetails("testusername2", "testpass2", testHolder2);
 
         testAccount1 = new CheckingAccount(
                 "secretKey1",
@@ -82,4 +83,5 @@ class AccountTest {
         testAccount1.unfreezeAccount();
         assertEquals(Status.ACTIVE, testAccount1.getStatus());
     }
+
 }

@@ -18,16 +18,18 @@ public class StudentAccountService implements IStudentAccountService {
     private StudentAccountRepository studentAccountRepository;
 
     public List<StudentAccount> findAll() {
-        return studentAccountRepository.findAll();
+        return studentAccountRepository.findAllSecure();
     }
 
     @Override
     public Optional<StudentAccount> findByAccountNumber(Long accountNumber) {
-        Optional<StudentAccount> optionalStudentAccount = studentAccountRepository.findById(accountNumber);
+        Optional<StudentAccount> optionalStudentAccount = studentAccountRepository.findByAccountNumberSecure(accountNumber);
         if (optionalStudentAccount.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Student Account Found with Account Number :" + accountNumber);
 
         return optionalStudentAccount;
 
     }
+
+
 }

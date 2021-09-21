@@ -44,8 +44,12 @@ public interface ITransactionService {
     void checkAvailableFunds(Account account, BigDecimal amount);
 
     BigDecimal penaltyCheck(Account account, BigDecimal minimumBalance, BigDecimal penaltyFee);
+
     boolean interestMonthlyCheck(Long accountNumber);
+
     boolean interestYearlyCheck(Long accountNumber);
+
     void applyInterestYearly(Long accountNumber, BigDecimal balance, BigDecimal interestRate);
+
     void applyInterestMonthly(Long accountNumber, BigDecimal balance, BigDecimal interestRate);
 }

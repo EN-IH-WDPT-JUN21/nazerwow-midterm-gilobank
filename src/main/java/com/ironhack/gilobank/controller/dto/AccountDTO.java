@@ -49,5 +49,14 @@ public class AccountDTO {
         this.status = status;
     }
 
+    public AccountDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder) {
+        this.secretKey = secretKey;
+        this.primaryHolder = primaryHolder;
+        this.secondaryHolder = secondaryHolder;
+    }
 
+    public AccountDTO(String secretKey, AccountHolder primaryHolder) {
+        this.secretKey = secretKey;
+        this.primaryHolder = primaryHolder;
+    }
 }

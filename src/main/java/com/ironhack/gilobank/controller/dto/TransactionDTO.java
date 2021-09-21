@@ -7,6 +7,8 @@ import lombok.Setter;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -17,6 +19,8 @@ public class TransactionDTO {
 
     private Long creditAccountNumber;
 
+    @DecimalMin(value = "0.00")
+    @Digits(integer = 30, fraction = 2)
     private BigDecimal amount;
 
     private Long debitAccountNumber;
@@ -26,19 +30,6 @@ public class TransactionDTO {
     @Enumerated(EnumType.STRING)
     private TransactionType type;
 
-    private Long accountNumber;
-    private LocalDateTime dateFrom;
-    private LocalDateTime dateTo;
-
-    public TransactionDTO(Long creditAccountNumber, BigDecimal amount) {
-        this.creditAccountNumber = creditAccountNumber;
-        this.amount = amount;
-    }
-
-    public TransactionDTO(BigDecimal amount, Long debitAccountNumber) {
-        this.debitAccountNumber = debitAccountNumber;
-        this.amount = amount;
-    }
 
     public TransactionDTO(Long creditAccountNumber, BigDecimal amount, TransactionType type) {
         this.creditAccountNumber = creditAccountNumber;
@@ -52,27 +43,16 @@ public class TransactionDTO {
         this.type = type;
     }
 
-    public TransactionDTO(BigDecimal amount, TransactionType type) {
-        this.amount = amount;
-        this.type = type;
-    }
-
-
-
     public TransactionDTO(Long creditAccountNumber, BigDecimal amount, Long debitAccountNumber) {
         this.creditAccountNumber = creditAccountNumber;
         this.amount = amount;
         this.debitAccountNumber = debitAccountNumber;
     }
 
-    public TransactionDTO(Long accountNumber, LocalDateTime dateFrom, LocalDateTime dateTo) {
-        this.accountNumber = accountNumber;
-        this.dateFrom = dateFrom;
-        this.dateTo = dateTo;
-    }
-
-    public TransactionDTO(BigDecimal amount, TransactionType type, LocalDateTime timeOfTrns) {
+    public TransactionDTO(Long creditAccountNumber, BigDecimal amount, Long debitAccountNumber, LocalDateTime timeOfTrns, TransactionType type) {
+        this.creditAccountNumber = creditAccountNumber;
         this.amount = amount;
+        this.debitAccountNumber = debitAccountNumber;
         this.timeOfTrns = timeOfTrns;
         this.type = type;
     }

@@ -1,6 +1,7 @@
 package com.ironhack.gilobank.security;
 
 import com.ironhack.gilobank.dao.LoginDetails;
+import com.ironhack.gilobank.enums.Role;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -30,6 +31,7 @@ public class CustomUserDetails implements UserDetails {
         return authorities;
     }
 
+
     @Override
     public String getPassword() {
         return loginDetails.getPassword();
@@ -38,6 +40,14 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public String getUsername() {
         return loginDetails.getUsername();
+    }
+
+    public Long getId() {
+        return loginDetails.getId();
+    }
+
+    public Role getRole() {
+        return loginDetails.getUser().getRole();
     }
 
     @Override

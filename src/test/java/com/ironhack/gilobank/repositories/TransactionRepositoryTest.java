@@ -8,9 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -21,6 +19,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 class TransactionRepositoryTest {
 
     @Autowired
@@ -34,43 +33,27 @@ class TransactionRepositoryTest {
     @Autowired
     private TransactionRepository transactionRepository;
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
-
-    private MockMvc mockMvc;
-
-    private Address testAddress1;
-    private Address testAddress2;
-    private AccountHolder testHolder1;
-    private AccountHolder testHolder2;
-    private LoginDetails loginDetails1;
-    private LoginDetails loginDetails2;
+    private Address testAddress1, testAddress2;
+    private AccountHolder testHolder1, testHolder2;
+    private LoginDetails loginDetails1, loginDetails2;
     private SavingsAccount testAccount1;
-    private Transaction testTransaction1;
-    private Transaction testTransaction2;
-    private Transaction testTransaction3;
-    private Transaction testTransaction4;
-    private Transaction testTransaction5;
-    private Transaction testTransaction6;
-    private Transaction testTransaction7;
-    private Transaction testTransaction8;
-    private Transaction testTransaction9;
+    private Transaction testTransaction1, testTransaction2, testTransaction3, testTransaction4, testTransaction5, testTransaction6, testTransaction7, testTransaction8, testTransaction9;
+
 
     @BeforeEach
     void setUp() throws ParseException {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
         LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
         LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
 
-        loginDetails1 = new LoginDetails("hackerman", "ihackthings");
-        loginDetails2 = new LoginDetails("testusername2", "testpass2");
-
         testAddress1 = new Address("1", "Primary Road", "Primary", "PRIMA1");
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
 
-        testHolder1 = new AccountHolder(loginDetails1, "Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
-        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+        testHolder1 = new AccountHolder("Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
+        testHolder2 = new AccountHolder("Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+
+        loginDetails1 = new LoginDetails("hackerman", "ihackthings", testHolder1);
+        loginDetails2 = new LoginDetails("testusername2", "testpass2", testHolder2);
 
         testAccount1 = new SavingsAccount(
                 "secretKey1",
@@ -81,7 +64,7 @@ class TransactionRepositoryTest {
                 LocalDate.parse("2011-01-01"),  // open date
                 Status.ACTIVE,                  // Status
                 new BigDecimal("100"),      // Minimum Balance
-                new BigDecimal("1"));      // interestRate
+                new BigDecimal("0.1"));      // interestRate
 
 
         testTransaction1 = new Transaction(testAccount1, "Test1", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-01-03T10:12:30"));
@@ -94,9 +77,9 @@ class TransactionRepositoryTest {
         testTransaction8 = new Transaction(testAccount1, "Test7", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.TRANSFER_CREDIT, LocalDateTime.parse("2020-08-03T10:15:30"));
         testTransaction9 = new Transaction(testAccount1, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.parse("2020-09-03T10:22:30"));
 
-        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
+        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         savingsAccountRepository.save(testAccount1);
         transactionRepository.saveAll(List.of(testTransaction1, testTransaction2, testTransaction3, testTransaction4,
                 testTransaction5, testTransaction6, testTransaction7, testTransaction8, testTransaction9));
@@ -106,8 +89,8 @@ class TransactionRepositoryTest {
     void tearDown() {
         transactionRepository.deleteAll();
         savingsAccountRepository.deleteAll();
-        accountHolderRepository.deleteAll();
         loginDetailsRepository.deleteAll();
+        accountHolderRepository.deleteAll();
         addressRepository.deleteAll();
     }
 

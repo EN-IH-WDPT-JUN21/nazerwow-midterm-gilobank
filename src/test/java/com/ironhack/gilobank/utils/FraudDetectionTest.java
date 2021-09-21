@@ -66,14 +66,14 @@ class FraudDetectionTest {
         LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
         LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
 
-        loginDetails1 = new LoginDetails("hackerman", "ihackthings");
-        loginDetails2 = new LoginDetails("testusername2", "testpass2");
-
         testAddress1 = new Address("1", "Primary Road", "Primary", "PRIMA1");
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
 
-        testHolder1 = new AccountHolder(loginDetails1, "Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
-        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+        testHolder1 = new AccountHolder("Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
+        testHolder2 = new AccountHolder("Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+
+        loginDetails1 = new LoginDetails("hackerman", "ihackthings", testHolder1);
+        loginDetails2 = new LoginDetails("testusername2", "testpass2", testHolder2);
 
         testAccount1 = new SavingsAccount(
                 "secretKey1",
@@ -84,7 +84,7 @@ class FraudDetectionTest {
                 LocalDate.parse("2011-01-01"),  // open date
                 Status.ACTIVE,                  // Status
                 new BigDecimal("100"),      // Minimum Balance
-                new BigDecimal("1"));      // interestRate
+                new BigDecimal(".1"));      // interestRate
 
         // Total 500 in 1 day
         testTransaction1 = new Transaction(testAccount1, "Test1", new BigDecimal("500.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-01-03T10:15:30"));
@@ -100,9 +100,9 @@ class FraudDetectionTest {
         testTransaction8 = new Transaction(testAccount1, "Test7", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-08-03T10:15:30"));
         testTransaction9 = new Transaction(testAccount1, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.parse("2020-09-03T10:15:30"));
 
-        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
+        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         savingsAccountRepository.save(testAccount1);
         transactionRepository.saveAll(List.of(testTransaction1, testTransaction2, testTransaction3, testTransaction4,
                 testTransaction5, testTransaction6, testTransaction7, testTransaction8, testTransaction9));
@@ -112,8 +112,8 @@ class FraudDetectionTest {
     void tearDown() {
         transactionRepository.deleteAll();
         savingsAccountRepository.deleteAll();
-        accountHolderRepository.deleteAll();
         loginDetailsRepository.deleteAll();
+        accountHolderRepository.deleteAll();
         addressRepository.deleteAll();
     }
 

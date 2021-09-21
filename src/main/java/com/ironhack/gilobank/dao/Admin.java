@@ -2,7 +2,6 @@ package com.ironhack.gilobank.dao;
 
 import com.ironhack.gilobank.enums.Role;
 import com.sun.istack.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,7 +13,6 @@ import javax.persistence.Enumerated;
 @Entity
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 public class Admin extends User {
 
@@ -25,13 +23,7 @@ public class Admin extends User {
     private final Role role = Role.ADMIN;
 
 
-    public Admin(Long id, LoginDetails loginDetails, Role role, String name) {
-        super(id, loginDetails, role);
-        this.name = name;
-    }
-
-    public Admin(LoginDetails loginDetails, String name) {
-        super(loginDetails);
+    public Admin(String name) {
         this.name = name;
     }
 }

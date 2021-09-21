@@ -21,6 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class AccountHolder extends User {
 
+    @Enumerated(EnumType.STRING)
     private Role role = Role.ACCOUNTHOLDER;
 
     @NotNull
@@ -52,8 +53,7 @@ public class AccountHolder extends User {
     @JsonBackReference
     private Set<Account> accountSecondaryHolder;
 
-    public AccountHolder(LoginDetails loginDetails, String firstName, String surname, LocalDate dateOfBirth, Address primaryAddress, Address mailingAddress) {
-        super(loginDetails);
+    public AccountHolder(String firstName, String surname, LocalDate dateOfBirth, Address primaryAddress, Address mailingAddress) {
         this.firstName = firstName;
         this.surname = surname;
         this.dateOfBirth = dateOfBirth;

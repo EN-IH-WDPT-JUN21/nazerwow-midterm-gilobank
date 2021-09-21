@@ -1,29 +1,27 @@
 package com.ironhack.gilobank.service.impl;
 
-import com.ironhack.gilobank.controller.dto.TransactionDTO;
-import com.ironhack.gilobank.dao.*;
+import com.ironhack.gilobank.dao.AccountHolder;
+import com.ironhack.gilobank.dao.Address;
+import com.ironhack.gilobank.dao.CheckingAccount;
+import com.ironhack.gilobank.dao.LoginDetails;
 import com.ironhack.gilobank.enums.Status;
-import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.*;
-import com.ironhack.gilobank.service.interfaces.ICheckingAccountService;
-import com.ironhack.gilobank.service.interfaces.ITransactionService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 class CheckingAccountServiceTest {
 
     @Autowired
@@ -37,9 +35,7 @@ class CheckingAccountServiceTest {
     @Autowired
     private TransactionRepository transactionRepository;
     @Autowired
-    private ICheckingAccountService checkingAccountService;
-    @Autowired
-    private ITransactionService transactionService;
+    private CheckingAccountService checkingAccountService;
 
 
     private Address testAddress1;
@@ -57,14 +53,14 @@ class CheckingAccountServiceTest {
         LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
         LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
 
-        loginDetails1 = new LoginDetails("hackerman", "ihackthings");
-        loginDetails2 = new LoginDetails("testusername2", "testpass2");
-
         testAddress1 = new Address("1", "Primary Road", "Primary", "PRIMA1");
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
 
-        testHolder1 = new AccountHolder(loginDetails1, "Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
-        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+        testHolder1 = new AccountHolder("Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
+        testHolder2 = new AccountHolder("Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+
+        loginDetails1 = new LoginDetails("hackerman", "ihackthings", testHolder1);
+        loginDetails2 = new LoginDetails("testusername2", "testpass2", testHolder2);
 
         testAccount1 = new CheckingAccount(
                 "secretKey1",
@@ -97,9 +93,9 @@ class CheckingAccountServiceTest {
                 new BigDecimal("33.00"),        // Monthly Maintenance Fee
                 new BigDecimal("300.00"));     // Minimum Balance
 
-        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
+        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         checkingAccountRepository.saveAll(List.of(testAccount1, testAccount2, testAccount3));
     }
 
@@ -107,20 +103,20 @@ class CheckingAccountServiceTest {
     void tearDown() {
         transactionRepository.deleteAll();
         checkingAccountRepository.deleteAll();
-        accountHolderRepository.deleteAll();
         loginDetailsRepository.deleteAll();
+        accountHolderRepository.deleteAll();
         addressRepository.deleteAll();
     }
 
     @Test
     void findByAccountNumber() {
-        Optional<CheckingAccount> optionalCheckingAccount = checkingAccountRepository.findById(testAccount1.getAccountNumber());
-        assertEquals(optionalCheckingAccount.get().getSecretKey(), testAccount1.getSecretKey());
+        CheckingAccount checkingAccount = checkingAccountService.findByAccountNumber(testAccount1.getAccountNumber());
+        assertEquals(checkingAccount.getSecretKey(), testAccount1.getSecretKey());
     }
 
     @Test
     void findAll() {
-        var listOfAccount = checkingAccountRepository.findAll();
+        var listOfAccount = checkingAccountService.findAll();
         assertEquals(3, listOfAccount.size());
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
+import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,14 +65,14 @@ class CheckingAccountControllerTest {
         LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
         LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
 
-        loginDetails1 = new LoginDetails("hackerman", "ihackthings");
-        loginDetails2 = new LoginDetails("testusername2", "testpass2");
-
         testAddress1 = new Address("1", "Primary Road", "Primary", "PRIMA1");
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
 
-        testHolder1 = new AccountHolder(loginDetails1, "Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
-        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+        testHolder1 = new AccountHolder("Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
+        testHolder2 = new AccountHolder("Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+
+        loginDetails1 = new LoginDetails("hackerman", "ihackthings", testHolder1);
+        loginDetails2 = new LoginDetails("testusername2", "testpass2", testHolder2);
 
         testAccount1 = new CheckingAccount(
                 "secretKey1",
@@ -104,9 +105,9 @@ class CheckingAccountControllerTest {
                 new BigDecimal("33.00"),        // Monthly Maintenance Fee
                 new BigDecimal("300.00"));     // Minimum Balance
 
-        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
+        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         checkingAccountRepository.saveAll(List.of(testAccount1, testAccount2, testAccount3));
     }
 
@@ -114,8 +115,8 @@ class CheckingAccountControllerTest {
     void tearDown() {
         transactionRepository.deleteAll();
         checkingAccountRepository.deleteAll();
-        accountHolderRepository.deleteAll();
         loginDetailsRepository.deleteAll();
+        accountHolderRepository.deleteAll();
         addressRepository.deleteAll();
     }
 
@@ -143,7 +144,7 @@ class CheckingAccountControllerTest {
 
     @Test
     void creditFunds_Valid() throws Exception {
-        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250"));
+        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250"), TransactionType.CREDIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
                         put("/account/checking/credit")
@@ -157,7 +158,7 @@ class CheckingAccountControllerTest {
 
     @Test
     void debitFunds_Valid() throws Exception {
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250"), testAccount1.getAccountNumber());
+        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250"), testAccount1.getAccountNumber(), TransactionType.DEBIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
                         put("/account/checking/debit")
@@ -221,6 +222,4 @@ class CheckingAccountControllerTest {
         assertFalse(result.getResponse().getContentAsString().contains("Test10"));
         assertFalse(result.getResponse().getContentAsString().contains("Test11"));
     }
-
-
 }

@@ -3,7 +3,6 @@ package com.ironhack.gilobank.controller.interfaces;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.CheckingAccount;
 import com.ironhack.gilobank.dao.Transaction;
-import org.apache.tomcat.jni.Local;
 
 import java.time.LocalDate;
 import java.util.List;

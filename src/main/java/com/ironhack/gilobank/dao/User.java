@@ -1,6 +1,6 @@
 package com.ironhack.gilobank.dao;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.ironhack.gilobank.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,9 +21,8 @@ public abstract class User {
     @GeneratedValue(strategy = GenerationType.TABLE)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "loginDetails")
-    @JsonManagedReference
+    @OneToOne(mappedBy = "user")
+    @JsonBackReference
     private LoginDetails loginDetails;
 
     @Enumerated(EnumType.STRING)

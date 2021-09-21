@@ -5,16 +5,18 @@ import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.*;
-import com.ironhack.gilobank.service.interfaces.ITransactionService;
+import com.ironhack.gilobank.security.CustomUserDetails;
+import com.ironhack.gilobank.security.IAuthenticationFacade;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
@@ -24,8 +26,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Collections.singleton;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
@@ -42,44 +44,49 @@ class TransactionServiceTest {
     @Autowired
     private TransactionRepository transactionRepository;
     @Autowired
-    StudentAccountRepository studentAccountRepository;
+    private StudentAccountRepository studentAccountRepository;
     @Autowired
-    CreditCardRepository creditCardRepository;
+    private CreditCardRepository creditCardRepository;
     @Autowired
-    SavingsAccountRepository savingsAccountRepository;
+    private SavingsAccountRepository savingsAccountRepository;
     @Autowired
-    private ITransactionService transactionService;
+    private TransactionService transactionService;
 
     @Autowired
-    private WebApplicationContext webApplicationContext;
+    private IAuthenticationFacade authenticationFacade;
+
 
     private MockMvc mockMvc;
 
-    private Address testAddress1;
-    private Address testAddress2;
-    private AccountHolder testHolder1;
-    private AccountHolder testHolder2;
-    private LoginDetails loginDetails1;
-    private LoginDetails loginDetails2;
-    private CheckingAccount testAccount1;
-    private CheckingAccount testAccount2;
-    private CheckingAccount testAccount3;
+    private Address testAddress1, testAddress2;
+    private AccountHolder testHolder1, testHolder2;
+    private LoginDetails loginDetails1, loginDetails2, loginDetails3;
+    private CheckingAccount testAccount1, testAccount2, testAccount3;
+    private Admin admin;
+    private CustomUserDetails details1, details2, details3;
+    private UsernamePasswordAuthenticationToken adminLogin, login1, login2;
 
     @BeforeEach
     void setUp() throws ParseException {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
         LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
         LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
 
-        loginDetails1 = new LoginDetails("hackerman", "ihackthings");
-        loginDetails2 = new LoginDetails("testusername2", "testpass2");
 
         testAddress1 = new Address("1", "Primary Road", "Primary", "PRIMA1");
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
 
-        testHolder1 = new AccountHolder(loginDetails1, "Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
-        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+        testHolder1 = new AccountHolder("Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
+        testHolder2 = new AccountHolder("Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+        admin = new Admin("Admin");
+
+        loginDetails1 = new LoginDetails("hackerman", "ihackthings", testHolder1);
+        loginDetails2 = new LoginDetails("testusername2", "testpass2", testHolder2);
+        loginDetails3 = new LoginDetails("testAdmin", "testpass", admin);
+
+        details1 = new CustomUserDetails(loginDetails1);
+        details2 = new CustomUserDetails(loginDetails2);
+        details3 = new CustomUserDetails(loginDetails3);
 
         testAccount1 = new CheckingAccount(
                 "secretKey1",
@@ -112,10 +119,16 @@ class TransactionServiceTest {
                 new BigDecimal("300"),      // monthly maintenance
                 new BigDecimal("3"));      // minimum balance
 
-        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
+        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         checkingAccountRepository.saveAll(List.of(testAccount1, testAccount2, testAccount3));
+
+        login1 = new UsernamePasswordAuthenticationToken(details1, "x");
+        login2 = new UsernamePasswordAuthenticationToken(details2, "x");
+        adminLogin = new UsernamePasswordAuthenticationToken(details3, "z",
+                singleton(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
     }
 
     @AfterEach
@@ -125,14 +138,17 @@ class TransactionServiceTest {
         creditCardRepository.deleteAll();
         studentAccountRepository.deleteAll();
         savingsAccountRepository.deleteAll();
-        accountHolderRepository.deleteAll();
         loginDetailsRepository.deleteAll();
+        accountHolderRepository.deleteAll();
         addressRepository.deleteAll();
     }
 
     @Test
     void createTransactionLogCredit_TestValidCreation() {
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250.00"), TransactionType.CREDIT);
+        TransactionDTO transactionDTO = new TransactionDTO(null, new BigDecimal("250.00"),
+                null,
+                LocalDateTime.parse("2012-01-01T10:15:30"),
+                TransactionType.CREDIT);
         var sizeBefore = transactionRepository.findAll().size();
         transactionService.createTransactionLog(testAccount1, transactionDTO);
         var sizeAfter = transactionRepository.findAll().size();
@@ -140,52 +156,38 @@ class TransactionServiceTest {
     }
 
     @Test
-    void createTransactionLogCredit_TestDateAutoGenerated() {
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250.00"), TransactionType.CREDIT);
+    void createTransactionLog_TestDateAutoGenerated() {
+        TransactionDTO transactionDTO = new TransactionDTO(null, new BigDecimal("250.00"),
+                null,
+                LocalDateTime.parse("2012-01-01T10:15:30"),
+                TransactionType.CREDIT);
         Transaction testTransaction = transactionService.createTransactionLog(testAccount1, transactionDTO);
-        assertTrue(testTransaction.getTimeOfTrns().toString().contains(LocalDate.now().toString()));
+        assertTrue(testTransaction.getTimeOfTrns().toString().contains("2012-01-01T10:15:30"));
     }
 
     @Test
-    void createTransactionLogCredit(){
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250.00"), TransactionType.CREDIT, LocalDateTime.parse("2012-01-01T10:15:30"));
+    void createTransactionLog() {
+        TransactionDTO transactionDTO = new TransactionDTO(null, new BigDecimal("250.00"),
+                null,
+                LocalDateTime.parse("2012-01-01T10:15:30"),
+                TransactionType.CREDIT);
         Transaction testTransaction = transactionService.createTransactionLog(testAccount1, transactionDTO);
         assertEquals(LocalDateTime.parse("2012-01-01T10:15:30"), testTransaction.getTimeOfTrns());
-    };
-
-    // Debits
-
-    @Test
-    void createTransactionLogDebit_TestValidCreation() {
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250.00"), TransactionType.DEBIT);
-        var sizeBefore = transactionRepository.findAll().size();
-        Transaction testTransaction = transactionService.createTransactionLog(testAccount1, transactionDTO);
-        var sizeAfter = transactionRepository.findAll().size();
-        assertEquals(sizeAfter, sizeBefore + 1);
     }
 
-    @Test
-    void createTransactionLogDebit_TestDateAutoGenerated() {
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250.00"), TransactionType.DEBIT);
-        Transaction testTransaction = transactionService.createTransactionLog(testAccount1, transactionDTO);
-        assertTrue(testTransaction.getTimeOfTrns().toString().contains(LocalDate.now().toString()));
-    }
+    ;
 
-    @Test
-    void createTransactionLogDebit(){
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250.00"), TransactionType.DEBIT, LocalDateTime.parse("2012-01-01T10:15:30"));
-        Transaction testTransaction = transactionService.createTransactionLog(testAccount1, transactionDTO);
-        assertEquals(LocalDateTime.parse("2012-01-01T10:15:30"), testTransaction.getTimeOfTrns());
-    };
 
     // Transfer
     @Test
-    void createTransactionLogTransfer(){
+    void createTransactionLogTransfer() {
         Transaction debitTransaction = transactionService.createTransactionLogTransfer(testAccount1, new BigDecimal("250.00"), testAccount2, LocalDateTime.parse("2012-01-01T10:15:30")).get(0);
         Transaction creditTransaction = transactionService.createTransactionLogTransfer(testAccount1, new BigDecimal("250.00"), testAccount2, LocalDateTime.parse("2012-01-01T10:15:30")).get(1);
         assertEquals(TransactionType.TRANSFER_DEBIT, debitTransaction.getType());
         assertEquals(TransactionType.TRANSFER_CREDIT, creditTransaction.getType());
-    };
+    }
+
+    ;
 
     @Test
     void findByDateTimeBetween() {
@@ -265,7 +267,7 @@ class TransactionServiceTest {
         Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(5));
         transactionRepository.saveAll(List.of(test1, test2, test3));
 
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250"), testAccount1.getAccountNumber());
+        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250"), testAccount1.getAccountNumber(), TransactionType.DEBIT);
 
         assertDoesNotThrow(() -> transactionService.checkForFraud(transactionDTO));
     }
@@ -277,7 +279,7 @@ class TransactionServiceTest {
         Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(5));
         transactionRepository.saveAll(List.of(test1, test2, test3));
 
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250"), testAccount1.getAccountNumber());
+        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250"), testAccount1.getAccountNumber(), TransactionType.DEBIT);
 
         assertThrows(ResponseStatusException.class, () -> transactionService.checkForFraud(transactionDTO));
     }
@@ -289,7 +291,7 @@ class TransactionServiceTest {
         Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(5));
         transactionRepository.saveAll(List.of(test1, test2, test3));
 
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("2500000"), testAccount1.getAccountNumber());
+        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("2500000"), testAccount1.getAccountNumber(), TransactionType.DEBIT);
         assertThrows(ResponseStatusException.class, () -> transactionService.checkForFraud(transactionDTO));
     }
 
@@ -300,7 +302,7 @@ class TransactionServiceTest {
         Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(5));
         transactionRepository.saveAll(List.of(test1, test2, test3));
 
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("2500000"), testAccount1.getAccountNumber());
+        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("2500000"), testAccount1.getAccountNumber(), TransactionType.DEBIT);
         Optional<CheckingAccount> optionalCheckingAccount =
                 checkingAccountRepository.findById(transactionDTO.getDebitAccountNumber());
         assertEquals(Status.ACTIVE, optionalCheckingAccount.get().getStatus());
@@ -331,29 +333,29 @@ class TransactionServiceTest {
     }
 
     @Test
-    void checkAvailableFunds_DoesNotThrow(){
+    void checkAvailableFunds_DoesNotThrow() {
         assertDoesNotThrow(() -> transactionService.checkAvailableFunds(testAccount1, testAccount1.getBalance()));
     }
 
     @Test
-    void penaltyCheck_Deducts_Penalty(){
+    void penaltyCheck_Deducts_Penalty() {
         testAccount1.setBalance(new BigDecimal("99.00"));
         var balanceAfterFee = transactionService.penaltyCheck(testAccount1, testAccount1.getMinimumBalance(), testAccount1.getPenaltyFee());
         assertEquals(new BigDecimal("99.00").subtract(testAccount1.getPenaltyFee()), balanceAfterFee);
     }
 
     @Test
-    void penaltyCheck_Does_Not_Deduct(){
+    void penaltyCheck_Does_Not_Deduct() {
         testAccount1.setBalance(new BigDecimal("100.00"));
         var balanceAfterFee = transactionService.penaltyCheck(testAccount1, testAccount1.getMinimumBalance(), testAccount1.getPenaltyFee());
         assertEquals(new BigDecimal("100.00"), balanceAfterFee);
     }
 
     @Test
-    void findAndReturn_Valid(){
+    void findAndReturn_Valid() {
         StudentAccount studentAccount = new StudentAccount("stukey", testHolder1, new BigDecimal("250.00"));
         SavingsAccount savingsAccount = new SavingsAccount("savkey", testHolder1, new BigDecimal("500.00"));
-        CreditCard creditCard = new CreditCard("cckey", testHolder1, new BigDecimal("0.00"), new BigDecimal("3000.00"), new BigDecimal("20.00"));
+        CreditCard creditCard = new CreditCard("cckey", testHolder1, new BigDecimal("0.00"), new BigDecimal("-3000.00"), new BigDecimal(".20"));
         studentAccountRepository.save(studentAccount);
         savingsAccountRepository.save(savingsAccount);
         creditCardRepository.save(creditCard);
@@ -370,7 +372,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    void findAccountTypeAndSave(){
+    void findAccountTypeAndSave() {
         testAccount1.setStatus(Status.FROZEN);
         testAccount1.setBalance(new BigDecimal("999.99"));
 
@@ -423,6 +425,15 @@ class TransactionServiceTest {
     }
 
     @Test
+    void applyInterestYearly_CheckNotPaidTwice() {
+        transactionService.applyInterestYearly(testAccount1.getAccountNumber(), new BigDecimal("100.00"), new BigDecimal("1.20"));
+        var transBefore = transactionRepository.findAll().size();
+        transactionService.applyInterestYearly(testAccount1.getAccountNumber(), new BigDecimal("100.00"), new BigDecimal("1.20"));
+        var transAfter = transactionRepository.findAll().size();
+        assertEquals(transAfter, transBefore);
+    }
+
+    @Test
     void applyInterestMonthly_Credit() {
         var transBefore = transactionRepository.findAll().size();
         transactionService.applyInterestMonthly(testAccount1.getAccountNumber(), new BigDecimal("100.00"), new BigDecimal("1.20"));
@@ -459,4 +470,27 @@ class TransactionServiceTest {
         var transAfter = transactionRepository.findAll().size();
         assertEquals(transAfter, transBefore);
     }
+
+    @Test
+    void applyInterestMonthly_CheckNotPaidTwice() {
+        transactionService.applyInterestMonthly(testAccount1.getAccountNumber(), new BigDecimal("100.00"), new BigDecimal("1.20"));
+        var transBefore = transactionRepository.findAll().size();
+        transactionService.applyInterestMonthly(testAccount1.getAccountNumber(), new BigDecimal("100.00"), new BigDecimal("1.20"));
+        var transAfter = transactionRepository.findAll().size();
+        assertEquals(transAfter, transBefore);
+    }
+
+    @Test
+    void checkAuthentication() {
+        SecurityContextHolder.getContext().setAuthentication(login1);
+        var result = transactionService.checkAuthentication(testAccount1.getAccountNumber());
+        assertTrue(result);
+        SecurityContextHolder.getContext().setAuthentication(login2);
+        assertThrows(ResponseStatusException.class, () ->
+                transactionService.checkAuthentication(testAccount2.getAccountNumber()));
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        var result3 = transactionService.checkAuthentication(testAccount1.getAccountNumber());
+        assertTrue(result3);
+    }
+
 }

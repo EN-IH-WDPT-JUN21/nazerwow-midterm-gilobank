@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Entity;
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -16,12 +19,21 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class CreditCard extends Account {
 
+    @NotNull
+    @DecimalMax(value = "0.00")
+    @Digits(integer = 30, fraction = 2)
+    private BigDecimal balance;
 
     @NotNull
+    @DecimalMax(value = "-100.00")
+    @DecimalMin(value = "-100000.00")
+    @Digits(integer = 8, fraction = 2, message = "Max digits 8, Max fraction 2, Reminder: start with '-'")
     private BigDecimal creditLimit;
 
     @NotNull
-    private BigDecimal interestRate;
+    @DecimalMax(value = "1.00")
+    @DecimalMin(value = "0.1")
+    private BigDecimal interestRate = new BigDecimal("0.20");
 
     public CreditCard(String secretKey, AccountHolder primaryHolder, BigDecimal balance, BigDecimal creditLimit, BigDecimal interestRate) {
         super(secretKey, primaryHolder, balance);
@@ -41,5 +53,17 @@ public class CreditCard extends Account {
         this.interestRate = interestRate;
     }
 
+    @Override
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance;
+    }
 
+    @Override
+    public BigDecimal getBalance() {
+        return balance;
+    }
+
+    public BigDecimal remainingBalance() {
+        return getCreditLimit().subtract(getBalance()).abs();
+    }
 }

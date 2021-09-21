@@ -63,62 +63,63 @@ class CreditCardControllerTest {
         LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
         LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
 
-        loginDetails1 = new LoginDetails("hackerman", "ihackthings");
-        loginDetails2 = new LoginDetails("testusername2", "testpass2");
-
         testAddress1 = new Address("1", "Primary Road", "Primary", "PRIMA1");
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
 
-        testHolder1 = new AccountHolder(loginDetails1, "Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
-        testHolder2 = new AccountHolder(loginDetails2, "Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+        testHolder1 = new AccountHolder("Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
+        testHolder2 = new AccountHolder("Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+
+        loginDetails1 = new LoginDetails("hackerman", "ihackthings", testHolder1);
+        loginDetails2 = new LoginDetails("testusername2", "testpass2", testHolder2);
 
         testAccount1 = new CreditCard(
                 "secretKey1",
                 testHolder1,                    // Primary Holder
                 testHolder2,                    // Secondary Holder
-                new BigDecimal("100"),      // balance
+                new BigDecimal("-100.00"),      // balance
                 new BigDecimal("10"),       // penaltyFee
                 LocalDate.parse("2011-01-01"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("1000"),     // Credit Limit Balance
-                new BigDecimal("11"));     // interestRate
+                new BigDecimal("-1000.00"),     // Credit Limit Balance
+                new BigDecimal("0.1"));     // interestRate
         testAccount2 = new CreditCard(
                 "secretKey2",
                 testHolder1,                    // Primary Holder
                 null,
-                new BigDecimal("200"),      // balance
+                new BigDecimal("-200.00"),      // balance
                 new BigDecimal("20"),       // penaltyFee
                 LocalDate.parse("2012-02-02"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("2000"),     // Credit Limit Balance
-                new BigDecimal("22"));     // Interest Rate
+                new BigDecimal("-2000.00"),     // Credit Limit Balance
+                new BigDecimal("0.1"));     // Interest Rate
         testAccount3 = new CreditCard(
                 "secretKey3",
                 testHolder2,                    // Primary Holder
                 null,
-                new BigDecimal("300"),      // balance
+                new BigDecimal("-300.00"),      // balance
                 new BigDecimal("30"),       // penaltyFee
                 LocalDate.parse("2013-03-03"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("3000"),     // Credit Limit Balance
-                new BigDecimal("33"));     // Interest Rate
+                new BigDecimal("-3000.00"),     // Credit Limit Balance
+                new BigDecimal("0.1"));     // Interest Rate
 
-        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
+        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         creditCardRepository.saveAll(List.of(testAccount1, testAccount2, testAccount3));
     }
 
     @AfterEach
     void tearDown() {
         creditCardRepository.deleteAll();
-        accountHolderRepository.deleteAll();
         loginDetailsRepository.deleteAll();
+        accountHolderRepository.deleteAll();
         addressRepository.deleteAll();
     }
 
     @Test
     void getByAccountNumber_TestValid() throws Exception {
+
         MvcResult result = mockMvc.perform(
                         get("/account/creditcard/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isOk())
@@ -138,4 +139,5 @@ class CreditCardControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getCreditLimit())));
         assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getCreditLimit())));
     }
+
 }

@@ -1,15 +1,17 @@
 package com.ironhack.gilobank.controller.impl;
 
+import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.controller.interfaces.ISavingsAccountController;
 import com.ironhack.gilobank.dao.SavingsAccount;
+import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.service.interfaces.ISavingsAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/account/saving")
@@ -26,8 +28,38 @@ public class SavingsAccountController implements ISavingsAccountController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<SavingsAccount> getByAccountNumber(@PathVariable(name = "id") Long accountNumber) {
+    public SavingsAccount getByAccountNumber(@PathVariable(name = "id") Long accountNumber) {
         return savingsAccountService.findByAccountNumber(accountNumber);
+    }
+
+    @PutMapping("/credit")
+    @ResponseStatus(HttpStatus.OK)
+    public Transaction creditFunds(@RequestBody TransactionDTO transactionDTO) {
+        return savingsAccountService.creditFunds(transactionDTO);
+    }
+
+    @PutMapping("/debit")
+    @ResponseStatus(HttpStatus.OK)
+    public Transaction debitFunds(@RequestBody TransactionDTO transactionDTO) {
+        return savingsAccountService.debitFunds(transactionDTO);
+    }
+
+    @PutMapping("/transfer")
+    @ResponseStatus(HttpStatus.OK)
+    public Transaction transferFunds(@RequestBody TransactionDTO transactionDTO) {
+        return savingsAccountService.transferBetweenAccounts(transactionDTO);
+    }
+
+    // Allows you to pass dates without time for enhanced customer experience
+    @GetMapping("/{id}/{dateFrom}/{dateTo}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Transaction> getTransactionsByDateBetween(
+            @PathVariable(name = "id") Long accountNumber,
+            @PathVariable(name = "dateFrom")
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startPoint,
+            @PathVariable(name = "dateTo")
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endPoint) {
+        return savingsAccountService.findTransactionBetween(accountNumber, startPoint, endPoint);
     }
 
 }

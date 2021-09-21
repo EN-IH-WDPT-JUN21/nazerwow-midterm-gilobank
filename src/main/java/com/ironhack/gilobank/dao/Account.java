@@ -11,6 +11,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -47,6 +50,9 @@ public abstract class Account {
     private List<Transaction> transaction;
 
     @NotNull
+    @DecimalMin(value = "0.00", groups = {CheckingAccount.class, SavingsAccount.class, StudentAccount.class})
+    @DecimalMax(value = "0.00", groups = CreditCard.class)
+    @Digits(integer = 30, fraction = 2)
     private BigDecimal balance;
 
     @NotNull
@@ -61,28 +67,28 @@ public abstract class Account {
     public Account(String secretKey, AccountHolder primaryHolder, BigDecimal balance) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
-        this.balance = balance;
+        setBalance(balance);
     }
 
     public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;
-        this.balance = balance;
+        setBalance(balance);
     }
 
     public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, LocalDate openDate) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;
-        this.balance = balance;
+        setBalance(balance);
         this.openDate = openDate;
     }
 
     public Account(String secretKey, AccountHolder primaryHolder, BigDecimal balance, LocalDate openDate) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
-        this.balance = balance;
+        setBalance(balance);
         this.openDate = openDate;
     }
 
@@ -90,22 +96,23 @@ public abstract class Account {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;
-        this.balance = balance;
+        setBalance(balance);
         this.penaltyFee = penaltyFee;
         this.openDate = openDate;
         this.status = status;
     }
 
+
     public Money getBalanceAsMoney() {
-        return new Money(balance);
+        return new Money(getBalance());
     }
 
     public void credit(BigDecimal amount) {
-        this.balance = getBalanceAsMoney().increaseAmount(amount);
+        setBalance(getBalanceAsMoney().increaseAmount(amount));
     }
 
     public void debit(BigDecimal amount) {
-        this.balance = getBalanceAsMoney().decreaseAmount(amount);
+        setBalance(getBalanceAsMoney().decreaseAmount(amount));
     }
 
     public void freezeAccount() {

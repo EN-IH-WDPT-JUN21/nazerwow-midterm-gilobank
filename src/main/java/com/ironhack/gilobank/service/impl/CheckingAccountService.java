@@ -27,10 +27,14 @@ public class CheckingAccountService implements ICheckingAccountService {
     private FraudDetection fraudDetection;
 
     public CheckingAccount findByAccountNumber(Long accountNumber) {
-        Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(accountNumber);
-        if (checkingAccount.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Checking Account found with Account Number: " + accountNumber);
-        return checkingAccount.get();
+        if (transactionService.checkAuthentication(accountNumber)) {
+            Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(accountNumber);
+            if (checkingAccount.isEmpty())
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Checking Account found with Account Number: " + accountNumber);
+            return checkingAccount.get();
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
     }
 
     public List<CheckingAccount> findAll() {
