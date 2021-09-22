@@ -1,7 +1,9 @@
-package com.ironhack.gilobank.dao;
+package com.ironhack.gilobank.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.ironhack.gilobank.dao.Account;
+import com.ironhack.gilobank.dao.Address;
 import com.ironhack.gilobank.enums.Role;
 import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
@@ -14,46 +16,36 @@ import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Set;
 
-@Entity
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class AccountHolder extends User {
+@AllArgsConstructor
+public class AccountHolderDTO {
 
-    @Enumerated(EnumType.STRING)
-    private Role role = Role.ACCOUNTHOLDER;
+    private Long id;
 
-    @NotNull
     private String firstName;
 
-    @NotNull
     private String surname;
 
-    @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dateOfBirth;
 
-    @NotNull
-    @ManyToOne
-    @JoinColumn(name = "primary_address", referencedColumnName = "id")
-    @JsonManagedReference
     private Address primaryAddress;
 
-    @ManyToOne
-    @JoinColumn(name = "mailing_address", referencedColumnName = "id")
-    @JsonManagedReference
     private Address mailingAddress;
 
-    @OneToMany(mappedBy = "primaryHolder", fetch = FetchType.LAZY)
-    @JsonBackReference
-    private Set<Account> accountPrimaryHolder;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
-    @OneToMany(mappedBy = "secondaryHolder", fetch = FetchType.LAZY)
-    @JsonBackReference
-    private Set<Account> accountSecondaryHolder;
+    public AccountHolderDTO(String firstName, String surname, LocalDate dateOfBirth, Address primaryAddress) {
+        this.firstName = firstName;
+        this.surname = surname;
+        this.dateOfBirth = dateOfBirth;
+        this.primaryAddress = primaryAddress;
+    }
 
-    public AccountHolder(String firstName, String surname, LocalDate dateOfBirth, Address primaryAddress, Address mailingAddress) {
+    public AccountHolderDTO(String firstName, String surname, LocalDate dateOfBirth, Address primaryAddress, Address mailingAddress) {
         this.firstName = firstName;
         this.surname = surname;
         this.dateOfBirth = dateOfBirth;
@@ -61,10 +53,5 @@ public class AccountHolder extends User {
         this.mailingAddress = mailingAddress;
     }
 
-    public AccountHolder(String firstName, String surname, LocalDate dateOfBirth, Address primaryAddress) {
-        this.firstName = firstName;
-        this.surname = surname;
-        this.dateOfBirth = dateOfBirth;
-        this.primaryAddress = primaryAddress;
-    }
+
 }

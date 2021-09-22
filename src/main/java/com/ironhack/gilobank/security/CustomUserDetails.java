@@ -1,6 +1,7 @@
 package com.ironhack.gilobank.security;
 
 import com.ironhack.gilobank.dao.LoginDetails;
+import com.ironhack.gilobank.dao.ThirdParty;
 import com.ironhack.gilobank.enums.Role;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -48,6 +49,11 @@ public class CustomUserDetails implements UserDetails {
 
     public Role getRole() {
         return loginDetails.getUser().getRole();
+    }
+
+    public String getHashedKey(){
+        ThirdParty thirdParty = (ThirdParty) loginDetails.getUser();
+        return thirdParty.getHashedKey();
     }
 
     @Override

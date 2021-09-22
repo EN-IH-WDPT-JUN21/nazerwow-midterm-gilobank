@@ -5,6 +5,7 @@ import com.ironhack.gilobank.dao.CheckingAccount;
 import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.repositories.CheckingAccountRepository;
 import com.ironhack.gilobank.service.interfaces.ICheckingAccountService;
+import com.ironhack.gilobank.service.interfaces.ITransactionService;
 import com.ironhack.gilobank.utils.FraudDetection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,19 +23,17 @@ public class CheckingAccountService implements ICheckingAccountService {
     @Autowired
     private CheckingAccountRepository checkingAccountRepository;
     @Autowired
-    private TransactionService transactionService;
+    private ITransactionService transactionService;
     @Autowired
     private FraudDetection fraudDetection;
 
     public CheckingAccount findByAccountNumber(Long accountNumber) {
-        if (transactionService.checkAuthentication(accountNumber)) {
             Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(accountNumber);
             if (checkingAccount.isEmpty())
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Checking Account found with Account Number: " + accountNumber);
+            if(!transactionService.checkAuthentication(accountNumber))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not allowed to access this page");
             return checkingAccount.get();
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
     }
 
     public List<CheckingAccount> findAll() {
@@ -43,16 +42,19 @@ public class CheckingAccountService implements ICheckingAccountService {
 
 
     public Transaction creditFunds(TransactionDTO transactionDTO) {
+        findByAccountNumber(transactionDTO.getCreditAccountNumber());
         return transactionService.creditFunds(transactionDTO);
     }
 
 
     public Transaction debitFunds(TransactionDTO transactionDTO) {
+        findByAccountNumber(transactionDTO.getDebitAccountNumber());
         return transactionService.debitFunds(transactionDTO);
     }
 
 
     public Transaction transferBetweenAccounts(TransactionDTO transactionDTO) {
+        findByAccountNumber(transactionDTO.getDebitAccountNumber());
         return transactionService.transferBetweenAccounts(transactionDTO);
     }
 

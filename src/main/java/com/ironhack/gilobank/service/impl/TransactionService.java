@@ -16,12 +16,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -37,6 +39,8 @@ public class TransactionService implements ITransactionService {
     private StudentAccountRepository studentAccountRepository;
     @Autowired
     private CreditCardRepository creditCardRepository;
+    @Autowired
+    private ThirdPartyRepository thirdPartyRepository;
 
     @Autowired
     private IAuthenticationFacade authenticationFacade;
@@ -53,14 +57,13 @@ public class TransactionService implements ITransactionService {
         return transaction;
     }
 
-
     public List<Transaction> createTransactionLogTransfer(Account debitAccount, BigDecimal amount, Account creditAccount) {
         LocalDateTime transactionDate = LocalDateTime.now();
         Money moneyAmount = new Money(amount);
         String debitName = moneyAmount + " Transfer to Account Number: " + creditAccount.getAccountNumber();
         String creditName = moneyAmount + " Transfer from Account Number: " + debitAccount.getAccountNumber();
         Transaction debit = new Transaction(debitAccount, debitName, amount, debitAccount.getBalance(), TransactionType.TRANSFER_DEBIT, transactionDate);
-        Transaction credit = new Transaction(debitAccount, debitName, amount, debitAccount.getBalance(), TransactionType.TRANSFER_CREDIT, transactionDate);
+        Transaction credit = new Transaction(creditAccount, creditName, amount, debitAccount.getBalance(), TransactionType.TRANSFER_CREDIT, transactionDate);
         transactionRepository.saveAll(List.of(debit, credit));
         return List.of(debit, credit);
     }
@@ -280,16 +283,31 @@ public class TransactionService implements ITransactionService {
         if (loggedInUser instanceof CustomUserDetails) {
             if (authenticationFacade.getPrincipalRole() == Role.ADMIN) return true;
             loggedInId = authenticationFacade.getPrincipalId();
-            if (loggedInId == account.getPrimaryHolder().getLoginDetails().getId()) {
+            if (Objects.equals(loggedInId, account.getPrimaryHolder().getLoginDetails().getId())) {
                 return true;
             } else if (account.getSecondaryHolder() != null &&
-                    loggedInId == account.getSecondaryHolder().getLoginDetails().getId()) {
+                    Objects.equals(loggedInId, account.getSecondaryHolder().getLoginDetails().getId())) {
                 return true;
             } else {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not allowed to access this information");
             }
         }
-        throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT);
+        throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT, "How did you get here!?");
     }
 
+    public boolean verifyThirdParty(String hashedKey){
+        Optional<ThirdParty> thirdParty = thirdPartyRepository.findByHashedKey(hashedKey);
+        Object loggedInUser = authenticationFacade.getPrincipal();
+        if(thirdParty.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect Hashed Key");
+        }
+        if(loggedInUser instanceof CustomUserDetails) {
+            if (authenticationFacade.getPrincipalRole() == Role.ADMIN) return true;
+            if(authenticationFacade.getPrincipalRole() != Role.THIRDPARTY)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect Role");
+            String loggedInHashedKey = authenticationFacade.getHashedKey();
+            return Objects.equals(thirdParty.get().getHashedKey(), loggedInHashedKey);
+        }
+        return false;
+    }
 }

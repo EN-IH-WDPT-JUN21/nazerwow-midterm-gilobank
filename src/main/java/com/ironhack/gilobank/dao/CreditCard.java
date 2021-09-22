@@ -22,13 +22,13 @@ public class CreditCard extends Account {
     @NotNull
     @DecimalMax(value = "0.00")
     @Digits(integer = 30, fraction = 2)
-    private BigDecimal balance;
+    private BigDecimal balance = new BigDecimal("0.00");
 
     @NotNull
     @DecimalMax(value = "-100.00")
     @DecimalMin(value = "-100000.00")
     @Digits(integer = 8, fraction = 2, message = "Max digits 8, Max fraction 2, Reminder: start with '-'")
-    private BigDecimal creditLimit;
+    private BigDecimal creditLimit = new BigDecimal("100.00");
 
     @NotNull
     @DecimalMax(value = "1.00")

@@ -7,6 +7,7 @@ import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.*;
 import com.ironhack.gilobank.security.CustomUserDetails;
 import com.ironhack.gilobank.security.IAuthenticationFacade;
+import com.ironhack.gilobank.service.interfaces.ITransactionService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,8 @@ class TransactionServiceTest {
     @Autowired
     private AccountHolderRepository accountHolderRepository;
     @Autowired
+    private ThirdPartyRepository thirdPartyRepository;
+    @Autowired
     private LoginDetailsRepository loginDetailsRepository;
     @Autowired
     private CheckingAccountRepository checkingAccountRepository;
@@ -50,7 +53,7 @@ class TransactionServiceTest {
     @Autowired
     private SavingsAccountRepository savingsAccountRepository;
     @Autowired
-    private TransactionService transactionService;
+    private ITransactionService transactionService;
 
     @Autowired
     private IAuthenticationFacade authenticationFacade;
@@ -60,11 +63,12 @@ class TransactionServiceTest {
 
     private Address testAddress1, testAddress2;
     private AccountHolder testHolder1, testHolder2;
-    private LoginDetails loginDetails1, loginDetails2, loginDetails3;
+    private LoginDetails loginDetails1, loginDetails2, loginDetails3, loginDetails4, loginDetails5;
     private CheckingAccount testAccount1, testAccount2, testAccount3;
     private Admin admin;
-    private CustomUserDetails details1, details2, details3;
-    private UsernamePasswordAuthenticationToken adminLogin, login1, login2;
+    private ThirdParty thirdParty, thirdParty2;
+    private CustomUserDetails details1, details2, details3, details4, details5;
+    private UsernamePasswordAuthenticationToken adminLogin, login1, login2, thirdPartyLogin, thirdPartyLogin2;
 
     @BeforeEach
     void setUp() throws ParseException {
@@ -79,14 +83,20 @@ class TransactionServiceTest {
         testHolder1 = new AccountHolder("Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
         testHolder2 = new AccountHolder("Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
         admin = new Admin("Admin");
+        thirdParty = new ThirdParty("ThirdParty", "hashedKey");
+        thirdParty2 = new ThirdParty("ThirdParty2", "haskedKey2");
 
         loginDetails1 = new LoginDetails("hackerman", "ihackthings", testHolder1);
         loginDetails2 = new LoginDetails("testusername2", "testpass2", testHolder2);
         loginDetails3 = new LoginDetails("testAdmin", "testpass", admin);
+        loginDetails4 = new LoginDetails("testThirdParty", "testpass", thirdParty);
+        loginDetails5 = new LoginDetails("TestThirdParty2", "testpass2", thirdParty2);
 
         details1 = new CustomUserDetails(loginDetails1);
         details2 = new CustomUserDetails(loginDetails2);
         details3 = new CustomUserDetails(loginDetails3);
+        details4 = new CustomUserDetails(loginDetails4);
+        details5 = new CustomUserDetails(loginDetails5);
 
         testAccount1 = new CheckingAccount(
                 "secretKey1",
@@ -121,7 +131,8 @@ class TransactionServiceTest {
 
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
-        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
+        thirdPartyRepository.save(thirdParty);
+        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2, loginDetails4));
         checkingAccountRepository.saveAll(List.of(testAccount1, testAccount2, testAccount3));
 
         login1 = new UsernamePasswordAuthenticationToken(details1, "x");
@@ -129,6 +140,10 @@ class TransactionServiceTest {
         adminLogin = new UsernamePasswordAuthenticationToken(details3, "z",
                 singleton(new SimpleGrantedAuthority("ROLE_ADMIN")));
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        thirdPartyLogin = new UsernamePasswordAuthenticationToken(details4, "z",
+                singleton(new SimpleGrantedAuthority("ROLE_THIRDPARTY")));
+        thirdPartyLogin2 = new UsernamePasswordAuthenticationToken(details5, "z",
+                singleton(new SimpleGrantedAuthority("ROLE_THIRDPARTY")));
     }
 
     @AfterEach
@@ -491,6 +506,25 @@ class TransactionServiceTest {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         var result3 = transactionService.checkAuthentication(testAccount1.getAccountNumber());
         assertTrue(result3);
+    }
+
+    @Test
+    void verifyThirdParty(){
+        SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
+        var result = transactionService.verifyThirdParty(thirdParty.getHashedKey());
+        assertTrue(result);
+        SecurityContextHolder.getContext().setAuthentication(login2);
+        assertThrows(ResponseStatusException.class, () ->
+                transactionService.verifyThirdParty("wrongHashedKey"));
+        SecurityContextHolder.getContext().setAuthentication(login2);
+        assertThrows(ResponseStatusException.class, () ->
+                transactionService.verifyThirdParty(thirdParty.getHashedKey()));
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        var result3 = transactionService.verifyThirdParty(thirdParty.getHashedKey());
+        assertTrue(result3);
+        SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin2);
+        var result4 = transactionService.verifyThirdParty(thirdParty.getHashedKey());
+        assertFalse(result4);
     }
 
 }

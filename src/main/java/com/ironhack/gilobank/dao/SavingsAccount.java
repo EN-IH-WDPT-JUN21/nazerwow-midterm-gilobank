@@ -21,9 +21,9 @@ import java.time.LocalDate;
 public class SavingsAccount extends Account {
 
     @NotNull
-    @DecimalMin(value = "100.00", message = "Minimum opening balance is $100")
+    @DecimalMin(value = "100.00", message = "Account cannot go below $100.00")
     @Digits(integer = 30, fraction = 2)
-    private BigDecimal balance;
+    private BigDecimal balance = new BigDecimal("100.00");
 
     @NotNull
     private BigDecimal minimumBalance = new BigDecimal("1000.00");

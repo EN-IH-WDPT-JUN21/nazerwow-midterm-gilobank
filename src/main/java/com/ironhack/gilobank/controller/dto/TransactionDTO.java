@@ -9,6 +9,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -20,7 +21,7 @@ public class TransactionDTO {
     private Long creditAccountNumber;
 
     @DecimalMin(value = "0.00")
-    @Digits(integer = 30, fraction = 2)
+    @Digits(integer = 30, fraction = 2, message = "Error: Incorrect format for Amount")
     private BigDecimal amount;
 
     private Long debitAccountNumber;
@@ -28,6 +29,7 @@ public class TransactionDTO {
     private LocalDateTime timeOfTrns;
 
     @Enumerated(EnumType.STRING)
+    @NotNull(message = "Error: Please input transaction type")
     private TransactionType type;
 
 

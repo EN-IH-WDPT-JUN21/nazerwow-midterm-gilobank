@@ -13,12 +13,6 @@ public interface ITransactionService {
 
     Transaction createTransactionLog(Account account, TransactionDTO transactionDTO);
 
-//    Transaction createTransactionLogCredit(Account account, BigDecimal amount, LocalDateTime date);
-//
-//    Transaction createTransactionLogDebit(Account account, BigDecimal amount);
-//
-//    Transaction createTransactionLogDebit(Account account, BigDecimal amount, LocalDateTime date);
-
     List<Transaction> createTransactionLogTransfer(Account debitAccount, BigDecimal amount, Account creditAccount);
 
     List<Transaction> createTransactionLogTransfer(Account debitAccount, BigDecimal amount, Account creditAccount, LocalDateTime date);
@@ -52,4 +46,7 @@ public interface ITransactionService {
     void applyInterestYearly(Long accountNumber, BigDecimal balance, BigDecimal interestRate);
 
     void applyInterestMonthly(Long accountNumber, BigDecimal balance, BigDecimal interestRate);
+
+    boolean checkAuthentication(Long accountNumber);
+    boolean verifyThirdParty(String hashKey);
 }

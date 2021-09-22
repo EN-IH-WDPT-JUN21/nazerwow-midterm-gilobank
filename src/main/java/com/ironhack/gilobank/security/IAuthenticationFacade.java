@@ -11,4 +11,6 @@ public interface IAuthenticationFacade {
     Long getPrincipalId();
 
     Role getPrincipalRole();
+
+    String getHashedKey();
 }

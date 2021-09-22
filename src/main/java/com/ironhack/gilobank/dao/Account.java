@@ -51,7 +51,6 @@ public abstract class Account {
 
     @NotNull
     @DecimalMin(value = "0.00", groups = {CheckingAccount.class, SavingsAccount.class, StudentAccount.class})
-    @DecimalMax(value = "0.00", groups = CreditCard.class)
     @Digits(integer = 30, fraction = 2)
     private BigDecimal balance;
 
