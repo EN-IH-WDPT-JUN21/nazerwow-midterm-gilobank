@@ -1,6 +1,5 @@
 package com.ironhack.gilobank.service.impl;
 
-import com.ironhack.gilobank.dao.CheckingAccount;
 import com.ironhack.gilobank.dao.StudentAccount;
 import com.ironhack.gilobank.repositories.StudentAccountRepository;
 import com.ironhack.gilobank.service.interfaces.IStudentAccountService;
@@ -37,7 +36,7 @@ public class StudentAccountService implements IStudentAccountService {
         return studentAccount;
     }
 
-    public void saveNewStudentAccount(StudentAccount studentAccount){
+    public void saveNewStudentAccount(StudentAccount studentAccount) {
         studentAccountRepository.save(studentAccount);
     }
 

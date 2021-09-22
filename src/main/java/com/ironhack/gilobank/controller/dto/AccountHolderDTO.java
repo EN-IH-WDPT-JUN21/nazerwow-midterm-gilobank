@@ -3,16 +3,15 @@ package com.ironhack.gilobank.controller.dto;
 
 import com.ironhack.gilobank.dao.Address;
 import com.ironhack.gilobank.enums.Role;
-import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.*;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import java.time.LocalDate;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -50,6 +49,8 @@ public class AccountHolderDTO {
         this.primaryAddress = primaryAddress;
         this.mailingAddress = mailingAddress;
     }
+
+
 
 
 }

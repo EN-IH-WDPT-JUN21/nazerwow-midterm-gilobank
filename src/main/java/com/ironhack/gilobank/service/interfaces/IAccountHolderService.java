@@ -9,7 +9,7 @@ public interface IAccountHolderService {
 
     List<AccountHolder> findAll();
 
-    Optional<AccountHolder> findById(Long id);
+    AccountHolder findById(Long id);
 
     void saveNewAccountHolder(AccountHolder accountHolder);
 }

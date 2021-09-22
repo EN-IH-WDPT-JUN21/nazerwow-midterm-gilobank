@@ -51,7 +51,7 @@ public class CustomUserDetails implements UserDetails {
         return loginDetails.getUser().getRole();
     }
 
-    public String getHashedKey(){
+    public String getHashedKey() {
         ThirdParty thirdParty = (ThirdParty) loginDetails.getUser();
         return thirdParty.getHashedKey();
     }

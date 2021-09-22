@@ -16,15 +16,15 @@ public class AddressService implements IAddressService {
     @Autowired
     private AddressRepository addressRepository;
 
-    public Address findById(Long id){
+    public Address findById(Long id) {
         Optional<Address> addressOptional = addressRepository.findById(id);
-        if(addressOptional.isEmpty()){
+        if (addressOptional.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Address found with ID: " + id);
         }
         return addressOptional.get();
     }
 
-    public void saveNewAddress(Address address){
+    public void saveNewAddress(Address address) {
         addressRepository.save(address);
     }
 }

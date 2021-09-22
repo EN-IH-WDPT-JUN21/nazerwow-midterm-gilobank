@@ -48,5 +48,6 @@ public interface ITransactionService {
     void applyInterestMonthly(Long accountNumber, BigDecimal balance, BigDecimal interestRate);
 
     boolean checkAuthentication(Long accountNumber);
+
     boolean verifyThirdParty(String hashKey);
 }

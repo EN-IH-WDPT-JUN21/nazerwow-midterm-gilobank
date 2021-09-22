@@ -33,10 +33,10 @@ public class AuthenticationFacade implements IAuthenticationFacade {
         return null;
     }
 
-    public String getHashedKey(){
+    public String getHashedKey() {
         Object principal = getPrincipal();
-        if (principal instanceof CustomUserDetails){
-            return ((CustomUserDetails)principal).getHashedKey();
+        if (principal instanceof CustomUserDetails) {
+            return ((CustomUserDetails) principal).getHashedKey();
         }
         return null;
     }

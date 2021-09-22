@@ -22,15 +22,15 @@ public class AccountHolderService implements IAccountHolderService {
     }
 
 
-    public Optional<AccountHolder> findById(Long id) {
+    public AccountHolder findById(Long id) {
         Optional<AccountHolder> accountHolder = accountHolderRepository.findById(id);
-        if (!accountHolder.isPresent())
+        if (accountHolder.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Account Holder found with id: " + id);
 
-        return accountHolder;
+        return accountHolder.get();
     }
 
-    public void saveNewAccountHolder(AccountHolder accountHolder){
+    public void saveNewAccountHolder(AccountHolder accountHolder) {
         accountHolderRepository.save(accountHolder);
     }
 

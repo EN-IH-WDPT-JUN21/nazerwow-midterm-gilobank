@@ -33,12 +33,12 @@ public class CheckingAccountService implements ICheckingAccountService {
     }
 
     public CheckingAccount findByAccountNumber(Long accountNumber) {
-            Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(accountNumber);
-            if (checkingAccount.isEmpty())
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Checking Account found with Account Number: " + accountNumber);
-            if(!transactionService.checkAuthentication(accountNumber))
+        Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(accountNumber);
+        if (checkingAccount.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Checking Account found with Account Number: " + accountNumber);
+        if (!transactionService.checkAuthentication(accountNumber))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not allowed to access this page");
-            return checkingAccount.get();
+        return checkingAccount.get();
     }
 
     public List<CheckingAccount> findAll() {
@@ -71,7 +71,7 @@ public class CheckingAccountService implements ICheckingAccountService {
         return transactionService.findByDateTimeBetween(checkingAccount, convertedStartDate, convertedEndDate);
     }
 
-    public void saveCheckingAccount(CheckingAccount checkingAccount){
+    public void saveCheckingAccount(CheckingAccount checkingAccount) {
         checkingAccountRepository.save(checkingAccount);
     }
 

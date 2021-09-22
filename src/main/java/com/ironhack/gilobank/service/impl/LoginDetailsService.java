@@ -19,7 +19,7 @@ public class LoginDetailsService implements ILoginDetailsService {
 
     public LoginDetails findById(Long id) {
         Optional<LoginDetails> loginDetails = loginDetailsRepository.findById(id);
-        if(loginDetails.isEmpty()){
+        if (loginDetails.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Login Details exist with ID: " + id);
         }
         return loginDetails.get();

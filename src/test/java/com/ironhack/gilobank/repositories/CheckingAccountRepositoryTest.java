@@ -13,7 +13,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.TransactionSystemException;
 
-import javax.validation.ConstraintViolationException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -42,9 +41,6 @@ class CheckingAccountRepositoryTest {
     private AccountHolder testHolder2;
     private LoginDetails loginDetails1;
     private LoginDetails loginDetails2;
-    private Admin admin1;
-
-    private UsernamePasswordAuthenticationToken login1, login2, login3;
 
     @BeforeEach
     void setUp() throws ParseException {
@@ -57,8 +53,6 @@ class CheckingAccountRepositoryTest {
         testHolder1 = new AccountHolder("Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
         testHolder2 = new AccountHolder("Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
 
-        admin1 = new Admin("admin1");
-
         loginDetails1 = new LoginDetails("hackerman", "ihackthings", testHolder1);
         loginDetails2 = new LoginDetails("testusername2", "testpass2", testHolder2);
 
@@ -66,11 +60,6 @@ class CheckingAccountRepositoryTest {
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
 
-        login1 = new UsernamePasswordAuthenticationToken(loginDetails1, "x");
-        login2 = new UsernamePasswordAuthenticationToken(admin1, "z",
-                singleton(new SimpleGrantedAuthority("ROLE_ADMIN")));
-        login3 = new UsernamePasswordAuthenticationToken(loginDetails2, "z",
-                singleton(new SimpleGrantedAuthority("ROLE_ACCOUNTHOLDER")));
     }
 
     @AfterEach
@@ -81,46 +70,6 @@ class CheckingAccountRepositoryTest {
         addressRepository.deleteAll();
     }
 
-    @Test
-    void findAll_secure() {
-        CheckingAccount testAccount = new CheckingAccount("secretKey1", testHolder1, null, new BigDecimal("150"));
-        CheckingAccount testAccount3 = new CheckingAccount("secretKey3", testHolder1, testHolder2, new BigDecimal("650"));
-        CheckingAccount testAccount2 = new CheckingAccount("secretKey2", testHolder2, null, new BigDecimal("350"));
-        checkingAccountRepository.save(testAccount);
-        checkingAccountRepository.save(testAccount2);
-        checkingAccountRepository.save(testAccount3);
-
-        SecurityContextHolder.getContext().setAuthentication(login1);
-        var checkingAccounts = checkingAccountRepository.findAllSecure();
-        assertEquals(2, checkingAccounts.size());
-        SecurityContextHolder.getContext().setAuthentication(login2);
-        var checkingAccounts2 = checkingAccountRepository.findAllSecure();
-        assertEquals(3, checkingAccounts2.size());
-        SecurityContextHolder.getContext().setAuthentication(login3);
-        var checkingAccount3 = checkingAccountRepository.findAllSecure();
-        assertEquals(1, checkingAccount3.size());
-        assertEquals("secretKey2", checkingAccount3.get(0).getSecretKey());
-    }
-
-    @Test
-    void findByAccountNumber_secure() {
-        CheckingAccount testAccount = new CheckingAccount("secretKey1", testHolder1, new BigDecimal("150"));
-        CheckingAccount testAccount3 = new CheckingAccount("secretKey3", testHolder1, new BigDecimal("650"));
-        CheckingAccount testAccount2 = new CheckingAccount("secretKey2", testHolder2, new BigDecimal("350"));
-        checkingAccountRepository.save(testAccount);
-        checkingAccountRepository.save(testAccount2);
-        checkingAccountRepository.save(testAccount3);
-
-        SecurityContextHolder.getContext().setAuthentication(login1);
-        var checkingAccounts = checkingAccountRepository.findByAccountNumberSecure(testAccount.getAccountNumber());
-        assertEquals(testAccount.getSecretKey(), checkingAccounts.get().getSecretKey());
-        SecurityContextHolder.getContext().setAuthentication(login3);
-        var checkingAccounts2 = checkingAccountRepository.findByAccountNumberSecure(testAccount.getAccountNumber());
-        assertFalse(checkingAccounts2.isPresent());
-        SecurityContextHolder.getContext().setAuthentication(login2);
-        var checkingAccounts3 = checkingAccountRepository.findByAccountNumberSecure(testAccount.getAccountNumber());
-        assertEquals(testAccount.getSecretKey(), checkingAccounts3.get().getSecretKey());
-    }
 
     @Test
     void CheckingAccountCreation_TEST_PositiveSingleAccount() throws ParseException {
@@ -156,7 +105,7 @@ class CheckingAccountRepositoryTest {
     }
 
     @Test
-    void checkingAccountCreation_Test_ThrowsConstraintViolation(){
+    void checkingAccountCreation_Test_ThrowsConstraintViolation() {
         CheckingAccount checkingAccount = new CheckingAccount();
         assertThrows(TransactionSystemException.class, () -> checkingAccountRepository.save(checkingAccount));
     }

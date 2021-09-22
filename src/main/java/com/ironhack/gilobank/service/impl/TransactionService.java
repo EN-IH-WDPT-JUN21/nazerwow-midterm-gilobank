@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
@@ -296,16 +295,16 @@ public class TransactionService implements ITransactionService {
         throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT, "How did you get here!?");
     }
 
-    public boolean verifyThirdParty(String hashedKey){
+    public boolean verifyThirdParty(String hashedKey) {
         Optional<ThirdParty> thirdParty = thirdPartyRepository.findByHashedKey(hashedKey);
         Object loggedInUser = authenticationFacade.getPrincipal();
-        if(thirdParty.isEmpty()){
+        if (thirdParty.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect Hashed Key");
         }
-        if(loggedInUser instanceof CustomUserDetails) {
+        if (loggedInUser instanceof CustomUserDetails) {
             if (authenticationFacade.getPrincipalRole() == Role.ADMIN) return true;
-            if(authenticationFacade.getPrincipalRole() != Role.THIRDPARTY)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect Role");
+            if (authenticationFacade.getPrincipalRole() != Role.THIRDPARTY)
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect Role");
             String loggedInHashedKey = authenticationFacade.getHashedKey();
             return Objects.equals(thirdParty.get().getHashedKey(), loggedInHashedKey);
         }

@@ -25,7 +25,7 @@ public class AccountHolderController implements IAccountHolderController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<AccountHolder> getById(@PathVariable(name = "id") Long id) {
+    public AccountHolder getById(@PathVariable(name = "id") Long id) {
         return accountHolderService.findById(id);
     }
 

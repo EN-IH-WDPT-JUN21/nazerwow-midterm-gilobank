@@ -2,9 +2,7 @@ package com.ironhack.gilobank.controller.impl;
 
 import com.ironhack.gilobank.dao.AccountHolder;
 import com.ironhack.gilobank.dao.Address;
-import com.ironhack.gilobank.dao.CheckingAccount;
 import com.ironhack.gilobank.dao.LoginDetails;
-import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.repositories.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +18,8 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 

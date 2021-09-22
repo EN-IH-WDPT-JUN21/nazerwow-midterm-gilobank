@@ -509,7 +509,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    void verifyThirdParty(){
+    void verifyThirdParty() {
         SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
         var result = transactionService.verifyThirdParty(thirdParty.getHashedKey());
         assertTrue(result);
