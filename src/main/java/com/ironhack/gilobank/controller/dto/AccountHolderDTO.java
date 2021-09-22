@@ -1,11 +1,9 @@
 package com.ironhack.gilobank.controller.dto;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.ironhack.gilobank.dao.Account;
+
 import com.ironhack.gilobank.dao.Address;
 import com.ironhack.gilobank.enums.Role;
-import com.sun.istack.NotNull;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

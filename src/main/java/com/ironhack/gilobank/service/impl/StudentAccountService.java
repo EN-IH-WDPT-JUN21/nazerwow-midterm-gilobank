@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.service.impl;
 
+import com.ironhack.gilobank.dao.CheckingAccount;
 import com.ironhack.gilobank.dao.StudentAccount;
 import com.ironhack.gilobank.repositories.StudentAccountRepository;
 import com.ironhack.gilobank.service.interfaces.IStudentAccountService;
@@ -22,14 +23,22 @@ public class StudentAccountService implements IStudentAccountService {
     }
 
     @Override
-    public Optional<StudentAccount> findByAccountNumber(Long accountNumber) {
+    public StudentAccount findByAccountNumber(Long accountNumber) {
         Optional<StudentAccount> optionalStudentAccount = studentAccountRepository.findByAccountNumberSecure(accountNumber);
         if (optionalStudentAccount.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Student Account Found with Account Number :" + accountNumber);
 
-        return optionalStudentAccount;
+        return optionalStudentAccount.get();
 
     }
 
+    public Optional<StudentAccount> findByAccountNumberOptional(Long accountNumber) {
+        Optional<StudentAccount> studentAccount = studentAccountRepository.findById(accountNumber);
+        return studentAccount;
+    }
+
+    public void saveNewStudentAccount(StudentAccount studentAccount){
+        studentAccountRepository.save(studentAccount);
+    }
 
 }

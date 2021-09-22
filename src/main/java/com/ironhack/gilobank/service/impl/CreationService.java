@@ -3,12 +3,15 @@ package com.ironhack.gilobank.service.impl;
 import com.ironhack.gilobank.controller.dto.*;
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.AccountType;
-import com.ironhack.gilobank.service.interfaces.IAccountHolderService;
-import com.ironhack.gilobank.service.interfaces.IAddressService;
-import com.ironhack.gilobank.service.interfaces.ICheckingAccountService;
-import com.ironhack.gilobank.service.interfaces.ILoginDetailsService;
+import com.ironhack.gilobank.service.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionSystemException;
+import org.springframework.web.server.ResponseStatusException;
+
+import javax.validation.ConstraintViolationException;
+import java.time.LocalDate;
 
 @Service
 public class CreationService {
@@ -21,11 +24,13 @@ public class CreationService {
     private ILoginDetailsService loginDetailsService;
     @Autowired
     private ICheckingAccountService checkingAccountService;
+    @Autowired
+    private IStudentAccountService studentAccountService;
 
-    public Address newAddress(AddressDTO addressDTO){
+    public Address newAddress(AddressDTO addressDTO) throws TransactionSystemException {
         Address address = new Address();
         if(!addressDTO.getId().toString().isEmpty()){
-            address.setId(addressService.findById(addressDTO.getId()).getId());
+            address = addressService.findById(addressDTO.getId());
         }
         if(!addressDTO.getHouseNumber().isEmpty()){
             address.setHouseNumber(addressDTO.getHouseNumber());
@@ -49,10 +54,10 @@ public class CreationService {
         return address;
     }
 
-    public AccountHolder newAccountHolder(AccountHolderDTO accountHolderDTO){
+    public AccountHolder newAccountHolder(AccountHolderDTO accountHolderDTO) throws TransactionSystemException{
         AccountHolder accountHolder = new AccountHolder();
         if(!accountHolder.getId().toString().isEmpty()){
-            accountHolder.setId(accountHolderDTO.getId());
+            accountHolder = accountHolderService.findById(accountHolderDTO.getId()).get();
         }
         if(!accountHolderDTO.getFirstName().isEmpty()){
             accountHolder.setFirstName(accountHolderDTO.getFirstName());
@@ -76,10 +81,10 @@ public class CreationService {
         return accountHolder;
     }
 
-    public LoginDetails newLoginDetails(LoginDetailsDTO loginDetailsDTO){
+    public LoginDetails newLoginDetails(LoginDetailsDTO loginDetailsDTO) throws TransactionSystemException{
         LoginDetails loginDetails = new LoginDetails();
         if(loginDetailsDTO.getId() != null){
-            loginDetails.setId(loginDetailsService.findById(loginDetailsDTO.getId()).getId());
+            loginDetails = loginDetailsService.findById(loginDetailsDTO.getId());
         }
         if(!loginDetailsDTO.getUsername().isEmpty()){
             loginDetails.setUsername(loginDetailsDTO.getUsername());
@@ -94,45 +99,93 @@ public class CreationService {
         return loginDetails;
     }
 
-    public CheckingAccount newCheckingAccount(CheckingAccountDTO checkingAccountDTO){
+    public CheckingAccount newCheckingAccount(CheckingAccountDTO checkingAccountDTO) throws TransactionSystemException {
         CheckingAccount checkingAccount = new CheckingAccount();
-        if(checkingAccountDTO.getAccountNumber() != null){
-            checkingAccount.setAccountNumber(
-                    checkingAccountService.findByAccountNumber(
-                            checkingAccountDTO.getAccountNumber()).getAccountNumber());
+        if (!checkIfOver24(checkingAccountDTO.getPrimaryHolder()) &&
+                !checkIfOver24(checkingAccountDTO.getSecondaryHolder()) ||
+                !checkIfOver24(checkingAccountDTO.getPrimaryHolder()) && checkingAccountDTO.getSecondaryHolder() == null) {
+            newStudentAccount(checkingAccountDTO);
+        } else if(checkIfOver24(checkingAccountDTO.getPrimaryHolder()) != checkIfOver24(checkingAccountDTO.getSecondaryHolder())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot open a joint account due to age difference");
         }
-        if(!checkingAccountDTO.getSecretKey().isEmpty()){
-            checkingAccount.setSecretKey(checkingAccountDTO.getSecretKey());
-        }
-        if(checkingAccountDTO.getPrimaryHolder() != null){
-            checkingAccount.setPrimaryHolder(checkingAccountDTO.getPrimaryHolder());
-        }
-        if(checkingAccountDTO.getSecondaryHolder() != null){
-            checkingAccount.setSecondaryHolder(checkingAccountDTO.getSecondaryHolder());
-        }
-        if(checkingAccountDTO.getBalance() != null){
-            checkingAccount.setBalance(checkingAccountDTO.getBalance());
-        }
-        if(checkingAccountDTO.getPenaltyFee() != null){
-            checkingAccount.setPenaltyFee(checkingAccountDTO.getPenaltyFee());
-        }
-        if(checkingAccountDTO.getOpenDate() != null){
-            checkingAccount.setOpenDate(checkingAccountDTO.getOpenDate());
-        }
-        if(checkingAccountDTO.getStatus() != null){
-            checkingAccount.setStatus(checkingAccountDTO.getStatus());
-        }
-        if(checkingAccountDTO.getMonthlyMaintenanceFee() != null){
-            checkingAccount.setMonthlyMaintenanceFee(checkingAccountDTO.getMonthlyMaintenanceFee());
-        }
-        if(checkingAccountDTO.getMinimumBalance() != null){
-            checkingAccount.setMinimumBalance(checkingAccountDTO.getMinimumBalance());
+        else {
+            if (checkingAccountDTO.getAccountNumber() != null) {
+                checkingAccount = checkingAccountService.findByAccountNumberOptional(
+                                checkingAccountDTO.getAccountNumber()).get();
+            }
+            if (checkingAccountDTO.getPrimaryHolder() != null) {
+                checkingAccount.setPrimaryHolder(checkingAccountDTO.getPrimaryHolder());
+            }
+            if (checkingAccountDTO.getSecondaryHolder() != null) {
+                checkingAccount.setSecondaryHolder(checkingAccountDTO.getSecondaryHolder());
+            }
+            if (!checkingAccountDTO.getSecretKey().isEmpty()) {
+                checkingAccount.setSecretKey(checkingAccountDTO.getSecretKey());
+            }
+            if (checkingAccountDTO.getBalance() != null) {
+                checkingAccount.setBalance(checkingAccountDTO.getBalance());
+            }
+            if (checkingAccountDTO.getPenaltyFee() != null) {
+                checkingAccount.setPenaltyFee(checkingAccountDTO.getPenaltyFee());
+            }
+            if (checkingAccountDTO.getOpenDate() != null) {
+                checkingAccount.setOpenDate(checkingAccountDTO.getOpenDate());
+            }
+            if (checkingAccountDTO.getStatus() != null) {
+                checkingAccount.setStatus(checkingAccountDTO.getStatus());
+            }
+            if (checkingAccountDTO.getMonthlyMaintenanceFee() != null) {
+                checkingAccount.setMonthlyMaintenanceFee(checkingAccountDTO.getMonthlyMaintenanceFee());
+            }
+            if (checkingAccountDTO.getMinimumBalance() != null) {
+                checkingAccount.setMinimumBalance(checkingAccountDTO.getMinimumBalance());
+            }
         }
         checkingAccountService.saveCheckingAccount(checkingAccount);
         return checkingAccount;
     }
 
-    public Account createAccount(AccountDTO accountDTO){
+    public StudentAccount newStudentAccount(CheckingAccountDTO checkingAccountDTO) throws TransactionSystemException {
+        StudentAccount studentAccount = new StudentAccount();
+        if (checkIfOver24(checkingAccountDTO.getPrimaryHolder()) &&
+                checkIfOver24(checkingAccountDTO.getSecondaryHolder()) ||
+                checkIfOver24(checkingAccountDTO.getPrimaryHolder()) && checkingAccountDTO.getSecondaryHolder() == null) {
+            newCheckingAccount(checkingAccountDTO);
+        } else if(checkIfOver24(checkingAccountDTO.getPrimaryHolder()) != checkIfOver24(checkingAccountDTO.getSecondaryHolder())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot open a joint account due to age difference");
+        }
+        else {
+            if (checkingAccountDTO.getAccountNumber() != null) {
+                studentAccount = studentAccountService.findByAccountNumberOptional(
+                                checkingAccountDTO.getAccountNumber()).get();
+            }
+            if (checkingAccountDTO.getPrimaryHolder() != null) {
+                studentAccount.setPrimaryHolder(checkingAccountDTO.getPrimaryHolder());
+            }
+            if (checkingAccountDTO.getSecondaryHolder() != null) {
+                studentAccount.setSecondaryHolder(checkingAccountDTO.getSecondaryHolder());
+            }
+            if (!checkingAccountDTO.getSecretKey().isEmpty()) {
+                studentAccount.setSecretKey(checkingAccountDTO.getSecretKey());
+            }
+            if (checkingAccountDTO.getBalance() != null) {
+                studentAccount.setBalance(checkingAccountDTO.getBalance());
+            }
+            if (checkingAccountDTO.getPenaltyFee() != null) {
+                studentAccount.setPenaltyFee(checkingAccountDTO.getPenaltyFee());
+            }
+            if (checkingAccountDTO.getOpenDate() != null) {
+                studentAccount.setOpenDate(checkingAccountDTO.getOpenDate());
+            }
+            if (checkingAccountDTO.getStatus() != null) {
+                studentAccount.setStatus(checkingAccountDTO.getStatus());
+            }
+        }
+        studentAccountService.saveNewStudentAccount(studentAccount);
+        return studentAccount;
+    }
+
+    public Account createAccount(AccountDTO accountDTO) throws ConstraintViolationException{
         if(accountDTO.getAccountType() == AccountType.CHECKING_ACCOUNT){
             CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO();
             checkingAccountDTO.setSecretKey(accountDTO.getSecretKey());
@@ -141,5 +194,12 @@ public class CreationService {
             return newCheckingAccount(checkingAccountDTO);
         }
         return null;
+    }
+
+    public boolean checkIfOver24(AccountHolder accountHolder){
+        LocalDate dateOfBirth = accountHolder.getDateOfBirth();
+        if(dateOfBirth == null) return true;
+        LocalDate todaysDate = LocalDate.now();
+        return !dateOfBirth.isAfter(todaysDate.minusYears(24));
     }
 }

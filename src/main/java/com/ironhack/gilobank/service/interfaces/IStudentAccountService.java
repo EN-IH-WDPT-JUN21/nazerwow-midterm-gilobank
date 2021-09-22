@@ -9,5 +9,7 @@ public interface IStudentAccountService {
 
     List<StudentAccount> findAll();
 
-    Optional<StudentAccount> findByAccountNumber(Long accountNumber);
+    StudentAccount findByAccountNumber(Long accountNumber);
+    Optional<StudentAccount> findByAccountNumberOptional(Long accountNumber);
+    void saveNewStudentAccount(StudentAccount studentAccount);
 }

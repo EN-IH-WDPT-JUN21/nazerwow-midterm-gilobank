@@ -11,15 +11,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.TransactionSystemException;
 
+import javax.validation.ConstraintViolationException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
 
 import static java.util.Collections.singleton;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class CheckingAccountRepositoryTest {
@@ -152,6 +153,12 @@ class CheckingAccountRepositoryTest {
         assertEquals(repoSizeAfter, repoSizeBefore + 1);
         assertEquals(new BigDecimal("40.00"), testAccount.getPenaltyFee());
         assertEquals(Status.ACTIVE, testAccount.getStatus());
+    }
+
+    @Test
+    void checkingAccountCreation_Test_ThrowsConstraintViolation(){
+        CheckingAccount checkingAccount = new CheckingAccount();
+        assertThrows(TransactionSystemException.class, () -> checkingAccountRepository.save(checkingAccount));
     }
 
 }

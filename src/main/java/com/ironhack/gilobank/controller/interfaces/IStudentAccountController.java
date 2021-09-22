@@ -9,5 +9,5 @@ public interface IStudentAccountController {
 
     List<StudentAccount> getAll();
 
-    Optional<StudentAccount> getByAccountNumber(Long accountNumber);
+    StudentAccount getByAccountNumber(Long accountNumber);
 }
