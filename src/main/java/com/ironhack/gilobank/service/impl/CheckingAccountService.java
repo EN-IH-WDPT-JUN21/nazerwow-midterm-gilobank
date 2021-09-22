@@ -27,6 +27,11 @@ public class CheckingAccountService implements ICheckingAccountService {
     @Autowired
     private FraudDetection fraudDetection;
 
+    public Optional<CheckingAccount> findByAccountNumberOptional(Long accountNumber) {
+        Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(accountNumber);
+        return checkingAccount;
+    }
+
     public CheckingAccount findByAccountNumber(Long accountNumber) {
             Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(accountNumber);
             if (checkingAccount.isEmpty())
@@ -66,5 +71,8 @@ public class CheckingAccountService implements ICheckingAccountService {
         return transactionService.findByDateTimeBetween(checkingAccount, convertedStartDate, convertedEndDate);
     }
 
+    public void saveCheckingAccount(CheckingAccount checkingAccount){
+        checkingAccountRepository.save(checkingAccount);
+    }
 
 }

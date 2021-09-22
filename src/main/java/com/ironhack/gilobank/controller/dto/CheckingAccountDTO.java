@@ -34,7 +34,7 @@ public class CheckingAccountDTO {
 
     @DecimalMin(value = "0.00")
     @Digits(integer = 30, fraction = 2, message = "Error: Incorrect format for Amount")
-    private BigDecimal balance = new BigDecimal("0.00");
+    private BigDecimal balance;
 
     private BigDecimal penaltyFee;
 

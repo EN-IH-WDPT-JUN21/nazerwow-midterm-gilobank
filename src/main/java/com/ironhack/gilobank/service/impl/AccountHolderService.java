@@ -30,5 +30,9 @@ public class AccountHolderService implements IAccountHolderService {
         return accountHolder;
     }
 
+    public void saveNewAccountHolder(AccountHolder accountHolder){
+        accountHolderRepository.save(accountHolder);
+    }
+
 
 }

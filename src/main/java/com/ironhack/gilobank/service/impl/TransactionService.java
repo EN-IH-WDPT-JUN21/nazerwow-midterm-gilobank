@@ -8,6 +8,7 @@ import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.*;
 import com.ironhack.gilobank.security.CustomUserDetails;
 import com.ironhack.gilobank.security.IAuthenticationFacade;
+import com.ironhack.gilobank.service.interfaces.ICheckingAccountService;
 import com.ironhack.gilobank.service.interfaces.ITransactionService;
 import com.ironhack.gilobank.utils.FraudDetection;
 import com.ironhack.gilobank.utils.Money;
@@ -16,7 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.swing.text.html.Option;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
@@ -32,7 +33,7 @@ public class TransactionService implements ITransactionService {
     @Autowired
     private TransactionRepository transactionRepository;
     @Autowired
-    private CheckingAccountRepository checkingAccountRepository;
+    private ICheckingAccountService checkingAccountService;
     @Autowired
     private SavingsAccountRepository savingsAccountRepository;
     @Autowired
@@ -142,7 +143,7 @@ public class TransactionService implements ITransactionService {
     }
 
     public void findAccountTypeAndSave(Account account) {
-        Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(account.getAccountNumber());
+        Optional<CheckingAccount> checkingAccount = checkingAccountService.findByAccountNumberOptional(account.getAccountNumber());
         if (checkingAccount.isPresent()) {
             // If balance equal or above minimum balance penalty checker will be called
             // If balance already below minimum balance the customer will not be charged again for the new transaction
@@ -152,7 +153,7 @@ public class TransactionService implements ITransactionService {
                         checkingAccount.get().getPenaltyFee()));
             }
             checkingAccount.get().setStatus(account.getStatus());
-            checkingAccountRepository.save(checkingAccount.get());
+            checkingAccountService.saveCheckingAccount(checkingAccount.get());
         }
         Optional<SavingsAccount> savingsAccount = savingsAccountRepository.findById(account.getAccountNumber());
         if (savingsAccount.isPresent()) {
@@ -181,7 +182,7 @@ public class TransactionService implements ITransactionService {
     }
 
     public Account findAccountTypeAndReturn(Long accountNumber) {
-        Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(accountNumber);
+        Optional<CheckingAccount> checkingAccount = checkingAccountService.findByAccountNumberOptional(accountNumber);
         if (checkingAccount.isPresent()) {
             return checkingAccount.get();
         }

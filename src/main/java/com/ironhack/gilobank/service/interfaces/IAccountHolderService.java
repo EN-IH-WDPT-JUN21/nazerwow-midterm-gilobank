@@ -11,4 +11,5 @@ public interface IAccountHolderService {
 
     Optional<AccountHolder> findById(Long id);
 
+    void saveNewAccountHolder(AccountHolder accountHolder);
 }
