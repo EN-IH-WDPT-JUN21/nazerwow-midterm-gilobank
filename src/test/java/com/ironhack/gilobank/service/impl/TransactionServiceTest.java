@@ -154,6 +154,7 @@ class TransactionServiceTest {
         studentAccountRepository.deleteAll();
         savingsAccountRepository.deleteAll();
         loginDetailsRepository.deleteAll();
+        thirdPartyRepository.deleteAll();
         accountHolderRepository.deleteAll();
         addressRepository.deleteAll();
     }

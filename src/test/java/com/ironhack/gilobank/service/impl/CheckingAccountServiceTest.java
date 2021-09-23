@@ -149,6 +149,7 @@ class CheckingAccountServiceTest {
         transactionRepository.deleteAll();
         checkingAccountRepository.deleteAll();
         loginDetailsRepository.deleteAll();
+        thirdPartyRepository.deleteAll();
         accountHolderRepository.deleteAll();
         addressRepository.deleteAll();
     }

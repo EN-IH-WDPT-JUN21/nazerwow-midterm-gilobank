@@ -15,6 +15,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Embeddable
 public abstract class User {
 
     @Id
@@ -23,6 +24,7 @@ public abstract class User {
 
     @OneToOne(mappedBy = "user")
     @JsonIgnore
+    @Embedded
     private LoginDetails loginDetails;
 
     @Enumerated(EnumType.STRING)

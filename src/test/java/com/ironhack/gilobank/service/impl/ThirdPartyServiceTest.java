@@ -130,6 +130,7 @@ class ThirdPartyServiceTest {
     void tearDown() {
         checkingAccountRepository.deleteAll();
         loginDetailsRepository.deleteAll();
+        thirdPartyRepository.deleteAll();
         accountHolderRepository.deleteAll();
         addressRepository.deleteAll();
     }

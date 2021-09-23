@@ -88,6 +88,7 @@ public class TransactionService implements ITransactionService {
 
     public Transaction creditFunds(TransactionDTO transactionDTO) {
         Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
+        checkForFraud(transactionDTO);
         checkAccountStatus(creditAccount);
         creditAccount.credit(transactionDTO.getAmount());
         findAccountTypeAndSave(creditAccount);
@@ -127,7 +128,11 @@ public class TransactionService implements ITransactionService {
     }
 
     public void checkForFraud(TransactionDTO transactionDTO) {
-        Account account = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
+        Account account;
+        if(transactionDTO.getDebitAccountNumber() == null){
+            account = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
+        } else {
+            account = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());}
         if (fraudDetection.fraudDetector(account, transactionDTO.getAmount())) {
             account.freezeAccount();
             findAccountTypeAndSave(account);

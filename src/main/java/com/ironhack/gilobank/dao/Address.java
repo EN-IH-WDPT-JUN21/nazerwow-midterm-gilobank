@@ -15,6 +15,7 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Embeddable
 public class Address {
 
     @Id

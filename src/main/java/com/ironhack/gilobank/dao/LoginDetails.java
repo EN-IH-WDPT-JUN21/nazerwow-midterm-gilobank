@@ -12,6 +12,7 @@ import javax.persistence.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Embeddable
 public class LoginDetails {
 
     @Id
@@ -23,6 +24,7 @@ public class LoginDetails {
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "userId")
+    @Embedded
     private User user;
 
     public LoginDetails(String username, String password, User user) {

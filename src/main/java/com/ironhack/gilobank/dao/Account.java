@@ -38,15 +38,18 @@ public abstract class Account {
     @ManyToOne
     @JoinColumn(name = "primaryHolder", referencedColumnName = "id")
     @JsonIgnore
+    @Embedded
     private AccountHolder primaryHolder;
 
     @ManyToOne
     @JoinColumn(name = "secondaryHolder", referencedColumnName = "id")
     @JsonIgnore
+    @Embedded
     private AccountHolder secondaryHolder;
 
     @OneToMany(mappedBy = "account")
     @JsonBackReference
+    @Embedded
     private List<Transaction> transaction;
 
     @NotNull

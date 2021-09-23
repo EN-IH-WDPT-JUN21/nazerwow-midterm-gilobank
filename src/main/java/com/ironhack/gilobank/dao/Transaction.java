@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Embeddable
 public class Transaction {
 
     @Id

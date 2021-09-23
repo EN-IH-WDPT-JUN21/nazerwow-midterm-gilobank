@@ -31,7 +31,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query(value = "SELECT time_of_trns as time FROM transaction " +
             "WHERE account_id = :account " +
-            "AND type LIKE '%debit%' " +
             "AND time_of_trns > DATE_SUB(NOW(), INTERVAL 24 HOUR) " +
             "GROUP BY time_of_trns, DATE(time_of_trns), HOUR(time_of_trns), MINUTE(time_of_trns), SECOND(time_of_trns) " +
             "HAVING COUNT(time_of_trns) > 1 ORDER BY time;", nativeQuery = true)

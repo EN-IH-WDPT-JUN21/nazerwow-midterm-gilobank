@@ -137,7 +137,7 @@ class FraudDetectionTest {
     void debitsWithin1SecondLast24Hours_Test_Detected() {
         Transaction test1 = new Transaction(testAccount1, "Test6", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
         Transaction test2 = new Transaction(testAccount1, "Test7", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
-        Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(1));
+        Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
         transactionRepository.saveAll(List.of(test1, test2, test3));
         var transactionTotal = fraudDetection.fraudDetector(testAccount1, new BigDecimal("10.00"));
         assertTrue(transactionTotal);

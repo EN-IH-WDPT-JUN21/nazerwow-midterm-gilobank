@@ -23,6 +23,7 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Embeddable
 public class AccountHolder extends User {
 
     @Enumerated(EnumType.STRING)
@@ -43,11 +44,13 @@ public class AccountHolder extends User {
 
     @NotNull
     @ManyToOne
+    @Embedded
     @JoinColumn(name = "primary_address", referencedColumnName = "id")
     private Address primaryAddress;
 
     @ManyToOne
     @JoinColumn(name = "mailing_address", referencedColumnName = "id")
+    @Embedded
     private Address mailingAddress;
 
     @OneToMany(mappedBy = "primaryHolder", fetch = FetchType.LAZY)
