@@ -32,6 +32,7 @@ public class CheckingAccountService implements ICheckingAccountService {
         return checkingAccount;
     }
 
+    // Also verifies login
     public CheckingAccount findByAccountNumber(Long accountNumber) {
         Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findById(accountNumber);
         if (checkingAccount.isEmpty())

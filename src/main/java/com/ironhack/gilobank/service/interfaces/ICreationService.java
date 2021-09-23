@@ -15,7 +15,9 @@ public interface ICreationService {
 
     StudentAccount newStudentAccount(CheckingAccountDTO checkingAccountDTO);
 
-//    Account createAccount(AccountDTO accountDTO);
+    CreditCard newCreditCard(CreditCardDTO creditCardDTO);
+
+    SavingsAccount newSavingsAccount(SavingsAccountDTO savingsAccountDTO);
 
     boolean checkIfOver24(AccountHolder accountHolder);
 

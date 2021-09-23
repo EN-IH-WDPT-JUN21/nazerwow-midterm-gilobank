@@ -100,6 +100,39 @@ public abstract class Account {
         this.status = status;
     }
 
+    public Account(String secretKey, AccountHolder primaryHolder) {
+        this.secretKey = secretKey;
+        this.primaryHolder = primaryHolder;
+    }
+
+    public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder) {
+        this.secretKey = secretKey;
+        this.primaryHolder = primaryHolder;
+        this.secondaryHolder = secondaryHolder;
+    }
+
+    public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, LocalDate openDate) {
+        this.secretKey = secretKey;
+        this.primaryHolder = primaryHolder;
+        this.secondaryHolder = secondaryHolder;
+        this.openDate = openDate;
+    }
+
+    public Account(String secretKey, AccountHolder primaryHolder, LocalDate openDate) {
+        this.secretKey = secretKey;
+        this.primaryHolder = primaryHolder;
+        this.openDate = openDate;
+    }
+
+    public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal penaltyFee, LocalDate openDate, Status status) {
+        this.secretKey = secretKey;
+        this.primaryHolder = primaryHolder;
+        this.secondaryHolder = secondaryHolder;
+        this.penaltyFee = penaltyFee;
+        this.openDate = openDate;
+        this.status = status;
+    }
+
 
     public Money getBalanceAsMoney() {
         return new Money(getBalance());

@@ -43,7 +43,7 @@ public class CreditCardDTO {
     @DecimalMax(value = "-100.00")
     @DecimalMin(value = "-100000.00")
     @Digits(integer = 8, fraction = 2, message = "Max digits 8, Max fraction 2, Reminder: start with '-'")
-    private BigDecimal creditLimit = new BigDecimal("100.00");
+    private BigDecimal creditLimit = new BigDecimal("-100.00");
 
     @DecimalMax(value = "1.00")
     @DecimalMin(value = "0.1")
@@ -66,5 +66,17 @@ public class CreditCardDTO {
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;
         this.creditLimit = creditLimit;
+    }
+
+    public CreditCardDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status, BigDecimal creditLimit, BigDecimal interestRate) {
+        this.secretKey = secretKey;
+        this.primaryHolder = primaryHolder;
+        this.secondaryHolder = secondaryHolder;
+        this.balance = balance;
+        this.penaltyFee = penaltyFee;
+        this.openDate = openDate;
+        this.status = status;
+        this.creditLimit = creditLimit;
+        this.interestRate = interestRate;
     }
 }

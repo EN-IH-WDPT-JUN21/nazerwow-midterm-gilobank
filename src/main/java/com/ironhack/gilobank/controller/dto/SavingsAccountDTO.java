@@ -69,4 +69,16 @@ public class SavingsAccountDTO {
         this.secondaryHolder = secondaryHolder;
         this.balance = balance;
     }
+
+    public SavingsAccountDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status, BigDecimal minimumBalance, BigDecimal interestRate) {
+        this.secretKey = secretKey;
+        this.primaryHolder = primaryHolder;
+        this.secondaryHolder = secondaryHolder;
+        this.balance = balance;
+        this.penaltyFee = penaltyFee;
+        this.openDate = openDate;
+        this.status = status;
+        this.minimumBalance = minimumBalance;
+        this.interestRate = interestRate;
+    }
 }

@@ -2,7 +2,6 @@ package com.ironhack.gilobank.service.impl;
 
 import com.ironhack.gilobank.controller.dto.*;
 import com.ironhack.gilobank.dao.*;
-import com.ironhack.gilobank.enums.AccountType;
 import com.ironhack.gilobank.service.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.validation.ConstraintViolationException;
 import java.time.LocalDate;
 
 @Service
@@ -26,6 +24,10 @@ public class CreationService implements ICreationService {
     private ICheckingAccountService checkingAccountService;
     @Autowired
     private IStudentAccountService studentAccountService;
+    @Autowired
+    private ICreditCardService creditCardService;
+    @Autowired
+    private ISavingsAccountService savingsAccountService;
 
     public Address newAddress(AddressDTO addressDTO) throws TransactionSystemException {
         Address address = new Address();
@@ -183,16 +185,80 @@ public class CreationService implements ICreationService {
         return studentAccount;
     }
 
-//    public Account createAccount(AccountDTO accountDTO) throws ConstraintViolationException {
-//        if (accountDTO.getAccountType() == AccountType.CHECKING_ACCOUNT) {
-//            CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO();
-//            checkingAccountDTO.setSecretKey(accountDTO.getSecretKey());
-//            checkingAccountDTO.setPrimaryHolder(accountDTO.getPrimaryHolder());
-//            checkingAccountDTO.setSecondaryHolder(accountDTO.getSecondaryHolder());
-//            return newCheckingAccount(checkingAccountDTO);
-//        }
-//        return null;
-//    }
+    public CreditCard newCreditCard(CreditCardDTO creditCardDTO) {
+        CreditCard creditCard = new CreditCard();
+            if (creditCardDTO.getAccountNumber() != null) {
+                creditCard = creditCardService.findByAccountNumberOptional(
+                        creditCardDTO.getAccountNumber()).get();
+            }
+            if (creditCardDTO.getPrimaryHolder() != null) {
+                creditCard.setPrimaryHolder(creditCardDTO.getPrimaryHolder());
+            }
+            if (creditCardDTO.getSecondaryHolder() != null) {
+                creditCard.setSecondaryHolder(creditCardDTO.getSecondaryHolder());
+            }
+            if (!creditCardDTO.getSecretKey().isEmpty()) {
+                creditCard.setSecretKey(creditCardDTO.getSecretKey());
+            }
+            if (creditCardDTO.getBalance() != null) {
+                creditCard.setBalance(creditCardDTO.getBalance());
+            }
+            if (creditCardDTO.getPenaltyFee() != null) {
+                creditCard.setPenaltyFee(creditCardDTO.getPenaltyFee());
+            }
+            if (creditCardDTO.getOpenDate() != null) {
+                creditCard.setOpenDate(creditCardDTO.getOpenDate());
+            }
+            if (creditCardDTO.getStatus() != null) {
+                creditCard.setStatus(creditCardDTO.getStatus());
+            }
+            if (creditCardDTO.getCreditLimit() != null){
+                creditCard.setCreditLimit(creditCardDTO.getCreditLimit());
+            }
+            if (creditCardDTO.getInterestRate() != null){
+                creditCard.setInterestRate(creditCardDTO.getInterestRate());
+            }
+        creditCardService.saveNewCreditCard(creditCard);
+        return creditCard;
+    }
+
+    public SavingsAccount newSavingsAccount(SavingsAccountDTO savingsAccountDTO) {
+        SavingsAccount savingsAccount = new SavingsAccount();
+        if (savingsAccountDTO.getAccountNumber() != null) {
+            savingsAccount = savingsAccountService.findByAccountNumberOptional(
+                    savingsAccountDTO.getAccountNumber()).get();
+        }
+        if (savingsAccountDTO.getPrimaryHolder() != null) {
+            savingsAccount.setPrimaryHolder(savingsAccountDTO.getPrimaryHolder());
+        }
+        if (savingsAccountDTO.getSecondaryHolder() != null) {
+            savingsAccount.setSecondaryHolder(savingsAccountDTO.getSecondaryHolder());
+        }
+        if (!savingsAccountDTO.getSecretKey().isEmpty()) {
+            savingsAccount.setSecretKey(savingsAccountDTO.getSecretKey());
+        }
+        if (savingsAccountDTO.getBalance() != null) {
+            savingsAccount.setBalance(savingsAccountDTO.getBalance());
+        }
+        if (savingsAccountDTO.getPenaltyFee() != null) {
+            savingsAccount.setPenaltyFee(savingsAccountDTO.getPenaltyFee());
+        }
+        if (savingsAccountDTO.getOpenDate() != null) {
+            savingsAccount.setOpenDate(savingsAccountDTO.getOpenDate());
+        }
+        if (savingsAccountDTO.getStatus() != null) {
+            savingsAccount.setStatus(savingsAccountDTO.getStatus());
+        }
+        if (savingsAccountDTO.getMinimumBalance() != null){
+            savingsAccount.setMinimumBalance(savingsAccountDTO.getMinimumBalance());
+        }
+        if (savingsAccountDTO.getInterestRate() != null){
+            savingsAccount.setInterestRate(savingsAccountDTO.getInterestRate());
+        }
+        savingsAccountService.saveNewSavingsAccount(savingsAccount);
+        return savingsAccount;
+    }
+
 
     public boolean checkIfOver24(AccountHolder accountHolder) {
         LocalDate dateOfBirth = accountHolder.getDateOfBirth();

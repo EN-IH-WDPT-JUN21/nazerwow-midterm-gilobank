@@ -12,16 +12,4 @@ import java.util.Optional;
 @Repository
 public interface CreditCardRepository extends JpaRepository<CreditCard, Long> {
 
-    @Query("SELECT ca FROM CreditCard ca WHERE " +
-            "(ca.primaryHolder.loginDetails.id = ?#{principal.id}) " +
-            "OR (ca.secondaryHolder.loginDetails.id = ?#{principal.id})" +
-            "or (1=?#{hasRole('ROLE_ADMIN') ? 1 : 0})")
-    List<CreditCard> findAllSecure();
-
-    @Query("SELECT ca FROM CreditCard ca WHERE " +
-            "(ca.accountNumber = :accountNumber) AND " +
-            "(ca.primaryHolder.loginDetails.id = ?#{principal.id}) " +
-            "OR (ca.secondaryHolder.loginDetails.id = ?#{principal.id})" +
-            "or (1=?#{hasRole('ROLE_ADMIN') ? 1 : 0})")
-    Optional<CreditCard> findByAccountNumberSecure(@Param("accountNumber") Long accountNumber);
 }

@@ -35,13 +35,18 @@ class CreationServiceTest {
     @Autowired
     private StudentAccountRepository studentAccountRepository;
     @Autowired
+    private CreditCardRepository creditCardRepository;
+    @Autowired
+    private SavingsAccountRepository savingsAccountRepository;
+    @Autowired
     private TransactionRepository transactionRepository;
 
     private AddressDTO addressDTO;
     private AccountHolderDTO accountHolderDTO;
     private LoginDetailsDTO loginDetailsDTO;
     private CheckingAccountDTO checkingAccountDTO;
-    private AccountDTO accountDTO;
+    private CreditCardDTO creditCardDTO;
+    private SavingsAccountDTO savingsAccountDTO;
 
     private Address testAddress1;
     private Address testAddress2;
@@ -105,6 +110,8 @@ class CreationServiceTest {
 
     @AfterEach
     void tearDown() {
+        creditCardRepository.deleteAll();
+        savingsAccountRepository.deleteAll();
         studentAccountRepository.deleteAll();
         checkingAccountRepository.deleteAll();
         loginDetailsRepository.deleteAll();
@@ -224,10 +231,50 @@ class CreationServiceTest {
         assertEquals(repoSizeBefore, repoSizeAfter);
     }
 
+    @Test
+    void newCreditCard() {
+        creditCardDTO = new CreditCardDTO("secreKey", testHolder1, testHolder2, new BigDecimal("-200.00"),
+                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("-2000.00"), new BigDecimal("0.20"));
+        var repoSizeBefore = creditCardRepository.findAll().size();
+        creationService.newCreditCard(creditCardDTO);
+        var repoSizeAfter = creditCardRepository.findAll().size();
+        assertEquals(repoSizeBefore + 1, repoSizeAfter);
+    }
 
-//    @Test
-//    void createAccount() {
-//    }
+    @Test
+    void newCreditCard_UpdateExisting() {
+        CreditCard creditCard = new CreditCard("secretKey1", testHolder1, new BigDecimal("-100.00"));
+        creditCardRepository.save(creditCard);
+        creditCardDTO = new CreditCardDTO(creditCard.getAccountNumber(), "secretKey", testHolder1, testHolder2, new BigDecimal("-200.00"),
+                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("-2000.00"), new BigDecimal("0.20"));
+        var repoSizeBefore = creditCardRepository.findAll().size();
+        creationService.newCreditCard(creditCardDTO);
+        var repoSizeAfter = creditCardRepository.findAll().size();
+        assertEquals(repoSizeBefore, repoSizeAfter);
+    }
+
+    @Test
+    void newSavingsAccount() {
+        savingsAccountDTO = new SavingsAccountDTO("secretKey", testHolder1, testHolder2, new BigDecimal("2000.00"),
+                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("200.00"), new BigDecimal("0.20"));
+        var repoSizeBefore = savingsAccountRepository.findAll().size();
+        creationService.newSavingsAccount(savingsAccountDTO);
+        var repoSizeAfter = savingsAccountRepository.findAll().size();
+        assertEquals(repoSizeBefore + 1, repoSizeAfter);
+    }
+
+    @Test
+    void newSavingsAccount_UpdateExisting() {
+        SavingsAccount savingsAccount = new SavingsAccount("secretKey1", testHolder1, new BigDecimal("1000.00"));
+        savingsAccountRepository.save(savingsAccount);
+        SavingsAccountDTO savingsAccountDTO = new SavingsAccountDTO(savingsAccount.getAccountNumber(), "secretKey", testHolder1, testHolder2, new BigDecimal("2000.00"),
+                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("200.00"), new BigDecimal("0.20"));
+        var repoSizeBefore = savingsAccountRepository.findAll().size();
+        creationService.newSavingsAccount(savingsAccountDTO);
+        var repoSizeAfter = savingsAccountRepository.findAll().size();
+        assertEquals(repoSizeBefore, repoSizeAfter);
+    }
+
 
     @Test
     void checkIfOver24() {

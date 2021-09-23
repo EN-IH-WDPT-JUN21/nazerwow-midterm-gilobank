@@ -110,4 +110,12 @@ class CheckingAccountRepositoryTest {
         assertThrows(TransactionSystemException.class, () -> checkingAccountRepository.save(checkingAccount));
     }
 
+    @Test
+    void getAccountBalanceByAccountNumber(){
+        CheckingAccount testAccount = new CheckingAccount("secretKeyJoint", testHolder1, testHolder2, new BigDecimal("150.00"));
+        checkingAccountRepository.save(testAccount);
+        var result = checkingAccountRepository.getBalanceByAccountNumber(testAccount.getAccountNumber());
+        assertEquals(new BigDecimal("150.00"), result);
+    }
+
 }

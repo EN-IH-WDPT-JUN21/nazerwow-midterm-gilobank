@@ -1,6 +1,7 @@
 package com.ironhack.gilobank.service.impl;
 
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
+import com.ironhack.gilobank.dao.CreditCard;
 import com.ironhack.gilobank.dao.SavingsAccount;
 import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.repositories.SavingsAccountRepository;
@@ -29,17 +30,24 @@ public class SavingsAccountService implements ISavingsAccountService {
 
 
     public List<SavingsAccount> findAll() {
-        return savingsAccountRepository.findAllSecure();
+        return savingsAccountRepository.findAll();
     }
 
     public SavingsAccount findByAccountNumber(Long accountNumber) {
-        Optional<SavingsAccount> savingsAccount = savingsAccountRepository.findByAccountNumberSecure(accountNumber);
+        Optional<SavingsAccount> savingsAccount = savingsAccountRepository.findById(accountNumber);
         if (savingsAccount.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Checking Account found with Account Number: " + accountNumber);
         transactionService.applyInterestYearly(savingsAccount.get().getAccountNumber(),
                 savingsAccount.get().getBalance(),
                 savingsAccount.get().getInterestRate());
+        if (!transactionService.checkAuthentication(accountNumber))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not allowed to access this page");
         return savingsAccount.get();
+    }
+
+    public Optional<SavingsAccount> findByAccountNumberOptional(Long accountNumber) {
+        Optional<SavingsAccount> savingsAccount = savingsAccountRepository.findById(accountNumber);
+        return savingsAccount;
     }
 
     public Transaction creditFunds(TransactionDTO transactionDTO) {
@@ -67,5 +75,8 @@ public class SavingsAccountService implements ISavingsAccountService {
         return transactionService.findByDateTimeBetween(savingsAccount, convertedStartDate, convertedEndDate);
     }
 
+    public void saveNewSavingsAccount(SavingsAccount savingsAccount){
+        savingsAccountRepository.save(savingsAccount);
+    }
 
 }

@@ -6,12 +6,16 @@ import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.*;
+import com.ironhack.gilobank.security.CustomUserDetails;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -23,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static java.util.Collections.singleton;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -41,6 +46,10 @@ class CheckingAccountControllerTest {
     private CheckingAccountRepository checkingAccountRepository;
     @Autowired
     private TransactionRepository transactionRepository;
+    @Autowired
+    private AdminRepository adminRepository;
+    @Autowired
+    private ThirdPartyRepository thirdPartyRepository;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -52,11 +61,12 @@ class CheckingAccountControllerTest {
     private Address testAddress2;
     private AccountHolder testHolder1;
     private AccountHolder testHolder2;
-    private LoginDetails loginDetails1;
-    private LoginDetails loginDetails2;
-    private CheckingAccount testAccount1;
-    private CheckingAccount testAccount2;
-    private CheckingAccount testAccount3;
+    private CheckingAccount testAccount1, testAccount2, testAccount3;
+    private LoginDetails loginDetails1, loginDetails2, loginDetails3, loginDetails4, loginDetails5;
+    private Admin admin;
+    private ThirdParty thirdParty, thirdParty2;
+    private CustomUserDetails details1, details2, details3, details4, details5;
+    private UsernamePasswordAuthenticationToken adminLogin, login1, login2, thirdPartyLogin, thirdPartyLogin2;
 
     @BeforeEach
     void setUp() throws ParseException {
@@ -70,45 +80,69 @@ class CheckingAccountControllerTest {
 
         testHolder1 = new AccountHolder("Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
         testHolder2 = new AccountHolder("Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
+        admin = new Admin("Admin");
+        thirdParty = new ThirdParty("ThirdParty", "hashedKey");
+        thirdParty2 = new ThirdParty("ThirdParty2", "haskedKey2");
 
         loginDetails1 = new LoginDetails("hackerman", "ihackthings", testHolder1);
         loginDetails2 = new LoginDetails("testusername2", "testpass2", testHolder2);
+        loginDetails3 = new LoginDetails("testAdmin", "testpass", admin);
+        loginDetails4 = new LoginDetails("testThirdParty", "testpass", thirdParty);
+        loginDetails5 = new LoginDetails("TestThirdParty2", "testpass2", thirdParty2);
+
+        details1 = new CustomUserDetails(loginDetails1);
+        details2 = new CustomUserDetails(loginDetails2);
+        details3 = new CustomUserDetails(loginDetails3);
+        details4 = new CustomUserDetails(loginDetails4);
+        details5 = new CustomUserDetails(loginDetails5);
 
         testAccount1 = new CheckingAccount(
                 "secretKey1",
-                testHolder1,                        // Primary Holder
-                testHolder2,                        // Secondary Holder
-                new BigDecimal("1000.00"),      // balance
-                new BigDecimal("10.00"),        // penaltyFee
-                LocalDate.parse("2011-01-01"),      // open date
-                Status.ACTIVE,                      // Status
-                new BigDecimal("11.00"),        // Monthly Maintenance Fee
-                new BigDecimal("100.00"));     // Minimum Balance
+                testHolder1,                    // Primary Holder
+                testHolder2,                    // Secondary Holder
+                new BigDecimal("1000"),     // balance
+                new BigDecimal("10"),       // penaltyFee
+                LocalDate.parse("2011-01-01"),  // open date
+                Status.ACTIVE,                  // Status
+                new BigDecimal("11"),      // monthly maintenance Balance
+                new BigDecimal("100"));      // minimum balance
         testAccount2 = new CheckingAccount(
                 "secretKey2",
-                testHolder1,                        // Primary Holder
+                testHolder1,                    // Primary Holder
                 null,
-                new BigDecimal("2000.00"),      // balance
-                new BigDecimal("20.00"),        // penaltyFee
-                LocalDate.parse("2012-02-02"),      // open date
-                Status.ACTIVE,                      // Status
-                new BigDecimal("22.00"),        // Monthly Maintenance Fee
-                new BigDecimal("200.00"));     // Minimum Balance
+                new BigDecimal("2000"),     // balance
+                new BigDecimal("20"),       // penaltyFee
+                LocalDate.parse("2012-02-02"),  // open date
+                Status.ACTIVE,                  // Status
+                new BigDecimal("22"),      // monthly maintenance
+                new BigDecimal("200"));      // minimum balance
         testAccount3 = new CheckingAccount(
                 "secretKey3",
-                testHolder2,                        // Primary Holder
+                testHolder2,                    // Primary Holder
                 null,
-                new BigDecimal("3000.00"),      // balance
-                new BigDecimal("30.00"),        // penaltyFee
-                LocalDate.parse("2013-03-03"),      // open date
-                Status.ACTIVE,                      // Status
-                new BigDecimal("33.00"),        // Monthly Maintenance Fee
-                new BigDecimal("300.00"));     // Minimum Balance
+                new BigDecimal("3000"),     // balance
+                new BigDecimal("30"),       // penaltyFee
+                LocalDate.parse("2013-03-03"),  // open date
+                Status.ACTIVE,                  // Status
+                new BigDecimal("300"),      // monthly maintenance
+                new BigDecimal("300"));      // minimum balance
 
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
-        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
+        adminRepository.save(admin);
+        thirdPartyRepository.save(thirdParty);
+        loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2, loginDetails4));
         checkingAccountRepository.saveAll(List.of(testAccount1, testAccount2, testAccount3));
+
+        login1 = new UsernamePasswordAuthenticationToken(details1, "x");
+        login2 = new UsernamePasswordAuthenticationToken(details2, "x");
+        adminLogin = new UsernamePasswordAuthenticationToken(details3, "z",
+                singleton(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        thirdPartyLogin = new UsernamePasswordAuthenticationToken(details4, "z",
+                singleton(new SimpleGrantedAuthority("ROLE_THIRDPARTY")));
+        thirdPartyLogin2 = new UsernamePasswordAuthenticationToken(details5, "z",
+                singleton(new SimpleGrantedAuthority("ROLE_THIRDPARTY")));
     }
 
     @AfterEach
@@ -116,23 +150,52 @@ class CheckingAccountControllerTest {
         transactionRepository.deleteAll();
         checkingAccountRepository.deleteAll();
         loginDetailsRepository.deleteAll();
+        adminRepository.deleteAll();
+        thirdPartyRepository.deleteAll();
         accountHolderRepository.deleteAll();
         addressRepository.deleteAll();
     }
 
     @Test
-    void getByAccountNumber_TestValid() throws Exception {
+    void getByAccountNumber_TestValid_Admin() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
         MvcResult result = mockMvc.perform(
                         get("/account/checking/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getMinimumBalance())));
-        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getMinimumBalance())));
-        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getMinimumBalance())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getBalance())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getBalance())));
     }
 
     @Test
+    void getByAccountNumber_TestValid_AccountOwner() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(login1);
+        MvcResult result = mockMvc.perform(
+                        get("/account/checking/" + testAccount1.getAccountNumber()))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getBalance())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getBalance())));
+    }
+
+    @Test
+    void getByAccountNumber_TestValid_InvalidOwnerUnauthorized() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
+        MvcResult result = mockMvc.perform(
+                        get("/account/checking/" + testAccount1.getAccountNumber()))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getBalance())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getBalance())));
+    }
+
+
+    @Test
     void getAll_TestValid() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
         MvcResult result = mockMvc.perform(
                         get("/account/checking"))
                 .andExpect(status().isOk())
@@ -144,6 +207,7 @@ class CheckingAccountControllerTest {
 
     @Test
     void creditFunds_Valid() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
         TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250"), TransactionType.CREDIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
@@ -158,6 +222,7 @@ class CheckingAccountControllerTest {
 
     @Test
     void debitFunds_Valid() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
         TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250"), testAccount1.getAccountNumber(), TransactionType.DEBIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
@@ -172,6 +237,7 @@ class CheckingAccountControllerTest {
 
     @Test
     void transferFunds_Valid() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
         TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250"), testAccount2.getAccountNumber());
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
@@ -188,6 +254,7 @@ class CheckingAccountControllerTest {
 
     @Test
     void getTransactionsByDateBetween() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
 
         Transaction testTransaction1 = new Transaction(testAccount1, "Test1", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
         Transaction testTransaction2 = new Transaction(testAccount1, "Test2", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
@@ -222,4 +289,5 @@ class CheckingAccountControllerTest {
         assertFalse(result.getResponse().getContentAsString().contains("Test10"));
         assertFalse(result.getResponse().getContentAsString().contains("Test11"));
     }
+
 }

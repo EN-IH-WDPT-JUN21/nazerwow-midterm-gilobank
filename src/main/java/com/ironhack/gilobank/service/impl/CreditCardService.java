@@ -1,6 +1,7 @@
 package com.ironhack.gilobank.service.impl;
 
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
+import com.ironhack.gilobank.dao.CheckingAccount;
 import com.ironhack.gilobank.dao.CreditCard;
 import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.repositories.CreditCardRepository;
@@ -22,7 +23,6 @@ public class CreditCardService implements ICreditCardService {
 
     @Autowired
     private CreditCardRepository creditCardRepository;
-
     @Autowired
     private ITransactionService transactionService;
     @Autowired
@@ -30,17 +30,24 @@ public class CreditCardService implements ICreditCardService {
 
 
     public List<CreditCard> findAll() {
-        return creditCardRepository.findAllSecure();
+        return creditCardRepository.findAll();
     }
 
     public CreditCard findByAccountNumber(Long accountNumber) {
-        Optional<CreditCard> creditCard = creditCardRepository.findByAccountNumberSecure(accountNumber);
+        Optional<CreditCard> creditCard = creditCardRepository.findById(accountNumber);
         if (creditCard.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Checking Account found with Account Number: " + accountNumber);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Credit card found with Account Number: " + accountNumber);
         transactionService.applyInterestMonthly(creditCard.get().getAccountNumber(),
                 creditCard.get().getBalance(),
                 creditCard.get().getInterestRate());
+        if (!transactionService.checkAuthentication(accountNumber))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not allowed to access this page");
         return creditCard.get();
+    }
+
+    public Optional<CreditCard> findByAccountNumberOptional(Long accountNumber) {
+        Optional<CreditCard> creditCard = creditCardRepository.findById(accountNumber);
+        return creditCard;
     }
 
     public Transaction creditFunds(TransactionDTO transactionDTO) {
@@ -67,4 +74,10 @@ public class CreditCardService implements ICreditCardService {
         LocalDateTime convertedEndDate = endDate.atTime(23, 59, 59);
         return transactionService.findByDateTimeBetween(creditCard, convertedStartDate, convertedEndDate);
     }
+
+    public void saveNewCreditCard(CreditCard creditCard) {
+        creditCardRepository.save(creditCard);
+    }
+
+
 }
