@@ -49,7 +49,6 @@ public class ThirdPartyService implements IThirdPartyService {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 
-    @Override
     public Transaction debitAccount(String hashedKey, ThirdPartyTransactionDTO thirdPartyTransactionDTO) {
         if(transactionService.verifyThirdParty(hashedKey) &&
                 transactionService.verifySecretKey(
@@ -64,11 +63,9 @@ public class ThirdPartyService implements IThirdPartyService {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 
-    @Override
     public Transaction transferBetweenAccounts(String hashedKey, ThirdPartyTransactionDTO thirdPartyTransactionDTO) {
         if(transactionService.verifyThirdParty(hashedKey) &&
-                transactionService.verifySecretKey(
-                        thirdPartyTransactionDTO.getDebitAccountSecretKey(),
+                transactionService.verifySecretKey(thirdPartyTransactionDTO.getDebitAccountSecretKey(),
                         transactionService.findAccountTypeAndReturn(thirdPartyTransactionDTO.getDebitAccountNumber()))){
             TransactionDTO transactionDTO = new TransactionDTO();
             transactionDTO.setAmount(thirdPartyTransactionDTO.getAmount());

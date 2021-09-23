@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -28,6 +29,7 @@ import static java.util.Collections.singleton;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class ThirdPartyServiceTest {
 
     @Autowired
@@ -154,7 +156,7 @@ class ThirdPartyServiceTest {
                 testAccount1.getAccountNumber(),
                 testAccount1.getSecretKey(),
                 null, null);
-        var result = thirdPartyService.creditAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
+        thirdPartyService.creditAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
         assertEquals(testAccount1.getBalance().add(new BigDecimal("1000.00")),
                 checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
     }
@@ -163,12 +165,12 @@ class ThirdPartyServiceTest {
     void debitAccount() {
         SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
         thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
-                new BigDecimal("1000.00"),
+                new BigDecimal("100.00"),
                 null, null,
                 testAccount1.getAccountNumber(),
                 testAccount1.getSecretKey());
-        var result = thirdPartyService.debitAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
-        assertEquals(testAccount1.getBalance().subtract(new BigDecimal("1000.00")),
+        thirdPartyService.debitAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
+        assertEquals(testAccount1.getBalance().subtract(new BigDecimal("100.00")),
                 checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
     }
 
@@ -176,15 +178,15 @@ class ThirdPartyServiceTest {
     void transferBetweenAccounts() {
         SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
         thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
-                new BigDecimal("1000.00"),
+                new BigDecimal("100.00"),
                 testAccount2.getAccountNumber(),
                 testAccount2.getSecretKey(),
                 testAccount1.getAccountNumber(),
                 testAccount1.getSecretKey());
-        var result = thirdPartyService.transferBetweenAccounts(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
-        assertEquals(testAccount1.getBalance().subtract(new BigDecimal("1000.00")),
+        thirdPartyService.transferBetweenAccounts(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
+        assertEquals(testAccount1.getBalance().subtract(new BigDecimal("100.00")),
                 checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
-        assertEquals(testAccount2.getBalance().add(new BigDecimal("1000.00")),
+        assertEquals(testAccount2.getBalance().add(new BigDecimal("100.00")),
                 checkingAccountRepository.findById(testAccount2.getAccountNumber()).get().getBalance());
     }
 
