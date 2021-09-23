@@ -6,6 +6,7 @@ import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.repositories.*;
 import com.ironhack.gilobank.security.CustomUserDetails;
 import com.ironhack.gilobank.service.interfaces.ICheckingAccountService;
+import com.ironhack.gilobank.utils.Money;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -99,32 +100,32 @@ class CheckingAccountServiceTest {
                 "secretKey1",
                 testHolder1,                    // Primary Holder
                 testHolder2,                    // Secondary Holder
-                new BigDecimal("1000"),     // balance
-                new BigDecimal("10"),       // penaltyFee
+                new Money( new BigDecimal("1000")),     // balance
+                new Money( new BigDecimal("10")),       // penaltyFee
                 LocalDate.parse("2011-01-01"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("11"),      // monthly maintenance Balance
-                new BigDecimal("100"));      // minimum balance
+                new Money(   new BigDecimal("11")),      // monthly maintenance Balance
+                new Money(   new BigDecimal("100")));      // minimum balance
         testAccount2 = new CheckingAccount(
                 "secretKey2",
                 testHolder1,                    // Primary Holder
                 null,
-                new BigDecimal("2000"),     // balance
-                new BigDecimal("20"),       // penaltyFee
+                new Money(    new BigDecimal("2000")),     // balance
+                new Money(    new BigDecimal("20")),       // penaltyFee
                 LocalDate.parse("2012-02-02"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("22"),      // monthly maintenance
-                new BigDecimal("200"));      // minimum balance
+                new Money(   new BigDecimal("22")),      // monthly maintenance
+                new Money(   new BigDecimal("200")));      // minimum balance
         testAccount3 = new CheckingAccount(
                 "secretKey3",
                 testHolder2,                    // Primary Holder
                 null,
-                new BigDecimal("3000"),     // balance
-                new BigDecimal("30"),       // penaltyFee
+                new Money(     new BigDecimal("3000")),     // balance
+                new Money(      new BigDecimal("30")),       // penaltyFee
                 LocalDate.parse("2013-03-03"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("300"),      // monthly maintenance
-                new BigDecimal("300"));      // minimum balance
+                new Money(     new BigDecimal("300")),      // monthly maintenance
+                new Money(    new BigDecimal("300")));      // minimum balance
 
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
@@ -149,6 +150,7 @@ class CheckingAccountServiceTest {
         transactionRepository.deleteAll();
         checkingAccountRepository.deleteAll();
         loginDetailsRepository.deleteAll();
+        thirdPartyRepository.deleteAll();
         accountHolderRepository.deleteAll();
         addressRepository.deleteAll();
     }

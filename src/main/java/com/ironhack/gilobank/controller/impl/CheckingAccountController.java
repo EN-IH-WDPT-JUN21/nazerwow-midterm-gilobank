@@ -20,7 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/account/checking")
+@RequestMapping("/api/account/checking")
 public class CheckingAccountController implements ICheckingAccountController {
 
     @Autowired

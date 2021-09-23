@@ -16,7 +16,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/account/creditcard")
+@RequestMapping("/api/account/creditcard")
 public class CreditCardController implements ICreditCardController {
 
     @Autowired

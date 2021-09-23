@@ -2,6 +2,7 @@ package com.ironhack.gilobank.dao;
 
 import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.repositories.*;
+import com.ironhack.gilobank.utils.Money;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,32 +66,33 @@ class TransactionTest {
                 "secretKey1",
                 testHolder1,                    // Primary Holder
                 testHolder2,                    // Secondary Holder
-                new BigDecimal("1000"),     // balance
-                new BigDecimal("10"),       // penaltyFee
-                LocalDate.parse("2011-01-01"),  // open date
+                new Money( new BigDecimal("10000")),     // balance
+                new Money(   new BigDecimal("10")),       // penaltyFee
+                LocalDate.now(),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("100"),      // Minimum Balance
-                new BigDecimal("1"));      // interestRate
+                new Money(   new BigDecimal("100")),      // Minimum Balance
+                new BigDecimal(".1"));      // interestRate
         testAccount2 = new SavingsAccount(
                 "secretKey2",
                 testHolder1,                    // Primary Holder
                 null,
-                new BigDecimal("2000"),     // balance
-                new BigDecimal("20"),       // penaltyFee
-                LocalDate.parse("2012-02-02"),  // open date
+                new Money(        new BigDecimal("20000")),     // balance
+                new Money(     new BigDecimal("20")),       // penaltyFee
+                LocalDate.now(),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("200"),      // Minimum Balance
-                new BigDecimal("2"));      // Interest Rate
+                new Money(    new BigDecimal("200")),      // Minimum Balance
+                new BigDecimal(".2"));      // Interest Rate
         testAccount3 = new SavingsAccount(
                 "secretKey3",
                 testHolder2,                    // Primary Holder
                 null,
-                new BigDecimal("3000"),     // balance
-                new BigDecimal("30"),       // penaltyFee
-                LocalDate.parse("2013-03-03"),  // open date
+                new Money(     new BigDecimal("30000")),     // balance
+                new Money(   new BigDecimal("30")),       // penaltyFee
+                LocalDate.now(),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("300"),      // Minimum Balance
-                new BigDecimal("3"));      // Interest Rate
+                new Money(    new BigDecimal("300")),      // Minimum Balance
+                new BigDecimal(".3"));      // Interest Rate
+
 
 
         addressRepository.saveAll(List.of(testAddress1, testAddress2));

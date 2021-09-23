@@ -1,9 +1,12 @@
 package com.ironhack.gilobank.utils;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Currency;
 
+@Embeddable
 public class Money {
 
     private static final Currency USD = Currency.getInstance("USD");

@@ -49,13 +49,12 @@ public abstract class Account {
     @JsonBackReference
     private List<Transaction> transaction;
 
-    @NotNull
-    @DecimalMin(value = "0.00", groups = {CheckingAccount.class, SavingsAccount.class, StudentAccount.class})
-    @Digits(integer = 30, fraction = 2)
-    private BigDecimal balance = new BigDecimal("0.00");
+    @Embedded
+    private Money balance = new Money(new BigDecimal("0.00"));
 
     @NotNull
-    private BigDecimal penaltyFee = new BigDecimal("40.00");
+    @Embedded
+    private Money penaltyFee = new Money(new BigDecimal("40.00"));
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate openDate = LocalDate.now();
@@ -64,20 +63,20 @@ public abstract class Account {
     private Status status = Status.ACTIVE;
 
 
-    public Account(String secretKey, AccountHolder primaryHolder, BigDecimal balance) {
+    public Account(String secretKey, AccountHolder primaryHolder, Money balance) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         setBalance(balance);
     }
 
-    public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance) {
+    public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, Money balance) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;
         setBalance(balance);
     }
 
-    public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, LocalDate openDate) {
+    public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, Money balance, LocalDate openDate) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;
@@ -85,14 +84,14 @@ public abstract class Account {
         this.openDate = openDate;
     }
 
-    public Account(String secretKey, AccountHolder primaryHolder, BigDecimal balance, LocalDate openDate) {
+    public Account(String secretKey, AccountHolder primaryHolder, Money balance, LocalDate openDate) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         setBalance(balance);
         this.openDate = openDate;
     }
 
-    public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
+    public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, Money balance, Money penaltyFee, LocalDate openDate, Status status) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;
@@ -126,7 +125,7 @@ public abstract class Account {
         this.openDate = openDate;
     }
 
-    public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal penaltyFee, LocalDate openDate, Status status) {
+    public Account(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, Money penaltyFee, LocalDate openDate, Status status) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;
@@ -136,17 +135,17 @@ public abstract class Account {
     }
 
 
-    public Money getBalanceAsMoney() {
-        return new Money(getBalance());
-    }
-
-    public void credit(BigDecimal amount) {
-        setBalance(getBalanceAsMoney().increaseAmount(amount));
-    }
-
-    public void debit(BigDecimal amount) {
-        setBalance(getBalanceAsMoney().decreaseAmount(amount));
-    }
+//    public Money getBalanceAsMoney() {
+//        return new Money(getBalance());
+//    }
+//
+//    public void credit(BigDecimal amount) {
+//        setBalance(getBalanceAsMoney().increaseAmount(amount));
+//    }
+//
+//    public void debit(BigDecimal amount) {
+//        setBalance(getBalanceAsMoney().decreaseAmount(amount));
+//    }
 
     public void freezeAccount() {
         this.status = Status.FROZEN;

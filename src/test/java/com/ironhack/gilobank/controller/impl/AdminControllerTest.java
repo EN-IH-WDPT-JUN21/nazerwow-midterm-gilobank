@@ -70,7 +70,7 @@ class AdminControllerTest {
     @Test
     void getAll_ValidTest() throws Exception {
         MvcResult result = mockMvc.perform(
-                        get("/user/admin"))
+                        get("/api/user/admin"))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains("Test1"));

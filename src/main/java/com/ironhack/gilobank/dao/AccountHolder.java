@@ -44,10 +44,12 @@ public class AccountHolder extends User {
     @NotNull
     @ManyToOne
     @JoinColumn(name = "primary_address", referencedColumnName = "id")
+    @Embedded
     private Address primaryAddress;
 
     @ManyToOne
     @JoinColumn(name = "mailing_address", referencedColumnName = "id")
+    @Embedded
     private Address mailingAddress;
 
     @OneToMany(mappedBy = "primaryHolder", fetch = FetchType.LAZY)

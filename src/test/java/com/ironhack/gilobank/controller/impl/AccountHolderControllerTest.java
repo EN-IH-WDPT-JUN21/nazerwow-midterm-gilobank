@@ -83,7 +83,7 @@ class AccountHolderControllerTest {
     @Test
     void getAllAccountHolders_ValidTest() throws Exception {
         MvcResult result = mockMvc.perform(
-                        get("/user/accholder"))
+                        get("/api/user/accholder"))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains("TestSur1"));
@@ -93,7 +93,7 @@ class AccountHolderControllerTest {
     @Test
     void getAccountHolderById() throws Exception {
         MvcResult result = mockMvc.perform(
-                        get("/user/accholder/" + testHolder1.getId()))
+                        get("/api/user/accholder/" + testHolder1.getId()))
                 .andExpect(status().isOk())
                 .andReturn();
 

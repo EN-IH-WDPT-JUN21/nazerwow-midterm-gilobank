@@ -11,6 +11,7 @@ import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.*;
 import com.ironhack.gilobank.security.CustomUserDetails;
+import com.ironhack.gilobank.utils.Money;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -116,31 +117,31 @@ class CreditCardControllerTest {
                 "secretKey1",
                 testHolder1,                    // Primary Holder
                 testHolder2,                    // Secondary Holder
-                new BigDecimal("-500.00"),      // balance
-                new BigDecimal("10"),       // penaltyFee
+                new Money( new BigDecimal("-500.00")),      // balance
+                        new Money( new BigDecimal("10")),       // penaltyFee
                 LocalDate.now(),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("-1000.00"),     // Credit Limit Balance
-                new BigDecimal("0.1"));     // interestRate
+                new Money(    new BigDecimal("-1000.00")),     // Credit Limit Balance
+                  new BigDecimal("0.1"));     // interestRate
         testAccount2 = new CreditCard(
                 "secretKey2",
                 testHolder1,                    // Primary Holder
                 null,
-                new BigDecimal("-500.00"),      // balance
-                new BigDecimal("20"),       // penaltyFee
+                new Money(     new BigDecimal("-500.00")),      // balance
+                        new Money(     new BigDecimal("20")),       // penaltyFee
                 LocalDate.now(),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("-2000.00"),     // Credit Limit Balance
+                                new Money(     new BigDecimal("-2000.00")),     // Credit Limit Balance
                 new BigDecimal("0.1"));     // Interest Rate
         testAccount3 = new CreditCard(
                 "secretKey3",
                 testHolder2,                    // Primary Holder
                 null,
-                new BigDecimal("-500.00"),      // balance
-                new BigDecimal("30"),       // penaltyFee
+                new Money(     new BigDecimal("-500.00")),      // balance
+                        new Money(      new BigDecimal("30")),       // penaltyFee
                 LocalDate.now(),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("-3000.00"),     // Credit Limit Balance
+                                new Money(      new BigDecimal("-3000.00")),     // Credit Limit Balance
                 new BigDecimal("0.1"));     // Interest Rate
 
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
@@ -176,7 +177,7 @@ class CreditCardControllerTest {
     void getByAccountNumber_TestValid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         MvcResult result = mockMvc.perform(
-                        get("/account/creditcard/" + testAccount1.getAccountNumber()))
+                        get("/api/account/creditcard/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getCreditLimit())));
@@ -188,7 +189,7 @@ class CreditCardControllerTest {
     void getAll_TestValid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         MvcResult result = mockMvc.perform(
-                        get("/account/creditcard/"))
+                        get("/api/account/creditcard/"))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getCreditLimit())));
@@ -199,73 +200,73 @@ class CreditCardControllerTest {
     @Test
     void creditFunds_Valid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250.00"), TransactionType.CREDIT);
+        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(),new Money( new BigDecimal("250.00")), TransactionType.CREDIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
-                        put("/account/creditcard/credit")
+                        put("/api/account/creditcard/credit")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
         CreditCard updatedAccount = creditCardRepository.findById(transactionDTO.getCreditAccountNumber()).get();
-        assertEquals(testAccount1.getBalance().add(new BigDecimal("250.00")), updatedAccount.getBalance());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance());
     }
 
     @Test
     void debitFunds_Valid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250.00"), testAccount1.getAccountNumber(), TransactionType.DEBIT);
+        TransactionDTO transactionDTO = new TransactionDTO(new Money( new BigDecimal("250.00")), testAccount1.getAccountNumber(), TransactionType.DEBIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
-                        put("/account/creditcard/debit")
+                        put("/api/account/creditcard/debit")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
         CreditCard updatedAccount = creditCardRepository.findById(transactionDTO.getDebitAccountNumber()).get();
-        assertEquals(testAccount1.getBalance().subtract(new BigDecimal("250.00")), updatedAccount.getBalance());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance());
     }
 
     @Test
     void transferFunds_Valid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250"), testAccount2.getAccountNumber());
+        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(),new Money( new BigDecimal("250")), testAccount2.getAccountNumber());
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
-                        put("/account/creditcard/transfer")
+                        put("/api/account/creditcard/transfer")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
         CreditCard debitedAccount = creditCardRepository.findById(transactionDTO.getDebitAccountNumber()).get();
         CreditCard creditedAccount = creditCardRepository.findById(transactionDTO.getCreditAccountNumber()).get();
-        assertEquals(testAccount2.getBalance().subtract(new BigDecimal("250.00")), debitedAccount.getBalance());
-        assertEquals(testAccount1.getBalance().add(new BigDecimal("250.00")), creditedAccount.getBalance());
+        assertEquals(testAccount2.getBalance().decreaseAmount(new BigDecimal("250.00")), debitedAccount.getBalance());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), creditedAccount.getBalance());
     }
 
     @Test
     void getTransactionsByDateBetween() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
 
-        Transaction testTransaction1 = new Transaction(testAccount1, "Test1", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
-        Transaction testTransaction2 = new Transaction(testAccount1, "Test2", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
-        Transaction testTransaction3 = new Transaction(testAccount1, "Test2", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-03-03T10:15:30"));
-        Transaction testTransaction4 = new Transaction(testAccount1, "Test3", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-04-03T10:15:30"));
-        Transaction testTransaction5 = new Transaction(testAccount1, "Test4", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-05-03T10:15:30"));
-        Transaction testTransaction6 = new Transaction(testAccount1, "Test5", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-06-03T10:15:30"));
-        Transaction testTransaction7 = new Transaction(testAccount1, "Test6", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-07-03T10:15:30"));
-        Transaction testTransaction8 = new Transaction(testAccount1, "Test7", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-08-03T10:15:30"));
-        Transaction testTransaction9 = new Transaction(testAccount1, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-09-03T10:15:30"));
+        Transaction testTransaction1 = new Transaction(testAccount1, "Test1",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
+        Transaction testTransaction2 = new Transaction(testAccount1, "Test2",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
+        Transaction testTransaction3 = new Transaction(testAccount1, "Test2",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-03-03T10:15:30"));
+        Transaction testTransaction4 = new Transaction(testAccount1, "Test3",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-04-03T10:15:30"));
+        Transaction testTransaction5 = new Transaction(testAccount1, "Test4",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-05-03T10:15:30"));
+        Transaction testTransaction6 = new Transaction(testAccount1, "Test5",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-06-03T10:15:30"));
+        Transaction testTransaction7 = new Transaction(testAccount1, "Test6",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-07-03T10:15:30"));
+        Transaction testTransaction8 = new Transaction(testAccount1, "Test7",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-08-03T10:15:30"));
+        Transaction testTransaction9 = new Transaction(testAccount1, "Test8",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-09-03T10:15:30"));
 
-        Transaction testTransaction10 = new Transaction(testAccount2, "Test10", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
-        Transaction testTransaction11 = new Transaction(testAccount2, "Test11", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
+        Transaction testTransaction10 = new Transaction(testAccount2, "Test10",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
+        Transaction testTransaction11 = new Transaction(testAccount2, "Test11",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
 
         transactionRepository.saveAll(List.of(testTransaction1, testTransaction2, testTransaction3, testTransaction4,
                 testTransaction5, testTransaction6, testTransaction7, testTransaction8, testTransaction9, testTransaction10,
                 testTransaction11));
 
         MvcResult result = mockMvc.perform(
-                        get("/account/creditcard/"
+                        get("/api/account/creditcard/"
                                 + testAccount1.getAccountNumber()
                                 + "/2020-01-03/2020-05-03"))
                 .andExpect(status().isOk())
@@ -285,12 +286,12 @@ class CreditCardControllerTest {
     void createNewCreditCard() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         var repoSizeBefore = creditCardRepository.findAll().size();
-        CreditCardDTO creditCardDTO = new CreditCardDTO("secreKey", testHolder1, testHolder2, new BigDecimal("-200.00"),
-                new BigDecimal("40.00"), dateNow, Status.ACTIVE, new BigDecimal("-5000.00"), new BigDecimal(".20"));
+        CreditCardDTO creditCardDTO = new CreditCardDTO("secreKey", testHolder1, testHolder2,new Money( new BigDecimal("-200.00")),
+                new Money(  new BigDecimal("40.00")), dateNow, Status.ACTIVE,new Money( new BigDecimal("-5000.00")), new BigDecimal(".20"));
         String body = objectMapper.writeValueAsString(creditCardDTO);
 
         MvcResult result = mockMvc.perform(
-                        put("/account/creditcard/new")
+                        put("/api/account/creditcard/new")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted())
@@ -304,12 +305,12 @@ class CreditCardControllerTest {
     void updateCreditCard() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         var repoSizeBefore = creditCardRepository.findAll().size();
-        CreditCardDTO creditCardDTO = new CreditCardDTO("secretKey", testHolder1, testHolder2, new BigDecimal("-999.00"),
-                new BigDecimal("40.00"), dateNow, Status.ACTIVE, new BigDecimal("-10000.00"), new BigDecimal(".50"));
+        CreditCardDTO creditCardDTO = new CreditCardDTO("secreKey", testHolder1, testHolder2,new Money( new BigDecimal("-999.00")),
+                new Money(  new BigDecimal("40.00")), dateNow, Status.ACTIVE,new Money( new BigDecimal("-10000.00")), new BigDecimal(".20"));
         String body = objectMapper.writeValueAsString(creditCardDTO);
 
         MvcResult result = mockMvc.perform(
-                        put("/account/creditcard/" + testAccount1.getAccountNumber() + "/update")
+                        put("/api/account/creditcard/" + testAccount1.getAccountNumber() + "/update")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted())

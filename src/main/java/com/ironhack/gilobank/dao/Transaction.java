@@ -2,6 +2,7 @@ package com.ironhack.gilobank.dao;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ironhack.gilobank.enums.TransactionType;
+import com.ironhack.gilobank.utils.Money;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,8 +28,8 @@ public class Transaction {
     @JsonManagedReference
     private Account account;
     private String name;
-    private BigDecimal amount;
-    private BigDecimal balanceAfterTransaction;
+    private Money amount;
+    private Money balanceAfterTransaction;
 
     @Enumerated(EnumType.STRING)
     private TransactionType type;
@@ -39,14 +40,14 @@ public class Transaction {
         this.account = account;
     }
 
-    public Transaction(Account account, String name, BigDecimal amount, BigDecimal balanceAfterTransaction) {
+    public Transaction(Account account, String name, Money amount, Money balanceAfterTransaction) {
         this.account = account;
         this.name = name;
         this.amount = amount;
         this.balanceAfterTransaction = balanceAfterTransaction;
     }
 
-    public Transaction(Account account, String name, BigDecimal amount, BigDecimal balanceAfterTransaction, LocalDateTime timeOfTrns) {
+    public Transaction(Account account, String name, Money amount, Money balanceAfterTransaction, LocalDateTime timeOfTrns) {
         this.account = account;
         this.name = name;
         this.amount = amount;
@@ -54,7 +55,7 @@ public class Transaction {
         this.timeOfTrns = timeOfTrns;
     }
 
-    public Transaction(Account account, String name, BigDecimal amount, BigDecimal balanceAfterTransaction, TransactionType type, LocalDateTime timeOfTrns) {
+    public Transaction(Account account, String name, Money amount, Money balanceAfterTransaction, TransactionType type, LocalDateTime timeOfTrns) {
         this.account = account;
         this.name = name;
         this.amount = amount;
@@ -63,7 +64,7 @@ public class Transaction {
         this.timeOfTrns = timeOfTrns;
     }
 
-    public Transaction(Account account, String name, BigDecimal amount, BigDecimal balanceAfterTransaction, TransactionType type) {
+    public Transaction(Account account, String name, Money amount, Money balanceAfterTransaction, TransactionType type) {
         this.account = account;
         this.name = name;
         this.amount = amount;

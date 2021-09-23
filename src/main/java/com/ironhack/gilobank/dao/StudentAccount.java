@@ -1,6 +1,7 @@
 package com.ironhack.gilobank.dao;
 
 import com.ironhack.gilobank.enums.Status;
+import com.ironhack.gilobank.utils.Money;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,19 +19,19 @@ public class StudentAccount extends Account {
     public StudentAccount() {
     }
 
-    public StudentAccount(Long accountNumber, String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, List<Transaction> transaction, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
+    public StudentAccount(Long accountNumber, String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, List<Transaction> transaction, Money balance, Money penaltyFee, LocalDate openDate, Status status) {
         super(accountNumber, secretKey, primaryHolder, secondaryHolder, transaction, balance, penaltyFee, openDate, status);
     }
 
-    public StudentAccount(String secretKey, AccountHolder primaryHolder, BigDecimal balance) {
+    public StudentAccount(String secretKey, AccountHolder primaryHolder, Money balance) {
         super(secretKey, primaryHolder, balance);
     }
 
-    public StudentAccount(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance) {
+    public StudentAccount(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, Money balance) {
         super(secretKey, primaryHolder, secondaryHolder, balance);
     }
 
-    public StudentAccount(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
+    public StudentAccount(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, Money balance, Money penaltyFee, LocalDate openDate, Status status) {
         super(secretKey, primaryHolder, secondaryHolder, balance, penaltyFee, openDate, status);
     }
 }

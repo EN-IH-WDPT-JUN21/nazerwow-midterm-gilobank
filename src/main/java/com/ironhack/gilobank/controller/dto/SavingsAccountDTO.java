@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.ironhack.gilobank.dao.AccountHolder;
 import com.ironhack.gilobank.enums.Status;
+import com.ironhack.gilobank.utils.Money;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,9 +38,9 @@ public class SavingsAccountDTO {
 
     @DecimalMin(value = "100.00", message = "Account cannot go below $100.00")
     @Digits(integer = 30, fraction = 2, message = "Error: Incorrect format for Amount")
-    private BigDecimal balance;
+    private Money balance;
 
-    private BigDecimal penaltyFee;
+    private Money penaltyFee;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @JsonDeserialize(using = LocalDateDeserializer.class)
@@ -50,7 +51,7 @@ public class SavingsAccountDTO {
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;
 
-    private BigDecimal minimumBalance = new BigDecimal("1000.00");
+    private Money minimumBalance = new Money (new BigDecimal("1000.00"));
 
     @DecimalMax(value = "0.5")
     @DecimalMin(value = "0")
@@ -67,20 +68,20 @@ public class SavingsAccountDTO {
         this.secondaryHolder = secondaryHolder;
     }
 
-    public SavingsAccountDTO(String secretKey, AccountHolder primaryHolder, BigDecimal balance) {
+    public SavingsAccountDTO(String secretKey, AccountHolder primaryHolder, Money balance) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.balance = balance;
     }
 
-    public SavingsAccountDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance) {
+    public SavingsAccountDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, Money balance) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;
         this.balance = balance;
     }
 
-    public SavingsAccountDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status, BigDecimal minimumBalance, BigDecimal interestRate) {
+    public SavingsAccountDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, Money balance, Money penaltyFee, LocalDate openDate, Status status, Money minimumBalance, BigDecimal interestRate) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;

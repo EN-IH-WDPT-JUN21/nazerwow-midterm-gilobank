@@ -16,7 +16,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/account/student")
+@RequestMapping("/api/account/student")
 public class StudentAccountController implements IStudentAccountController {
 
     @Autowired

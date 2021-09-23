@@ -50,28 +50,25 @@ public class TransactionService implements ITransactionService {
     public Transaction createTransactionLog(Account account, TransactionDTO transactionDTO) {
         LocalDateTime transactionDate = LocalDateTime.now();
         if (transactionDTO.getTimeOfTrns() != null) transactionDate = transactionDTO.getTimeOfTrns();
-        Money moneyAmount = new Money(transactionDTO.getAmount());
-        String transactionName = moneyAmount + transactionDTO.getType().toString();
+        String transactionName = transactionDTO.getAmount() + transactionDTO.getType().toString();
         Transaction transaction = new Transaction(account, transactionName, transactionDTO.getAmount(), account.getBalance(), transactionDTO.getType(), transactionDate);
         transactionRepository.save(transaction);
         return transaction;
     }
 
-    public List<Transaction> createTransactionLogTransfer(Account debitAccount, BigDecimal amount, Account creditAccount) {
+    public List<Transaction> createTransactionLogTransfer(Account debitAccount, Money amount, Account creditAccount) {
         LocalDateTime transactionDate = LocalDateTime.now();
-        Money moneyAmount = new Money(amount);
-        String debitName = moneyAmount + " Transfer to Account Number: " + creditAccount.getAccountNumber();
-        String creditName = moneyAmount + " Transfer from Account Number: " + debitAccount.getAccountNumber();
+        String debitName = amount + " Transfer to Account Number: " + creditAccount.getAccountNumber();
+        String creditName = amount + " Transfer from Account Number: " + debitAccount.getAccountNumber();
         Transaction debit = new Transaction(debitAccount, debitName, amount, debitAccount.getBalance(), TransactionType.TRANSFER_DEBIT, transactionDate);
         Transaction credit = new Transaction(creditAccount, creditName, amount, debitAccount.getBalance(), TransactionType.TRANSFER_CREDIT, transactionDate);
         transactionRepository.saveAll(List.of(debit, credit));
         return List.of(debit, credit);
     }
 
-    public List<Transaction> createTransactionLogTransfer(Account debitAccount, BigDecimal amount, Account creditAccount, LocalDateTime transactionDate) {
-        Money moneyAmount = new Money(amount);
-        String debitName = moneyAmount + " Transfer to Account Number: " + creditAccount.getAccountNumber();
-        String creditName = moneyAmount + " Transfer from Account Number: " + debitAccount.getAccountNumber();
+    public List<Transaction> createTransactionLogTransfer(Account debitAccount, Money amount, Account creditAccount, LocalDateTime transactionDate) {
+        String debitName = amount + " Transfer to Account Number: " + creditAccount.getAccountNumber();
+        String creditName = amount + " Transfer from Account Number: " + debitAccount.getAccountNumber();
         Transaction debit = new Transaction(debitAccount, debitName, amount, debitAccount.getBalance(), TransactionType.TRANSFER_DEBIT, transactionDate);
         Transaction credit = new Transaction(creditAccount, creditName, amount, creditAccount.getBalance(), TransactionType.TRANSFER_CREDIT, transactionDate);
         transactionRepository.saveAll(List.of(debit, credit));
@@ -89,7 +86,7 @@ public class TransactionService implements ITransactionService {
     public Transaction creditFunds(TransactionDTO transactionDTO) {
         Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
         checkAccountStatus(creditAccount);
-        creditAccount.credit(transactionDTO.getAmount());
+        creditAccount.getBalance().increaseAmount(transactionDTO.getAmount());
         findAccountTypeAndSave(creditAccount);
         return createTransactionLog(creditAccount, transactionDTO);
     }
@@ -99,7 +96,7 @@ public class TransactionService implements ITransactionService {
         Account debitAccount = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
         checkForFraud(transactionDTO);
         checkAccountStatus(debitAccount);
-        debitAccount.debit(transactionDTO.getAmount());
+        debitAccount.getBalance().decreaseAmount(transactionDTO.getAmount());
         findAccountTypeAndSave(debitAccount);
         return createTransactionLog(debitAccount, transactionDTO);
     }
@@ -111,8 +108,8 @@ public class TransactionService implements ITransactionService {
         checkForFraud(transactionDTO);
         checkAccountStatus(debitAccount);
         checkAccountStatus(creditAccount);
-        debitAccount.debit(transactionDTO.getAmount());
-        creditAccount.credit(transactionDTO.getAmount());
+        debitAccount.getBalance().decreaseAmount(transactionDTO.getAmount());
+        creditAccount.getBalance().increaseAmount(transactionDTO.getAmount());
         findAccountTypeAndSave(debitAccount);
         findAccountTypeAndSave(creditAccount);
         return createTransactionLogTransfer(debitAccount, transactionDTO.getAmount(), creditAccount).get(0);
@@ -128,7 +125,7 @@ public class TransactionService implements ITransactionService {
 
     public void checkForFraud(TransactionDTO transactionDTO) {
         Account account = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
-        if (fraudDetection.fraudDetector(account, transactionDTO.getAmount())) {
+        if (fraudDetection.fraudDetector(account, transactionDTO.getAmount().getAmount())) {
             account.freezeAccount();
             findAccountTypeAndSave(account);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
@@ -146,7 +143,7 @@ public class TransactionService implements ITransactionService {
         if (checkingAccount.isPresent()) {
             // If balance equal or above minimum balance penalty checker will be called
             // If balance already below minimum balance the customer will not be charged again for the new transaction
-            if (checkingAccount.get().getBalance().compareTo(checkingAccount.get().getMinimumBalance()) >= 0) {
+            if (checkingAccount.get().getBalance().getAmount().compareTo(checkingAccount.get().getMinimumBalance().getAmount()) >= 0) {
                 checkingAccount.get().setBalance(penaltyCheck(account,
                         checkingAccount.get().getMinimumBalance(),
                         checkingAccount.get().getPenaltyFee()));
@@ -158,7 +155,7 @@ public class TransactionService implements ITransactionService {
         if (savingsAccount.isPresent()) {
             // If balance equal or above minimum balance penalty checker will be called
             // If balance already below minimum balance the customer will not be charged again for the new transaction
-            if (savingsAccount.get().getBalance().compareTo(savingsAccount.get().getMinimumBalance()) >= 0) {
+            if (savingsAccount.get().getBalance().getAmount().compareTo(savingsAccount.get().getMinimumBalance().getAmount()) >= 0) {
                 savingsAccount.get().setBalance(penaltyCheck(account,
                         savingsAccount.get().getMinimumBalance(),
                         savingsAccount.get().getPenaltyFee()));
@@ -202,14 +199,14 @@ public class TransactionService implements ITransactionService {
     }
 
     public void checkAvailableFunds(Account account, BigDecimal amount) {
-        if (account.getBalanceAsMoney().decreaseAmount(amount).compareTo(new BigDecimal("0")) < 0) {
+        if (account.getBalance().decreaseAmount(amount).compareTo(new BigDecimal("0")) < 0) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Insufficient Funds");
         }
     }
 
-    public BigDecimal penaltyCheck(Account account, BigDecimal minimumBalance, BigDecimal penaltyFee) {
-        if (account.getBalance().compareTo(minimumBalance) < 0) {
-            account.debit(penaltyFee);
+    public Money penaltyCheck(Account account, Money minimumBalance, Money penaltyFee) {
+        if (account.getBalance().getAmount().compareTo(minimumBalance.getAmount()) < 0) {
+            account.getBalance().decreaseAmount(penaltyFee);
             TransactionDTO transactionDTO = new TransactionDTO(penaltyFee, null, TransactionType.PENALTY_FEE);
             return account.getBalance();
         }
@@ -240,29 +237,27 @@ public class TransactionService implements ITransactionService {
         return timeOfLastPayment.isBefore(LocalDate.now().minusYears(1));
     }
 
-    public void applyInterestYearly(Long accountNumber, BigDecimal balance, BigDecimal interestRate) {
+    public void applyInterestYearly(Long accountNumber, Money balance, BigDecimal interestRate) {
         if (interestYearlyCheck(accountNumber)) {
-            Money balanceAsMoney = new Money(balance);
-            Money interestDue = new Money(balanceAsMoney.getAmount().multiply(interestRate));
-            if (balanceAsMoney.getAmount().compareTo(new BigDecimal("0")) > 0) {
-                TransactionDTO transactionDTO = new TransactionDTO(accountNumber, interestDue.getAmount(), TransactionType.INTEREST_CREDIT);
+            Money interestDue = new Money(balance.getAmount().multiply(interestRate));
+            if (balance.getAmount().compareTo(new BigDecimal("0")) > 0) {
+                TransactionDTO transactionDTO = new TransactionDTO(accountNumber, interestDue, TransactionType.INTEREST_CREDIT);
                 creditFunds(transactionDTO);
-            } else if (balanceAsMoney.getAmount().compareTo(new BigDecimal("0")) < 0) {
-                TransactionDTO transactionDTO = new TransactionDTO(interestDue.getAmount().abs(), accountNumber, TransactionType.INTEREST_DEBIT);
+            } else if (balance.getAmount().compareTo(new BigDecimal("0")) < 0) {
+                TransactionDTO transactionDTO = new TransactionDTO(interestDue, accountNumber, TransactionType.INTEREST_DEBIT);
                 debitFunds(transactionDTO);
             }
         }
     }
 
-    public void applyInterestMonthly(Long accountNumber, BigDecimal balance, BigDecimal interestRate) {
+    public void applyInterestMonthly(Long accountNumber, Money balance, BigDecimal interestRate) {
         if (interestMonthlyCheck(accountNumber)) {
-            Money balanceAsMoney = new Money(balance);
-            Money interestDue = new Money(balanceAsMoney.getAmount().multiply((interestRate.divide(new BigDecimal("12"), RoundingMode.HALF_EVEN))));
-            if (balanceAsMoney.getAmount().compareTo(new BigDecimal("0")) > 0) {
-                TransactionDTO transactionDTO = new TransactionDTO(accountNumber, interestDue.getAmount(), TransactionType.INTEREST_CREDIT);
+            Money interestDue = new Money(balance.getAmount().multiply((interestRate.divide(new BigDecimal("12"), RoundingMode.HALF_EVEN))));
+            if (balance.getAmount().compareTo(new BigDecimal("0")) > 0) {
+                TransactionDTO transactionDTO = new TransactionDTO(accountNumber, interestDue, TransactionType.INTEREST_CREDIT);
                 creditFunds(transactionDTO);
-            } else if (balanceAsMoney.getAmount().compareTo(new BigDecimal("0")) < 0) {
-                TransactionDTO transactionDTO = new TransactionDTO(interestDue.getAmount().abs(), accountNumber, TransactionType.INTEREST_DEBIT);
+            } else if (balance.getAmount().compareTo(new BigDecimal("0")) < 0) {
+                TransactionDTO transactionDTO = new TransactionDTO(interestDue, accountNumber, TransactionType.INTEREST_DEBIT);
                 debitFunds(transactionDTO);
             }
         }
@@ -304,12 +299,14 @@ public class TransactionService implements ITransactionService {
     }
 
     public boolean verifySecretKey(String secretKey, Account account){
-        if(account.getSecretKey() == secretKey){
+        System.out.println(secretKey);
+        System.out.println(account.getSecretKey());
+        if(Objects.equals(account.getSecretKey(), secretKey)){
             return true;
         }
         else{
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Secret key: " + secretKey +
-                    "does not match account: " + account.getAccountNumber());
+                    " does not match account: " + account.getAccountNumber());
         }
     }
 }

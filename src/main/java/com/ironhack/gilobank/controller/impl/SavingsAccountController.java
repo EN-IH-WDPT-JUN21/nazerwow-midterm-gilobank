@@ -16,7 +16,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/account/saving")
+@RequestMapping("/api/account/saving")
 public class SavingsAccountController implements ISavingsAccountController {
 
     @Autowired

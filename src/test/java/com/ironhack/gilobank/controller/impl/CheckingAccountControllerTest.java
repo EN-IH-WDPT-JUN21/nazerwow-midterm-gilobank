@@ -12,6 +12,7 @@ import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.*;
 import com.ironhack.gilobank.security.CustomUserDetails;
+import com.ironhack.gilobank.utils.Money;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -115,37 +116,37 @@ class CheckingAccountControllerTest {
                 "secretKey1",
                 testHolder1,                    // Primary Holder
                 testHolder2,                    // Secondary Holder
-                new BigDecimal("1000"),     // balance
-                new BigDecimal("10"),       // penaltyFee
+                new Money( new BigDecimal("1000")),     // balance
+                        new Money( new BigDecimal("10")),       // penaltyFee
                 LocalDate.parse("2011-01-01"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("11"),      // monthly maintenance Balance
-                new BigDecimal("100"));      // minimum balance
+                                new Money(   new BigDecimal("11")),      // monthly maintenance Balance
+                                        new Money(   new BigDecimal("100")));      // minimum balance
         testAccount2 = new CheckingAccount(
                 "secretKey2",
                 testHolder1,                    // Primary Holder
                 null,
-                new BigDecimal("2000"),     // balance
-                new BigDecimal("20"),       // penaltyFee
+                new Money(    new BigDecimal("2000")),     // balance
+                        new Money(    new BigDecimal("20")),       // penaltyFee
                 LocalDate.parse("2012-02-02"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("22"),      // monthly maintenance
-                new BigDecimal("200"));      // minimum balance
+                                new Money(   new BigDecimal("22")),      // monthly maintenance
+                                        new Money(   new BigDecimal("200")));      // minimum balance
         testAccount3 = new CheckingAccount(
                 "secretKey3",
                 testHolder2,                    // Primary Holder
                 null,
-                new BigDecimal("3000"),     // balance
-                new BigDecimal("30"),       // penaltyFee
+                new Money(     new BigDecimal("3000")),     // balance
+                        new Money(      new BigDecimal("30")),       // penaltyFee
                 LocalDate.parse("2013-03-03"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("300"),      // monthly maintenance
-                new BigDecimal("300"));      // minimum balance
+                                new Money(     new BigDecimal("300")),      // monthly maintenance
+                                        new Money(    new BigDecimal("300")));      // minimum balance
 
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
         adminRepository.save(admin);
-        thirdPartyRepository.save(thirdParty);
+        thirdPartyRepository.saveAll(List.of(thirdParty, thirdParty2));
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2, loginDetails4));
         checkingAccountRepository.saveAll(List.of(testAccount1, testAccount2, testAccount3));
 
@@ -175,7 +176,7 @@ class CheckingAccountControllerTest {
     void getByAccountNumber_TestValid_Admin() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         MvcResult result = mockMvc.perform(
-                        get("/account/checking/" + testAccount1.getAccountNumber()))
+                        get("/api/account/checking/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
@@ -187,7 +188,7 @@ class CheckingAccountControllerTest {
     void getByAccountNumber_TestValid_AccountOwner() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(login1);
         MvcResult result = mockMvc.perform(
-                        get("/account/checking/" + testAccount1.getAccountNumber()))
+                        get("/api/account/checking/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
@@ -199,7 +200,7 @@ class CheckingAccountControllerTest {
     void getByAccountNumber_TestValid_InvalidOwnerUnauthorized() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
         MvcResult result = mockMvc.perform(
-                        get("/account/checking/" + testAccount1.getAccountNumber()))
+                        get("/api/account/checking/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isUnauthorized())
                 .andReturn();
         assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
@@ -212,7 +213,7 @@ class CheckingAccountControllerTest {
     void getAll_TestValid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         MvcResult result = mockMvc.perform(
-                        get("/account/checking"))
+                        get("/api/account/checking"))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getMinimumBalance())));
@@ -223,73 +224,73 @@ class CheckingAccountControllerTest {
     @Test
     void creditFunds_Valid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250"), TransactionType.CREDIT);
+        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(),new Money( new BigDecimal("250")), TransactionType.CREDIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
-                        put("/account/checking/credit")
+                        put("/api/account/checking/credit")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
         CheckingAccount updatedAccount = checkingAccountRepository.findById(transactionDTO.getCreditAccountNumber()).get();
-        assertEquals(testAccount1.getBalance().add(new BigDecimal("250.00")), updatedAccount.getBalance());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance());
     }
 
     @Test
     void debitFunds_Valid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250"), testAccount1.getAccountNumber(), TransactionType.DEBIT);
+        TransactionDTO transactionDTO = new TransactionDTO(new Money( new BigDecimal("250")), testAccount1.getAccountNumber(), TransactionType.DEBIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
-                        put("/account/checking/debit")
+                        put("/api/account/checking/debit")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
         CheckingAccount updatedAccount = checkingAccountRepository.findById(transactionDTO.getDebitAccountNumber()).get();
-        assertEquals(testAccount1.getBalance().subtract(new BigDecimal("250.00")), updatedAccount.getBalance());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance());
     }
 
     @Test
     void transferFunds_Valid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250"), testAccount2.getAccountNumber());
+        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(),new Money( new BigDecimal("250")), testAccount2.getAccountNumber());
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
-                        put("/account/checking/transfer")
+                        put("/api/account/checking/transfer")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
         CheckingAccount debitedAccount = checkingAccountRepository.findById(transactionDTO.getDebitAccountNumber()).get();
         CheckingAccount creditedAccount = checkingAccountRepository.findById(transactionDTO.getCreditAccountNumber()).get();
-        assertEquals(testAccount2.getBalance().subtract(new BigDecimal("250.00")), debitedAccount.getBalance());
-        assertEquals(testAccount1.getBalance().add(new BigDecimal("250.00")), creditedAccount.getBalance());
+        assertEquals(testAccount2.getBalance().decreaseAmount(new BigDecimal("250.00")), debitedAccount.getBalance());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), creditedAccount.getBalance());
     }
 
     @Test
     void getTransactionsByDateBetween() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
 
-        Transaction testTransaction1 = new Transaction(testAccount1, "Test1", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
-        Transaction testTransaction2 = new Transaction(testAccount1, "Test2", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
-        Transaction testTransaction3 = new Transaction(testAccount1, "Test2", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-03-03T10:15:30"));
-        Transaction testTransaction4 = new Transaction(testAccount1, "Test3", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-04-03T10:15:30"));
-        Transaction testTransaction5 = new Transaction(testAccount1, "Test4", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-05-03T10:15:30"));
-        Transaction testTransaction6 = new Transaction(testAccount1, "Test5", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-06-03T10:15:30"));
-        Transaction testTransaction7 = new Transaction(testAccount1, "Test6", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-07-03T10:15:30"));
-        Transaction testTransaction8 = new Transaction(testAccount1, "Test7", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-08-03T10:15:30"));
-        Transaction testTransaction9 = new Transaction(testAccount1, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-09-03T10:15:30"));
+        Transaction testTransaction1 = new Transaction(testAccount1, "Test1",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
+        Transaction testTransaction2 = new Transaction(testAccount1, "Test2",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
+        Transaction testTransaction3 = new Transaction(testAccount1, "Test2",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-03-03T10:15:30"));
+        Transaction testTransaction4 = new Transaction(testAccount1, "Test3",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-04-03T10:15:30"));
+        Transaction testTransaction5 = new Transaction(testAccount1, "Test4",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-05-03T10:15:30"));
+        Transaction testTransaction6 = new Transaction(testAccount1, "Test5",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-06-03T10:15:30"));
+        Transaction testTransaction7 = new Transaction(testAccount1, "Test6",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-07-03T10:15:30"));
+        Transaction testTransaction8 = new Transaction(testAccount1, "Test7",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-08-03T10:15:30"));
+        Transaction testTransaction9 = new Transaction(testAccount1, "Test8",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-09-03T10:15:30"));
 
-        Transaction testTransaction10 = new Transaction(testAccount2, "Test10", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
-        Transaction testTransaction11 = new Transaction(testAccount2, "Test11", new BigDecimal("250.00"), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
+        Transaction testTransaction10 = new Transaction(testAccount2, "Test10",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
+        Transaction testTransaction11 = new Transaction(testAccount2, "Test11",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
 
         transactionRepository.saveAll(List.of(testTransaction1, testTransaction2, testTransaction3, testTransaction4,
                 testTransaction5, testTransaction6, testTransaction7, testTransaction8, testTransaction9, testTransaction10,
                 testTransaction11));
 
         MvcResult result = mockMvc.perform(
-                        get("/account/checking/"
+                        get("/api/account/checking/"
                                 + testAccount1.getAccountNumber()
                                 + "/2020-01-03/2020-05-03"))
                 .andExpect(status().isOk())
@@ -309,12 +310,12 @@ class CheckingAccountControllerTest {
     void createNewCheckingAccount() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         var repoSizeBefore = checkingAccountRepository.findAll().size();
-        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO("secreKey", testHolder1, testHolder2, new BigDecimal("200.00"),
-                new BigDecimal("40.00"), dateNow, Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO("secreKey", testHolder1, testHolder2, new Money( new BigDecimal("200.00")),
+                new Money(   new BigDecimal("40.00")), dateNow, Status.ACTIVE,new Money( new BigDecimal("12.00")),new Money( new BigDecimal("100.00")));
         String body = objectMapper.writeValueAsString(checkingAccountDTO);
 
         MvcResult result = mockMvc.perform(
-                        put("/account/checking/new")
+                        put("/api/account/checking/new")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted())
@@ -328,12 +329,12 @@ class CheckingAccountControllerTest {
     void updateCheckingAccount() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         var repoSizeBefore = checkingAccountRepository.findAll().size();
-        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO("secretKey", testHolder1, testHolder2, new BigDecimal("999.00"),
-                new BigDecimal("40.00"), dateNow, Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO("secretKey", testHolder1, testHolder2,new Money( new BigDecimal("999.00")),
+                new Money(   new BigDecimal("40.00")), dateNow, Status.ACTIVE,new Money( new BigDecimal("12.00")),new Money( new BigDecimal("100.00")));
         String body = objectMapper.writeValueAsString(checkingAccountDTO);
 
         MvcResult result = mockMvc.perform(
-                        put("/account/checking/" + testAccount1.getAccountNumber() + "/update")
+                        put("/api/account/checking/" + testAccount1.getAccountNumber() + "/update")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted())

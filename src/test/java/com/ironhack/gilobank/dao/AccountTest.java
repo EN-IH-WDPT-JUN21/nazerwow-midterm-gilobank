@@ -40,25 +40,25 @@ class AccountTest {
                 "secretKey1",
                 testHolder1,                        // Primary Holder
                 testHolder2,                        // Secondary Holder
-                new BigDecimal("1000.00"),      // balance
-                new BigDecimal("10.00"),        // penaltyFee
+             new Money(   new BigDecimal("1000.00")),      // balance
+                     new Money(  new BigDecimal("10.00")),        // penaltyFee
                 LocalDate.parse("2011-01-01"),      // open date
                 Status.ACTIVE,                      // Status
-                new BigDecimal("11.00"),        // Monthly Maintenance Fee
-                new BigDecimal("100.00"));     // Minimum Balance
+                             new Money(   new BigDecimal("11.00")),        // Monthly Maintenance Fee
+                                     new Money(   new BigDecimal("100.00")));     // Minimum Balance
     }
 
     @Test
     void getBalanceAsMoney() {
         Money testAmount = new Money(new BigDecimal("1000.00"));
-        assertEquals(testAmount.getCurrency(), testAccount1.getBalanceAsMoney().getCurrency());
+        assertEquals(testAmount.getCurrency(), testAccount1.getBalance().getCurrency());
     }
 
     @Test
     void credit() {
         Money startAmount = new Money(new BigDecimal("1000.00"));
         BigDecimal endAmount = startAmount.increaseAmount(new BigDecimal("250"));
-        testAccount1.credit(new BigDecimal("250"));
+        testAccount1.getBalance().increaseAmount(new BigDecimal("250"));
         assertEquals(endAmount, testAccount1.getBalance());
     }
 
@@ -66,7 +66,7 @@ class AccountTest {
     void debit() {
         Money startAmount = new Money(new BigDecimal("1000.00"));
         BigDecimal endAmount = startAmount.decreaseAmount(new BigDecimal("250"));
-        testAccount1.debit(new BigDecimal("250"));
+        testAccount1.getBalance().decreaseAmount(new BigDecimal("250"));
         assertEquals(endAmount, testAccount1.getBalance());
     }
 
