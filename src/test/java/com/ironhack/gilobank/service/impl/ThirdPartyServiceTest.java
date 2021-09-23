@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.service.impl;
 
+import com.ironhack.gilobank.controller.dto.ThirdPartyTransactionDTO;
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.repositories.*;
@@ -7,6 +8,7 @@ import com.ironhack.gilobank.security.CustomUserDetails;
 import com.ironhack.gilobank.security.IAuthenticationFacade;
 import com.ironhack.gilobank.service.interfaces.IThirdPartyService;
 import com.ironhack.gilobank.service.interfaces.ITransactionService;
+import com.ironhack.gilobank.utils.Money;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,6 +59,8 @@ class ThirdPartyServiceTest {
     private ThirdParty thirdParty, thirdParty2;
     private CustomUserDetails details1, details2, details3, details4, details5;
     private UsernamePasswordAuthenticationToken adminLogin, login1, login2, thirdPartyLogin, thirdPartyLogin2;
+
+    private ThirdPartyTransactionDTO thirdPartyTransactionDTO;
 
     @BeforeEach
     void setUp() throws ParseException {
@@ -144,14 +148,44 @@ class ThirdPartyServiceTest {
 
     @Test
     void creditAccount() {
+        SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
+        thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
+                new BigDecimal("1000.00"),
+                testAccount1.getAccountNumber(),
+                testAccount1.getSecretKey(),
+                null, null);
+        var result = thirdPartyService.creditAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
+        assertEquals(testAccount1.getBalance().add(new BigDecimal("1000.00")),
+                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
     }
 
     @Test
     void debitAccount() {
+        SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
+        thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
+                new BigDecimal("1000.00"),
+                null, null,
+                testAccount1.getAccountNumber(),
+                testAccount1.getSecretKey());
+        var result = thirdPartyService.debitAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
+        assertEquals(testAccount1.getBalance().subtract(new BigDecimal("1000.00")),
+                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
     }
 
     @Test
     void transferBetweenAccounts() {
+        SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
+        thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
+                new BigDecimal("1000.00"),
+                testAccount2.getAccountNumber(),
+                testAccount2.getSecretKey(),
+                testAccount1.getAccountNumber(),
+                testAccount1.getSecretKey());
+        var result = thirdPartyService.transferBetweenAccounts(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
+        assertEquals(testAccount1.getBalance().subtract(new BigDecimal("1000.00")),
+                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+        assertEquals(testAccount2.getBalance().add(new BigDecimal("1000.00")),
+                checkingAccountRepository.findById(testAccount2.getAccountNumber()).get().getBalance());
     }
 
     @Test

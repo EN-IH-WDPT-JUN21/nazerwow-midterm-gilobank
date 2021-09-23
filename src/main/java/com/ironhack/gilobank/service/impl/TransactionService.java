@@ -309,7 +309,7 @@ public class TransactionService implements ITransactionService {
     }
 
     public boolean verifySecretKey(String secretKey, Account account){
-        if(account.getSecretKey() == secretKey){
+        if(Objects.equals(account.getSecretKey(), secretKey)){
             return true;
         }
         else{

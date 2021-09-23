@@ -37,7 +37,8 @@ public class ThirdPartyService implements IThirdPartyService {
     @Override
     public Transaction creditAccount(String hashedKey, ThirdPartyTransactionDTO thirdPartyTransactionDTO) {
         if(transactionService.verifyThirdParty(hashedKey) &&
-                transactionService.verifySecretKey(hashedKey,
+                transactionService.verifySecretKey(
+                        thirdPartyTransactionDTO.getCreditAccountSecretKey(),
                         transactionService.findAccountTypeAndReturn(thirdPartyTransactionDTO.getCreditAccountNumber()))){
             TransactionDTO transactionDTO = new TransactionDTO(
                     thirdPartyTransactionDTO.getCreditAccountNumber(),
@@ -51,7 +52,8 @@ public class ThirdPartyService implements IThirdPartyService {
     @Override
     public Transaction debitAccount(String hashedKey, ThirdPartyTransactionDTO thirdPartyTransactionDTO) {
         if(transactionService.verifyThirdParty(hashedKey) &&
-                transactionService.verifySecretKey(hashedKey,
+                transactionService.verifySecretKey(
+                        thirdPartyTransactionDTO.getDebitAccountSecretKey(),
                         transactionService.findAccountTypeAndReturn(thirdPartyTransactionDTO.getDebitAccountNumber()))){
             TransactionDTO transactionDTO = new TransactionDTO();
             transactionDTO.setAmount(thirdPartyTransactionDTO.getAmount());
@@ -65,7 +67,8 @@ public class ThirdPartyService implements IThirdPartyService {
     @Override
     public Transaction transferBetweenAccounts(String hashedKey, ThirdPartyTransactionDTO thirdPartyTransactionDTO) {
         if(transactionService.verifyThirdParty(hashedKey) &&
-                transactionService.verifySecretKey(hashedKey,
+                transactionService.verifySecretKey(
+                        thirdPartyTransactionDTO.getDebitAccountSecretKey(),
                         transactionService.findAccountTypeAndReturn(thirdPartyTransactionDTO.getDebitAccountNumber()))){
             TransactionDTO transactionDTO = new TransactionDTO();
             transactionDTO.setAmount(thirdPartyTransactionDTO.getAmount());
