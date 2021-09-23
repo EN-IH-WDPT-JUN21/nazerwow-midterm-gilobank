@@ -2,7 +2,6 @@ package com.ironhack.gilobank.service.interfaces;
 
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.CreditCard;
-import com.ironhack.gilobank.dao.StudentAccount;
 import com.ironhack.gilobank.dao.Transaction;
 
 import java.time.LocalDate;

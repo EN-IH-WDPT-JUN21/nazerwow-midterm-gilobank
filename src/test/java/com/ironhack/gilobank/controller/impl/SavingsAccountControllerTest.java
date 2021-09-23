@@ -1,6 +1,8 @@
 package com.ironhack.gilobank.controller.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
+import com.ironhack.gilobank.controller.dto.SavingsAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
@@ -266,6 +268,43 @@ class SavingsAccountControllerTest {
         assertFalse(result.getResponse().getContentAsString().contains("Test7"));
         assertFalse(result.getResponse().getContentAsString().contains("Test10"));
         assertFalse(result.getResponse().getContentAsString().contains("Test11"));
+    }
+
+    @Test
+    void createNewCheckingAccount() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        var repoSizeBefore = savingsAccountRepository.findAll().size();
+        SavingsAccountDTO savingsAccountDTO = new SavingsAccountDTO("secreKey", testHolder1, testHolder2, new BigDecimal("6000.00"),
+                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("200.00"), new BigDecimal(".05"));
+        String body = objectMapper.writeValueAsString(savingsAccountDTO);
+        MvcResult result = mockMvc.perform(
+                        put("/account/saving/new")
+                                .content(body)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isAccepted())
+                .andReturn();
+        var repoSizeAfter = savingsAccountRepository.findAll().size();
+        assertTrue(result.getResponse().getContentAsString().contains("secreKey"));
+        assertEquals(repoSizeBefore + 1, repoSizeAfter);
+    }
+
+    @Test
+    void updateCheckingAccount() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        var repoSizeBefore = savingsAccountRepository.findAll().size();
+        SavingsAccountDTO savingsAccountDTO = new SavingsAccountDTO("secretKey", testHolder1, testHolder2, new BigDecimal("999.00"),
+                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("200.00"), new BigDecimal("0.05"));
+        String body = objectMapper.writeValueAsString(savingsAccountDTO);
+        MvcResult result = mockMvc.perform(
+                        put("/account/saving/" + testAccount1.getAccountNumber() + "/update")
+                                .content(body)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isAccepted())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains("secretKey"));
+        var repoSizeAfter = savingsAccountRepository.findAll().size();
+        assertEquals(repoSizeBefore, repoSizeAfter);
+        assertEquals(new BigDecimal("999.00"), savingsAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
     }
 
 }

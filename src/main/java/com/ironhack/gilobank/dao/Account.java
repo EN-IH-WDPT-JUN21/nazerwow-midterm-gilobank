@@ -1,13 +1,14 @@
 package com.ironhack.gilobank.dao;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.utils.Money;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.DecimalMin;
@@ -36,12 +37,12 @@ public abstract class Account {
     @NotNull
     @ManyToOne
     @JoinColumn(name = "primaryHolder", referencedColumnName = "id")
-    @JsonManagedReference
+    @JsonIgnore
     private AccountHolder primaryHolder;
 
     @ManyToOne
     @JoinColumn(name = "secondaryHolder", referencedColumnName = "id")
-    @JsonManagedReference
+    @JsonIgnore
     private AccountHolder secondaryHolder;
 
     @OneToMany(mappedBy = "account")
@@ -56,6 +57,7 @@ public abstract class Account {
     @NotNull
     private BigDecimal penaltyFee = new BigDecimal("40.00");
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate openDate = LocalDate.now();
 
     @Enumerated(EnumType.STRING)

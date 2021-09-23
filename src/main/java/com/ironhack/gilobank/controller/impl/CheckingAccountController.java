@@ -1,11 +1,17 @@
 package com.ironhack.gilobank.controller.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.controller.interfaces.ICheckingAccountController;
 import com.ironhack.gilobank.dao.CheckingAccount;
 import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.service.interfaces.ICheckingAccountService;
+import com.ironhack.gilobank.service.interfaces.ICreationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +25,19 @@ public class CheckingAccountController implements ICheckingAccountController {
 
     @Autowired
     private ICheckingAccountService checkingAccountService;
+    @Autowired
+    private ICreationService creationService;
+
+    @Bean
+    public ObjectMapper objectMapper() {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        return objectMapper;
+    }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
@@ -62,10 +81,19 @@ public class CheckingAccountController implements ICheckingAccountController {
         return checkingAccountService.findTransactionBetween(accountNumber, startPoint, endPoint);
     }
 
-//    @PostMapping
-//    @ResponseStatus(HttpStatus.CREATED)
-//    public CheckingAccount createAccount(CheckingAccountDTO checkingAccountDTO){
-//
-//    }
+    @PutMapping("/new")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public CheckingAccount createCheckingAccount(@RequestBody CheckingAccountDTO checkingAccountDTO) {
+        return creationService.newCheckingAccount(checkingAccountDTO);
+    }
+
+    @PutMapping("/{id}/update")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public CheckingAccount updateCheckingAccount(@PathVariable(name = "id") Long accountNumber,
+                                                 @RequestBody CheckingAccountDTO checkingAccountDTO) {
+        checkingAccountService.findByAccountNumber(accountNumber);
+        checkingAccountDTO.setAccountNumber(accountNumber);
+        return creationService.newCheckingAccount(checkingAccountDTO);
+    }
 
 }

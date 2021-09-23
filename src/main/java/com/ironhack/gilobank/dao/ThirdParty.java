@@ -5,10 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.UniqueElements;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -22,6 +21,7 @@ public class ThirdParty extends User {
     private String name;
 
     @NotNull
+    @Column(unique = true)
     private String hashedKey;
 
     @Enumerated(EnumType.STRING)

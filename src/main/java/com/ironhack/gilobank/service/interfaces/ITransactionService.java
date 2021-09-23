@@ -50,4 +50,5 @@ public interface ITransactionService {
     boolean checkAuthentication(Long accountNumber);
 
     boolean verifyThirdParty(String hashKey);
+    boolean verifySecretKey(String secretKey, Account account);
 }

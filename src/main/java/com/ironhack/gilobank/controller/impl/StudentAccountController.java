@@ -1,9 +1,11 @@
 package com.ironhack.gilobank.controller.impl;
 
+import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.controller.interfaces.IStudentAccountController;
 import com.ironhack.gilobank.dao.StudentAccount;
 import com.ironhack.gilobank.dao.Transaction;
+import com.ironhack.gilobank.service.interfaces.ICreationService;
 import com.ironhack.gilobank.service.interfaces.IStudentAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,6 +21,8 @@ public class StudentAccountController implements IStudentAccountController {
 
     @Autowired
     private IStudentAccountService studentAccountService;
+    @Autowired
+    private ICreationService creationService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -62,4 +66,18 @@ public class StudentAccountController implements IStudentAccountController {
         return studentAccountService.findTransactionBetween(accountNumber, startPoint, endPoint);
     }
 
+    @PutMapping("/new")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public StudentAccount createStudentAccount(@RequestBody CheckingAccountDTO checkingAccountDTO) {
+        return creationService.newStudentAccount(checkingAccountDTO);
+    }
+
+    @PutMapping("/{id}/update")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public StudentAccount updateStudentAccount(@PathVariable(name = "id") Long accountNumber,
+                                               @RequestBody CheckingAccountDTO checkingAccountDTO) {
+        studentAccountService.findByAccountNumber(accountNumber);
+        checkingAccountDTO.setAccountNumber(accountNumber);
+        return creationService.newStudentAccount(checkingAccountDTO);
+    }
 }

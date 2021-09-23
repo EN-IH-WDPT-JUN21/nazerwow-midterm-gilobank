@@ -1,6 +1,11 @@
 package com.ironhack.gilobank.controller.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
@@ -12,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -55,7 +61,7 @@ class CheckingAccountControllerTest {
     private WebApplicationContext webApplicationContext;
 
     private MockMvc mockMvc;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     private Address testAddress1;
     private Address testAddress2;
@@ -67,13 +73,22 @@ class CheckingAccountControllerTest {
     private ThirdParty thirdParty, thirdParty2;
     private CustomUserDetails details1, details2, details3, details4, details5;
     private UsernamePasswordAuthenticationToken adminLogin, login1, login2, thirdPartyLogin, thirdPartyLogin2;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private  LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private  LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate dateNow = LocalDate.now();
 
     @BeforeEach
     void setUp() throws ParseException {
+
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
-        LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
+//        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+//        objectMapper.registerModule(new JavaTimeModule());
+//        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
 
         testAddress1 = new Address("1", "Primary Road", "Primary", "PRIMA1");
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
@@ -290,4 +305,42 @@ class CheckingAccountControllerTest {
         assertFalse(result.getResponse().getContentAsString().contains("Test11"));
     }
 
+    @Test
+    void createNewCheckingAccount() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        var repoSizeBefore = checkingAccountRepository.findAll().size();
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO("secreKey", testHolder1, testHolder2, new BigDecimal("200.00"),
+                new BigDecimal("40.00"), dateNow, Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
+        String body = objectMapper.writeValueAsString(checkingAccountDTO);
+
+        MvcResult result = mockMvc.perform(
+                        put("/account/checking/new")
+                                .content(body)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isAccepted())
+                .andReturn();
+        var repoSizeAfter = checkingAccountRepository.findAll().size();
+        assertTrue(result.getResponse().getContentAsString().contains("secreKey"));
+        assertEquals(repoSizeBefore + 1, repoSizeAfter);
+    }
+
+    @Test
+    void updateCheckingAccount() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        var repoSizeBefore = checkingAccountRepository.findAll().size();
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO("secretKey", testHolder1, testHolder2, new BigDecimal("999.00"),
+                new BigDecimal("40.00"), dateNow, Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
+        String body = objectMapper.writeValueAsString(checkingAccountDTO);
+
+        MvcResult result = mockMvc.perform(
+                        put("/account/checking/" + testAccount1.getAccountNumber() + "/update")
+                                .content(body)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isAccepted())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains("secretKey"));
+        var repoSizeAfter = checkingAccountRepository.findAll().size();
+        assertEquals(repoSizeBefore, repoSizeAfter);
+        assertEquals(new BigDecimal("999.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+    }
 }

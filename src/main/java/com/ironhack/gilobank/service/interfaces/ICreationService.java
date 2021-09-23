@@ -22,6 +22,4 @@ public interface ICreationService {
     boolean checkIfOver24(AccountHolder accountHolder);
 
 
-
-
 }

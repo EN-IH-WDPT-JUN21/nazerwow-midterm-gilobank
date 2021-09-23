@@ -1,9 +1,11 @@
 package com.ironhack.gilobank.controller.impl;
 
+import com.ironhack.gilobank.controller.dto.SavingsAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.controller.interfaces.ISavingsAccountController;
 import com.ironhack.gilobank.dao.SavingsAccount;
 import com.ironhack.gilobank.dao.Transaction;
+import com.ironhack.gilobank.service.interfaces.ICreationService;
 import com.ironhack.gilobank.service.interfaces.ISavingsAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,6 +21,8 @@ public class SavingsAccountController implements ISavingsAccountController {
 
     @Autowired
     private ISavingsAccountService savingsAccountService;
+    @Autowired
+    private ICreationService creationService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -62,4 +66,18 @@ public class SavingsAccountController implements ISavingsAccountController {
         return savingsAccountService.findTransactionBetween(accountNumber, startPoint, endPoint);
     }
 
+    @PutMapping("/new")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public SavingsAccount createSavingsAccount(@RequestBody SavingsAccountDTO savingsAccountDTO) {
+        return creationService.newSavingsAccount(savingsAccountDTO);
+    }
+
+    @PutMapping("/{id}/update")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public SavingsAccount updateSavingsAccount(@PathVariable(name = "id") Long accountNumber,
+                                               @RequestBody SavingsAccountDTO savingsAccountDTO) {
+        savingsAccountService.findByAccountNumber(accountNumber);
+        savingsAccountDTO.setAccountNumber(accountNumber);
+        return creationService.newSavingsAccount(savingsAccountDTO);
+    }
 }

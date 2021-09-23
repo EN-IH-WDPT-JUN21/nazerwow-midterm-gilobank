@@ -1,7 +1,6 @@
 package com.ironhack.gilobank.service.interfaces;
 
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
-import com.ironhack.gilobank.dao.SavingsAccount;
 import com.ironhack.gilobank.dao.StudentAccount;
 import com.ironhack.gilobank.dao.Transaction;
 

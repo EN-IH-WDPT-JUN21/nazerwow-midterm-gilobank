@@ -1,7 +1,6 @@
 package com.ironhack.gilobank.service.impl;
 
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
-import com.ironhack.gilobank.dao.CreditCard;
 import com.ironhack.gilobank.dao.SavingsAccount;
 import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.repositories.SavingsAccountRepository;
@@ -75,7 +74,7 @@ public class SavingsAccountService implements ISavingsAccountService {
         return transactionService.findByDateTimeBetween(savingsAccount, convertedStartDate, convertedEndDate);
     }
 
-    public void saveNewSavingsAccount(SavingsAccount savingsAccount){
+    public void saveNewSavingsAccount(SavingsAccount savingsAccount) {
         savingsAccountRepository.save(savingsAccount);
     }
 

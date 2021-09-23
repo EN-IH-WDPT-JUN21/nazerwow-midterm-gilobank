@@ -225,11 +225,7 @@ public class TransactionService implements ITransactionService {
             return false;
         }
         LocalDate timeOfLastPayment = interestPayments.get(interestPayments.size() - 1).toLocalDateTime().toLocalDate();
-        if (timeOfLastPayment.isBefore(LocalDate.now().minusMonths(1))) {
-            return true;
-        } else {
-            return false;
-        }
+        return timeOfLastPayment.isBefore(LocalDate.now().minusMonths(1));
     }
 
     public boolean interestYearlyCheck(Long accountNumber) {
@@ -241,11 +237,7 @@ public class TransactionService implements ITransactionService {
             return false;
         }
         LocalDate timeOfLastPayment = interestPayments.get(interestPayments.size() - 1).toLocalDateTime().toLocalDate();
-        if (timeOfLastPayment.isBefore(LocalDate.now().minusYears(1))) {
-            return true;
-        } else {
-            return false;
-        }
+        return timeOfLastPayment.isBefore(LocalDate.now().minusYears(1));
     }
 
     public void applyInterestYearly(Long accountNumber, BigDecimal balance, BigDecimal interestRate) {
@@ -309,5 +301,15 @@ public class TransactionService implements ITransactionService {
             return Objects.equals(thirdParty.get().getHashedKey(), loggedInHashedKey);
         }
         return false;
+    }
+
+    public boolean verifySecretKey(String secretKey, Account account){
+        if(account.getSecretKey() == secretKey){
+            return true;
+        }
+        else{
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Secret key: " + secretKey +
+                    "does not match account: " + account.getAccountNumber());
+        }
     }
 }

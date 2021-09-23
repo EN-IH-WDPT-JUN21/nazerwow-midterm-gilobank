@@ -1,7 +1,11 @@
 package com.ironhack.gilobank.dao;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.ironhack.gilobank.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,25 +36,26 @@ public class AccountHolder extends User {
 
     @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    @JsonSerialize(using = LocalDateSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
 
     @NotNull
     @ManyToOne
     @JoinColumn(name = "primary_address", referencedColumnName = "id")
-    @JsonManagedReference
     private Address primaryAddress;
 
     @ManyToOne
     @JoinColumn(name = "mailing_address", referencedColumnName = "id")
-    @JsonManagedReference
     private Address mailingAddress;
 
     @OneToMany(mappedBy = "primaryHolder", fetch = FetchType.LAZY)
-    @JsonBackReference
+    @JsonIgnore
     private Set<Account> accountPrimaryHolder;
 
     @OneToMany(mappedBy = "secondaryHolder", fetch = FetchType.LAZY)
-    @JsonBackReference
+    @JsonIgnore
     private Set<Account> accountSecondaryHolder;
 
     public AccountHolder(String firstName, String surname, LocalDate dateOfBirth, Address primaryAddress, Address mailingAddress) {

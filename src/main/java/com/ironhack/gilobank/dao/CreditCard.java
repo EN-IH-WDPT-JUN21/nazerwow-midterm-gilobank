@@ -80,10 +80,12 @@ public class CreditCard extends Account {
     public Money getBalanceAsMoney() {
         return new Money(getBalance());
     }
+
     @Override
     public void credit(BigDecimal amount) {
         setBalance(getBalanceAsMoney().increaseAmount(amount));
     }
+
     @Override
     public void debit(BigDecimal amount) {
         setBalance(getBalanceAsMoney().decreaseAmount(amount));

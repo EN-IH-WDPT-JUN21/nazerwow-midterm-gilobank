@@ -1,21 +1,25 @@
 package com.ironhack.gilobank.controller.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.ironhack.gilobank.dao.AccountHolder;
-import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Digits;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 @Getter
 @Setter
@@ -25,12 +29,12 @@ public class CheckingAccountDTO {
 
     private Long accountNumber;
 
-    @NotNull
     private String secretKey;
 
-    @NotNull
+
     private AccountHolder primaryHolder;
 
+    @ManyToOne
     private AccountHolder secondaryHolder;
 
 
@@ -40,6 +44,10 @@ public class CheckingAccountDTO {
 
     private BigDecimal penaltyFee;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    @JsonSerialize(using = LocalDateSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate openDate;
 
     @Enumerated(EnumType.STRING)

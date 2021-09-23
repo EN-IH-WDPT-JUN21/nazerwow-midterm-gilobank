@@ -13,6 +13,7 @@ public interface ISavingsAccountService {
     List<SavingsAccount> findAll();
 
     SavingsAccount findByAccountNumber(Long accountNumber);
+
     Optional<SavingsAccount> findByAccountNumberOptional(Long accountNumber);
 
     Transaction creditFunds(TransactionDTO transactionDTO);

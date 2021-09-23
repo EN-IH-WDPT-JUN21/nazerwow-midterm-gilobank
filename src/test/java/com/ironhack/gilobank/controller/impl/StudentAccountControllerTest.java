@@ -1,6 +1,7 @@
 package com.ironhack.gilobank.controller.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
@@ -73,8 +74,8 @@ class StudentAccountControllerTest {
     void setUp() throws ParseException {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        LocalDate testDateOfBirth1 = LocalDate.parse("2010-01-01");
-        LocalDate testDateOfBirth2 = LocalDate.parse("2010-01-01");
+        LocalDate testDateOfBirth1 = LocalDate.now();
+        LocalDate testDateOfBirth2 = LocalDate.now();
 
         testAddress1 = new Address("1", "Primary Road", "Primary", "PRIMA1");
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
@@ -258,6 +259,45 @@ class StudentAccountControllerTest {
         assertFalse(result.getResponse().getContentAsString().contains("Test7"));
         assertFalse(result.getResponse().getContentAsString().contains("Test10"));
         assertFalse(result.getResponse().getContentAsString().contains("Test11"));
+    }
+
+    @Test
+    void createNewStudentAccount() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        var repoSizeBefore = studentAccountRepository.findAll().size();
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO("secreKey", testHolder1, testHolder2, new BigDecimal("200.00"),
+                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
+        String body = objectMapper.writeValueAsString(checkingAccountDTO);
+
+        MvcResult result = mockMvc.perform(
+                        put("/account/student/new")
+                                .content(body)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isAccepted())
+                .andReturn();
+        var repoSizeAfter = studentAccountRepository.findAll().size();
+        assertTrue(result.getResponse().getContentAsString().contains("secreKey"));
+        assertEquals(repoSizeBefore + 1, repoSizeAfter);
+    }
+
+    @Test
+    void updateStudentAccount() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        var repoSizeBefore = studentAccountRepository.findAll().size();
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO("secretKey", testHolder1, testHolder2, new BigDecimal("999.00"),
+                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
+        String body = objectMapper.writeValueAsString(checkingAccountDTO);
+
+        MvcResult result = mockMvc.perform(
+                        put("/account/student/" + testAccount1.getAccountNumber() + "/update")
+                                .content(body)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isAccepted())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains("secretKey"));
+        var repoSizeAfter = studentAccountRepository.findAll().size();
+        assertEquals(repoSizeBefore, repoSizeAfter);
+        assertEquals(new BigDecimal("999.00"), studentAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
     }
 
 }

@@ -1,9 +1,11 @@
 package com.ironhack.gilobank.controller.impl;
 
+import com.ironhack.gilobank.controller.dto.CreditCardDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.controller.interfaces.ICreditCardController;
 import com.ironhack.gilobank.dao.CreditCard;
 import com.ironhack.gilobank.dao.Transaction;
+import com.ironhack.gilobank.service.interfaces.ICreationService;
 import com.ironhack.gilobank.service.interfaces.ICreditCardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,6 +21,8 @@ public class CreditCardController implements ICreditCardController {
 
     @Autowired
     private ICreditCardService creditCardService;
+    @Autowired
+    private ICreationService creationService;
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
@@ -60,5 +64,20 @@ public class CreditCardController implements ICreditCardController {
             @PathVariable(name = "dateTo")
             @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endPoint) {
         return creditCardService.findTransactionBetween(accountNumber, startPoint, endPoint);
+    }
+
+    @PutMapping("/new")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public CreditCard createCreditCard(@RequestBody CreditCardDTO creditCardDTO) {
+        return creationService.newCreditCard(creditCardDTO);
+    }
+
+    @PutMapping("/{id}/update")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public CreditCard updateCreditCard(@PathVariable(name = "id") Long accountNumber,
+                                       @RequestBody CreditCardDTO creditCardDTO) {
+        creditCardService.findByAccountNumber(accountNumber);
+        creditCardDTO.setAccountNumber(accountNumber);
+        return creationService.newCreditCard(creditCardDTO);
     }
 }

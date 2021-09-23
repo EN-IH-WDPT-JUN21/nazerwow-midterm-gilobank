@@ -1,6 +1,10 @@
 package com.ironhack.gilobank.controller.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
+import com.ironhack.gilobank.controller.dto.CreditCardDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
@@ -12,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -71,12 +76,20 @@ class CreditCardControllerTest {
     private CustomUserDetails details1, details2, details3, details4, details5;
     private UsernamePasswordAuthenticationToken adminLogin, login1, login2, thirdPartyLogin, thirdPartyLogin2;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private  LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private  LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate dateNow = LocalDate.now();
+
     @BeforeEach
     void setUp() throws ParseException {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
-        LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
+//        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+//        objectMapper.registerModule(new JavaTimeModule());
+//        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         testAddress1 = new Address("1", "Primary Road", "Primary", "PRIMA1");
         testAddress2 = new Address("2", "Mailing Road", "Mailing", "MAILI1");
@@ -267,4 +280,44 @@ class CreditCardControllerTest {
         assertFalse(result.getResponse().getContentAsString().contains("Test10"));
         assertFalse(result.getResponse().getContentAsString().contains("Test11"));
     }
+
+    @Test
+    void createNewCreditCard() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        var repoSizeBefore = creditCardRepository.findAll().size();
+        CreditCardDTO creditCardDTO = new CreditCardDTO("secreKey", testHolder1, testHolder2, new BigDecimal("-200.00"),
+                new BigDecimal("40.00"), dateNow, Status.ACTIVE, new BigDecimal("-5000.00"), new BigDecimal(".20"));
+        String body = objectMapper.writeValueAsString(creditCardDTO);
+
+        MvcResult result = mockMvc.perform(
+                        put("/account/creditcard/new")
+                                .content(body)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isAccepted())
+                .andReturn();
+        var repoSizeAfter = creditCardRepository.findAll().size();
+        assertTrue(result.getResponse().getContentAsString().contains("secreKey"));
+        assertEquals(repoSizeBefore + 1, repoSizeAfter);
+    }
+
+    @Test
+    void updateCreditCard() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        var repoSizeBefore = creditCardRepository.findAll().size();
+        CreditCardDTO creditCardDTO = new CreditCardDTO("secretKey", testHolder1, testHolder2, new BigDecimal("-999.00"),
+                new BigDecimal("40.00"), dateNow, Status.ACTIVE, new BigDecimal("-10000.00"), new BigDecimal(".50"));
+        String body = objectMapper.writeValueAsString(creditCardDTO);
+
+        MvcResult result = mockMvc.perform(
+                        put("/account/creditcard/" + testAccount1.getAccountNumber() + "/update")
+                                .content(body)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isAccepted())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains("secretKey"));
+        var repoSizeAfter = creditCardRepository.findAll().size();
+        assertEquals(repoSizeBefore, repoSizeAfter);
+        assertEquals(new BigDecimal("-999.00"), creditCardRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+    }
 }
+
