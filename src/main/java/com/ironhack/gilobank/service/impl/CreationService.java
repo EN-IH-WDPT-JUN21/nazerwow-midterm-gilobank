@@ -2,6 +2,7 @@ package com.ironhack.gilobank.service.impl;
 
 import com.ironhack.gilobank.controller.dto.*;
 import com.ironhack.gilobank.dao.*;
+import com.ironhack.gilobank.enums.Role;
 import com.ironhack.gilobank.service.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,8 @@ public class CreationService implements ICreationService {
     private ICreditCardService creditCardService;
     @Autowired
     private ISavingsAccountService savingsAccountService;
+    @Autowired
+    private IThirdPartyService thirdPartyService;
 
     public Address newAddress(AddressDTO addressDTO) throws TransactionSystemException {
         Address address = new Address();
@@ -81,6 +84,24 @@ public class CreationService implements ICreationService {
         }
         accountHolderService.saveNewAccountHolder(accountHolder);
         return accountHolder;
+    }
+
+    public ThirdParty newThirdParty(ThirdPartyDTO thirdPartyDTO){
+        ThirdParty thirdParty = new ThirdParty();
+        if(thirdPartyDTO.getId() != null){
+            thirdParty = thirdPartyService.findById(thirdPartyDTO.getId());
+        }
+        if(thirdPartyDTO.getName() != null) {
+            thirdParty.setName(thirdPartyDTO.getName());
+        }
+        if(thirdPartyDTO.getHashedKey() != null){
+            thirdParty.setHashedKey(thirdPartyDTO.getHashedKey());
+        }
+        if(thirdPartyDTO.getRole() != null){
+            thirdParty.setRole(Role.THIRDPARTY);
+        }
+        thirdPartyService.saveThirdParty(thirdParty);
+        return thirdParty;
     }
 
     public LoginDetails newLoginDetails(LoginDetailsDTO loginDetailsDTO) throws TransactionSystemException {

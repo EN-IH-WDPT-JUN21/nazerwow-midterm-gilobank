@@ -18,6 +18,8 @@ public interface ICreationService {
     CreditCard newCreditCard(CreditCardDTO creditCardDTO);
 
     SavingsAccount newSavingsAccount(SavingsAccountDTO savingsAccountDTO);
+    ThirdParty newThirdParty(ThirdPartyDTO thirdPartyDTO);
+
 
     boolean checkIfOver24(AccountHolder accountHolder);
 

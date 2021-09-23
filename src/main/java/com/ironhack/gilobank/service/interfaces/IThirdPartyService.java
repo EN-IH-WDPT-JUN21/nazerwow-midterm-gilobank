@@ -5,6 +5,8 @@ import com.ironhack.gilobank.controller.dto.ThirdPartyTransactionDTO;
 import com.ironhack.gilobank.dao.ThirdParty;
 import com.ironhack.gilobank.dao.Transaction;
 
+import java.util.Optional;
+
 public interface IThirdPartyService {
 
     Transaction creditAccount(String hashedKey, ThirdPartyTransactionDTO thirdPartyTransactionDTO);
@@ -13,5 +15,6 @@ public interface IThirdPartyService {
 
     ThirdParty addThirdParty(ThirdPartyDTO thirdPartyDTO);
     ThirdParty updateThirdParty(ThirdPartyDTO thirdPartyDTO);
-
+    ThirdParty findById(Long id);
+    void saveThirdParty(ThirdParty thirdParty);
 }

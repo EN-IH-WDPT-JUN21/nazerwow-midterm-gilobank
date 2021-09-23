@@ -12,10 +12,12 @@ import com.ironhack.gilobank.service.interfaces.IThirdPartyService;
 import com.ironhack.gilobank.service.interfaces.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
+@Service
 public class ThirdPartyService implements IThirdPartyService {
 
 
@@ -23,6 +25,14 @@ public class ThirdPartyService implements IThirdPartyService {
     private ThirdPartyRepository thirdPartyRepository;
     @Autowired
     private ITransactionService transactionService;
+
+    public ThirdParty findById(Long id){
+        Optional<ThirdParty> optionalThirdParty=  thirdPartyRepository.findById(id);
+        if(optionalThirdParty.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Third Party found with id: " + id);
+        }
+        return optionalThirdParty.get();
+    }
 
     @Override
     public Transaction creditAccount(String hashedKey, ThirdPartyTransactionDTO thirdPartyTransactionDTO) {
@@ -74,5 +84,9 @@ public class ThirdPartyService implements IThirdPartyService {
     @Override
     public ThirdParty updateThirdParty(ThirdPartyDTO thirdPartyDTO) {
         return null;
+    }
+
+    public void saveThirdParty(ThirdParty thirdParty){
+        thirdPartyRepository.save(thirdParty);
     }
 }

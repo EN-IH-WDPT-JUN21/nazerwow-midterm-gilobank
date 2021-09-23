@@ -14,6 +14,8 @@ import javax.validation.constraints.NotNull;
 @Setter
 public class ThirdPartyDTO {
 
+    private Long id;
+
     private String name;
 
     private String hashedKey;
