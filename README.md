@@ -27,6 +27,8 @@ INSERT INTO checking_account (account_number, balance, open_date, penalty_fee, s
 
 INSERT INTO transaction (id, amount, balance_after_transaction, name, time_of_trns, type, account_id) VALUES
 -- Day 1 - Total debit = 300.00
+=======
+-- Day 1 - Total debit = 300.00
 (1, 100.00, 900.00, '250 Debit', '2021-09-17 08:00:00', 'DEBIT' ,32165487),
 (2, 200.00, 700.00, '200 Debit', '2021-09-17 09:00:00', 'DEBIT' ,32165487),
 -- Day 2 - Total Debit = 1200
@@ -39,7 +41,7 @@ INSERT INTO transaction (id, amount, balance_after_transaction, name, time_of_tr
 (8, 500.00, 1500.00, '500 Debit', '2021-09-13 08:00:21', 'DEBIT' ,32165487),
 (9, 500.00, 1000.00, '500 Debit', '2021-09-13 12:00:59', 'DEBIT' ,32165487),
 
--- Credits
+-- Credits 
 (10, 250.00, 750.00, '250 Debit', '2021-09-14 08:00:00', 'CREDIT' ,32165487),
 (11, 250.00, 750.00, '250 Debit', '2021-09-17 08:11:00', 'CREDIT' ,32165487),
 (12, 250.00, 750.00, '250 Debit', '2021-09-11 08:50:00', 'CREDIT' ,32165487);
