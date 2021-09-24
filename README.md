@@ -27,8 +27,6 @@ INSERT INTO checking_account (account_number, balance, open_date, penalty_fee, s
 
 INSERT INTO transaction (id, amount, balance_after_transaction, name, time_of_trns, type, account_id) VALUES
 -- Day 1 - Total debit = 300.00
-=======
--- Day 1 - Total debit = 300.00
 (1, 100.00, 900.00, '250 Debit', '2021-09-17 08:00:00', 'DEBIT' ,32165487),
 (2, 200.00, 700.00, '200 Debit', '2021-09-17 09:00:00', 'DEBIT' ,32165487),
 -- Day 2 - Total Debit = 1200
