@@ -40,7 +40,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.httpBasic();
         http.csrf().disable();
         http.authorizeRequests()
-                .mvcMatchers(HttpMethod.GET, "/swagger-ui.html").permitAll()
+                .mvcMatchers(HttpMethod.GET, "/swagger-ui/").permitAll()
                 .mvcMatchers(HttpMethod.GET, "/api/**").hasRole("ADMIN")
                 .mvcMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
                 .mvcMatchers(HttpMethod.PATCH, "/api/**").hasRole("ADMIN")
