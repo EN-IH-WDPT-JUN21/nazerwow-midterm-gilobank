@@ -128,15 +128,21 @@ public class TransactionService implements ITransactionService {
     }
 
     public void checkForFraud(TransactionDTO transactionDTO) {
-        Account account;
-        if(transactionDTO.getDebitAccountNumber() == null){
-            account = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
-        } else {
-            account = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());}
-        if (fraudDetection.fraudDetector(account, transactionDTO.getAmount())) {
-            account.freezeAccount();
-            findAccountTypeAndSave(account);
+        if(transactionDTO.getDebitAccountNumber() != null){
+            Account debitAccount = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
+        if (fraudDetection.fraudDetector(debitAccount, transactionDTO.getAmount())) {
+            debitAccount.freezeAccount();
+            findAccountTypeAndSave(debitAccount);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
+        }
+        }
+        if (transactionDTO.getCreditAccountNumber() != null) {
+            Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
+            if (fraudDetection.fraudDetector(creditAccount, transactionDTO.getAmount())) {
+                creditAccount.freezeAccount();
+                findAccountTypeAndSave(creditAccount);
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
+            }
         }
     }
 

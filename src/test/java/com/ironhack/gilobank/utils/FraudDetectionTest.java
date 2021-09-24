@@ -4,6 +4,7 @@ import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.*;
+import org.apache.tomcat.jni.Local;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -134,10 +136,24 @@ class FraudDetectionTest {
     }
 
     @Test
+    void debitsWithin1SecondLast24Hours_Test_Detected1() {
+        String timeAsString = LocalDateTime.now().toString();
+        LocalDateTime now = LocalDateTime.parse(timeAsString);
+        Transaction test1 = new Transaction(testAccount1, "Test6", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, now);
+        Transaction test2 = new Transaction(testAccount1, "Test7", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, now);
+        Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, now);
+        transactionRepository.saveAll(List.of(test1, test2, test3));
+        var transactionTotal = fraudDetection.debitsWithin1SecondLast24Hours(testAccount1);
+        assertTrue(transactionTotal);
+    }
+
+    @Test
     void debitsWithin1SecondLast24Hours_Test_Detected() {
-        Transaction test1 = new Transaction(testAccount1, "Test6", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
-        Transaction test2 = new Transaction(testAccount1, "Test7", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
-        Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
+        String timeAsString = LocalDateTime.now().toString();
+        LocalDateTime now = LocalDateTime.parse(timeAsString);
+        Transaction test1 = new Transaction(testAccount1, "Test6", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, now);
+        Transaction test2 = new Transaction(testAccount1, "Test7", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, now);
+        Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, now);
         transactionRepository.saveAll(List.of(test1, test2, test3));
         var transactionTotal = fraudDetection.fraudDetector(testAccount1, new BigDecimal("10.00"));
         assertTrue(transactionTotal);

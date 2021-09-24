@@ -20,6 +20,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -102,7 +103,7 @@ class TransactionServiceTest {
                 "secretKey1",
                 testHolder1,                    // Primary Holder
                 testHolder2,                    // Secondary Holder
-                new BigDecimal("1000"),     // balance
+                new BigDecimal("1000.00"),     // balance
                 new BigDecimal("10"),       // penaltyFee
                 LocalDate.parse("2011-01-01"),  // open date
                 Status.ACTIVE,                  // Status
@@ -112,7 +113,7 @@ class TransactionServiceTest {
                 "secretKey2",
                 testHolder1,                    // Primary Holder
                 null,
-                new BigDecimal("2000"),     // balance
+                new BigDecimal("2000.00"),     // balance
                 new BigDecimal("20"),       // penaltyFee
                 LocalDate.parse("2012-02-02"),  // open date
                 Status.ACTIVE,                  // Status
@@ -122,7 +123,7 @@ class TransactionServiceTest {
                 "secretKey3",
                 testHolder2,                    // Primary Holder
                 null,
-                new BigDecimal("3000"),     // balance
+                new BigDecimal("3000.00"),     // balance
                 new BigDecimal("30"),       // penaltyFee
                 LocalDate.parse("2013-03-03"),  // open date
                 Status.ACTIVE,                  // Status
@@ -295,7 +296,7 @@ class TransactionServiceTest {
         Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("10.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(5));
         transactionRepository.saveAll(List.of(test1, test2, test3));
 
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250"), testAccount1.getAccountNumber(), TransactionType.DEBIT);
+        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250.00"), testAccount1.getAccountNumber(), TransactionType.DEBIT);
 
         assertThrows(ResponseStatusException.class, () -> transactionService.checkForFraud(transactionDTO));
     }
@@ -307,7 +308,7 @@ class TransactionServiceTest {
         Transaction test3 = new Transaction(testAccount1, "Test8", new BigDecimal("250.00"), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(5));
         transactionRepository.saveAll(List.of(test1, test2, test3));
 
-        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("2500000"), testAccount1.getAccountNumber(), TransactionType.DEBIT);
+        TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("2500000.00"), testAccount1.getAccountNumber(), TransactionType.DEBIT);
         assertThrows(ResponseStatusException.class, () -> transactionService.checkForFraud(transactionDTO));
     }
 

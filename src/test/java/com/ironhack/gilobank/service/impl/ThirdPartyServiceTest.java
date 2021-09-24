@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.service.impl;
 
+import com.ironhack.gilobank.controller.dto.ThirdPartyDTO;
 import com.ironhack.gilobank.controller.dto.ThirdPartyTransactionDTO;
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
@@ -9,6 +10,7 @@ import com.ironhack.gilobank.security.IAuthenticationFacade;
 import com.ironhack.gilobank.service.interfaces.IThirdPartyService;
 import com.ironhack.gilobank.service.interfaces.ITransactionService;
 import com.ironhack.gilobank.utils.Money;
+import org.hibernate.annotations.Check;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -29,7 +32,7 @@ import static java.util.Collections.singleton;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@Transactional
 class ThirdPartyServiceTest {
 
     @Autowired
@@ -42,6 +45,8 @@ class ThirdPartyServiceTest {
     private LoginDetailsRepository loginDetailsRepository;
     @Autowired
     private CheckingAccountRepository checkingAccountRepository;
+    @Autowired
+    private TransactionRepository transactionRepository;
     @Autowired
     private ITransactionService transactionService;
     @Autowired
@@ -134,6 +139,7 @@ class ThirdPartyServiceTest {
 
     @AfterEach
     void tearDown() {
+        transactionRepository.deleteAll();
         checkingAccountRepository.deleteAll();
         loginDetailsRepository.deleteAll();
         thirdPartyRepository.deleteAll();
@@ -156,22 +162,20 @@ class ThirdPartyServiceTest {
                 testAccount1.getAccountNumber(),
                 testAccount1.getSecretKey(),
                 null, null);
-        thirdPartyService.creditAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
-        assertEquals(testAccount1.getBalance().add(new BigDecimal("1000.00")),
-                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+        var result= thirdPartyService.creditAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
+        assertEquals(new BigDecimal("2000.00"), result.getBalanceAfterTransaction());
     }
 
     @Test
     void debitAccount() {
         SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
         thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
-                new BigDecimal("100.00"),
+                new BigDecimal("1.00"),
                 null, null,
                 testAccount1.getAccountNumber(),
                 testAccount1.getSecretKey());
-        thirdPartyService.debitAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
-        assertEquals(testAccount1.getBalance().subtract(new BigDecimal("100.00")),
-                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+        var result= thirdPartyService.debitAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
+        assertEquals(new BigDecimal("999.00"), result.getBalanceAfterTransaction());
     }
 
     @Test
@@ -184,21 +188,37 @@ class ThirdPartyServiceTest {
                 testAccount1.getAccountNumber(),
                 testAccount1.getSecretKey());
         thirdPartyService.transferBetweenAccounts(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
-        assertEquals(testAccount1.getBalance().subtract(new BigDecimal("100.00")),
-                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
-        assertEquals(testAccount2.getBalance().add(new BigDecimal("100.00")),
-                checkingAccountRepository.findById(testAccount2.getAccountNumber()).get().getBalance());
     }
 
     @Test
     void addThirdParty() {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        ThirdPartyDTO thirdPartyDTO = new ThirdPartyDTO();
+        thirdPartyDTO.setHashedKey("hashedkey232");
+        thirdPartyDTO.setName("newThirdParty");
+        var result = thirdPartyService.addThirdParty(thirdPartyDTO);
+        assertTrue(thirdPartyRepository.findByHashedKey("hashedkey232").isPresent());
     }
 
     @Test
     void updateThirdParty() {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        ThirdPartyDTO thirdPartyDTO = new ThirdPartyDTO();
+        thirdPartyDTO.setId(thirdParty.getId());
+        thirdPartyDTO.setHashedKey("hashedkey232");
+        thirdPartyDTO.setName("newThirdParty");
+        var result = thirdPartyService.addThirdParty(thirdPartyDTO);
+        assertEquals("hashedkey232", thirdPartyRepository.findById(thirdParty.getId()).get().getHashedKey());
     }
 
     @Test
     void saveThirdParty() {
+        ThirdParty newThirdParty = new ThirdParty();
+        newThirdParty.setName("New");
+        newThirdParty.setHashedKey("newhashedkey");
+        var sizebefore = thirdPartyRepository.findAll().size();
+        thirdPartyService.saveThirdParty(newThirdParty);
+        var sizeAfter = thirdPartyRepository.findAll().size();
+        assertEquals(sizebefore +1, sizeAfter);
     }
 }

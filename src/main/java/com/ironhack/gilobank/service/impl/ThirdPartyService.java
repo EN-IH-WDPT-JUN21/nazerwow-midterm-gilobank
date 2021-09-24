@@ -5,6 +5,7 @@ import com.ironhack.gilobank.controller.dto.ThirdPartyTransactionDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.ThirdParty;
 import com.ironhack.gilobank.dao.Transaction;
+import com.ironhack.gilobank.enums.Role;
 import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.ThirdPartyRepository;
 import com.ironhack.gilobank.service.interfaces.ICreationService;
@@ -78,12 +79,26 @@ public class ThirdPartyService implements IThirdPartyService {
 
     @Override
     public ThirdParty addThirdParty(ThirdPartyDTO thirdPartyDTO) {
-        return null;
+        ThirdParty thirdParty = new ThirdParty();
+        if(thirdPartyDTO.getId() != null){
+            thirdParty = thirdPartyRepository.findById(thirdPartyDTO.getId()).get();
+        }
+        if (thirdPartyDTO.getHashedKey() != null){
+            thirdParty.setHashedKey(thirdPartyDTO.getHashedKey());
+        }
+        if(thirdPartyDTO.getName() != null){
+            thirdParty.setName(thirdPartyDTO.getName());
+        }
+        if(thirdPartyDTO.getRole() != null){
+            thirdParty.setRole(Role.THIRDPARTY);
+        }
+        thirdPartyRepository.save(thirdParty);
+        return thirdParty;
     }
 
     @Override
     public ThirdParty updateThirdParty(ThirdPartyDTO thirdPartyDTO) {
-        return null;
+        return addThirdParty(thirdPartyDTO);
     }
 
     public void saveThirdParty(ThirdParty thirdParty){

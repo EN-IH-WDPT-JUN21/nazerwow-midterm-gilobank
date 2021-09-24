@@ -12,6 +12,7 @@ public interface IAdminService {
 
     List<Admin> findAll();
     ThirdParty newThirdParty(ThirdPartyDTO thirdPartyDTO);
+    ThirdParty updateThirdParty(ThirdPartyDTO thirdPartyDTO);
     Address newAddress(AddressDTO addressDTO);
     LoginDetails newLoginDetails(LoginDetailsDTO loginDetailsDTO);
     AccountHolder newAccountHolder(AccountHolderDTO accountHolderDTO);

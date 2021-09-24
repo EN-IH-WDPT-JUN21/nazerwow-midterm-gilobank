@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -40,6 +41,8 @@ class CreationServiceTest {
     private SavingsAccountRepository savingsAccountRepository;
     @Autowired
     private TransactionRepository transactionRepository;
+    @Autowired
+    private ThirdPartyRepository thirdPartyRepository;
 
     private AddressDTO addressDTO;
     private AccountHolderDTO accountHolderDTO;
@@ -160,6 +163,27 @@ class CreationServiceTest {
         var repoSizeAfter = accountHolderRepository.findAll().size();
         assertEquals(repoSizeBefore, repoSizeAfter);
         assertEquals("firstName", accountHolderRepository.findById(testHolder1.getId()).get().getFirstName());
+    }
+
+    @Test
+    void addThirdParty() {
+        ThirdPartyDTO thirdPartyDTO = new ThirdPartyDTO();
+        thirdPartyDTO.setHashedKey("hashedkey232");
+        thirdPartyDTO.setName("newThirdParty");
+        var result = creationService.newThirdParty(thirdPartyDTO);
+        assertTrue(thirdPartyRepository.findByHashedKey("hashedkey232").isPresent());
+    }
+
+    @Test
+    void updateThirdParty() {
+        ThirdParty thirdParty = new ThirdParty("name", "name");
+        thirdPartyRepository.save(thirdParty);
+        ThirdPartyDTO thirdPartyDTO = new ThirdPartyDTO();
+        thirdPartyDTO.setId(thirdParty.getId());
+        thirdPartyDTO.setHashedKey("hashedkey232");
+        thirdPartyDTO.setName("newThirdParty");
+        var result = creationService.newThirdParty(thirdPartyDTO);
+        assertEquals("hashedkey232", thirdPartyRepository.findById(thirdParty.getId()).get().getHashedKey());
     }
 
     @Test
