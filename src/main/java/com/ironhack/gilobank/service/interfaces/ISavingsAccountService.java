@@ -26,5 +26,6 @@ public interface ISavingsAccountService {
     List<Transaction> findTransactionBetween(Long accountNumber, LocalDate startDate, LocalDate endDate);
 
     void saveNewSavingsAccount(SavingsAccount savingsAccount);
+
     BalanceDTO getBalance(Long accountNumber);
 }

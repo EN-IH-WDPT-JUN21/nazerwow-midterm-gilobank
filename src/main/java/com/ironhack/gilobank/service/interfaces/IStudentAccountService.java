@@ -26,5 +26,6 @@ public interface IStudentAccountService {
     Transaction transferBetweenAccounts(TransactionDTO transactionDTO);
 
     List<Transaction> findTransactionBetween(Long accountNumber, LocalDate startDate, LocalDate endDate);
+
     BalanceDTO getBalance(Long accountNumber);
 }

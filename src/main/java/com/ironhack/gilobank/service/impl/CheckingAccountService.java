@@ -48,7 +48,6 @@ public class CheckingAccountService implements ICheckingAccountService {
     }
 
 
-
     public Transaction creditFunds(TransactionDTO transactionDTO) {
         findByAccountNumber(transactionDTO.getCreditAccountNumber());
         return transactionService.creditFunds(transactionDTO);

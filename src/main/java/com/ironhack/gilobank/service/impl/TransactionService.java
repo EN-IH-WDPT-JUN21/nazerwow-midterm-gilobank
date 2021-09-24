@@ -324,7 +324,7 @@ public class TransactionService implements ITransactionService {
         }
     }
 
-    public BalanceDTO getBalance(Account account){
+    public BalanceDTO getBalance(Account account) {
         BalanceDTO balanceDTO = new BalanceDTO();
         balanceDTO.setAccountNumber(account.getAccountNumber());
         balanceDTO.setBalance(account.getBalanceAsMoney());
