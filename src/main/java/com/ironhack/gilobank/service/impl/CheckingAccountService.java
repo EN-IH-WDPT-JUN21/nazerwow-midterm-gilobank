@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.service.impl;
 
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.CheckingAccount;
 import com.ironhack.gilobank.dao.Transaction;
@@ -47,6 +48,7 @@ public class CheckingAccountService implements ICheckingAccountService {
     }
 
 
+
     public Transaction creditFunds(TransactionDTO transactionDTO) {
         findByAccountNumber(transactionDTO.getCreditAccountNumber());
         return transactionService.creditFunds(transactionDTO);
@@ -74,6 +76,11 @@ public class CheckingAccountService implements ICheckingAccountService {
 
     public void saveCheckingAccount(CheckingAccount checkingAccount) {
         checkingAccountRepository.save(checkingAccount);
+    }
+
+    @Override
+    public BalanceDTO getBalance(Long accountNumber) {
+        return transactionService.getBalance(findByAccountNumber(accountNumber));
     }
 
 }

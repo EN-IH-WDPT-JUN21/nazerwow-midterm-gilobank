@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.controller.impl;
 
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.controller.interfaces.IStudentAccountController;
@@ -16,7 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/account/student")
+@RequestMapping("/api/account/student")
 public class StudentAccountController implements IStudentAccountController {
 
     @Autowired
@@ -34,6 +35,12 @@ public class StudentAccountController implements IStudentAccountController {
     @ResponseStatus(HttpStatus.OK)
     public StudentAccount getByAccountNumber(@PathVariable(name = "id") Long accountNumber) {
         return studentAccountService.findByAccountNumber(accountNumber);
+    }
+
+    @GetMapping("/{id}/balance")
+    @ResponseStatus(HttpStatus.OK)
+    public BalanceDTO getBalance(@PathVariable(name = "id") Long accountNumber) {
+        return studentAccountService.getBalance(accountNumber);
     }
 
     @PutMapping("/credit")

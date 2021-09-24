@@ -1,10 +1,6 @@
 package com.ironhack.gilobank.controller.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.*;
@@ -61,7 +57,7 @@ class CheckingAccountControllerTest {
     private WebApplicationContext webApplicationContext;
 
     private MockMvc mockMvc;
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private Address testAddress1;
     private Address testAddress2;
@@ -74,11 +70,11 @@ class CheckingAccountControllerTest {
     private CustomUserDetails details1, details2, details3, details4, details5;
     private UsernamePasswordAuthenticationToken adminLogin, login1, login2, thirdPartyLogin, thirdPartyLogin2;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private  LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
+    private final LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private  LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
+    private final LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate dateNow = LocalDate.now();
+    private final LocalDate dateNow = LocalDate.now();
 
     @BeforeEach
     void setUp() throws ParseException {
@@ -175,7 +171,7 @@ class CheckingAccountControllerTest {
     void getByAccountNumber_TestValid_Admin() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         MvcResult result = mockMvc.perform(
-                        get("/account/checking/" + testAccount1.getAccountNumber()))
+                        get("/api/account/checking/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
@@ -187,7 +183,7 @@ class CheckingAccountControllerTest {
     void getByAccountNumber_TestValid_AccountOwner() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(login1);
         MvcResult result = mockMvc.perform(
-                        get("/account/checking/" + testAccount1.getAccountNumber()))
+                        get("/api/account/checking/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
@@ -196,10 +192,46 @@ class CheckingAccountControllerTest {
     }
 
     @Test
+    void getByBalance_TestValid() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/checking/" + testAccount1.getAccountNumber() + "/balance"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getSecretKey())));
+    }
+
+    @Test
+    void getByBalance_Test_AccountOwner() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(login1);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/checking/" + testAccount1.getAccountNumber() + "/balance"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getSecretKey())));
+    }
+
+    @Test
+    void getByBalance_Test_NotAllowed() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(login2);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/checking/" + testAccount2.getAccountNumber() + "/balance"))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getBalance())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getSecretKey())));
+    }
+
+    @Test
     void getByAccountNumber_TestValid_InvalidOwnerUnauthorized() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
         MvcResult result = mockMvc.perform(
-                        get("/account/checking/" + testAccount1.getAccountNumber()))
+                        get("/api/account/checking/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isUnauthorized())
                 .andReturn();
         assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
@@ -212,7 +244,7 @@ class CheckingAccountControllerTest {
     void getAll_TestValid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         MvcResult result = mockMvc.perform(
-                        get("/account/checking"))
+                        get("/api/account/checking"))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getMinimumBalance())));
@@ -226,7 +258,7 @@ class CheckingAccountControllerTest {
         TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250"), TransactionType.CREDIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
-                        put("/account/checking/credit")
+                        put("/api/account/checking/credit")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -241,7 +273,7 @@ class CheckingAccountControllerTest {
         TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250"), testAccount1.getAccountNumber(), TransactionType.DEBIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
-                        put("/account/checking/debit")
+                        put("/api/account/checking/debit")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -256,7 +288,7 @@ class CheckingAccountControllerTest {
         TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250"), testAccount2.getAccountNumber());
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
-                        put("/account/checking/transfer")
+                        put("/api/account/checking/transfer")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -289,7 +321,7 @@ class CheckingAccountControllerTest {
                 testTransaction11));
 
         MvcResult result = mockMvc.perform(
-                        get("/account/checking/"
+                        get("/api/account/checking/"
                                 + testAccount1.getAccountNumber()
                                 + "/2020-01-03/2020-05-03"))
                 .andExpect(status().isOk())
@@ -314,7 +346,7 @@ class CheckingAccountControllerTest {
         String body = objectMapper.writeValueAsString(checkingAccountDTO);
 
         MvcResult result = mockMvc.perform(
-                        put("/account/checking/new")
+                        put("/api/account/checking/new")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted())
@@ -333,7 +365,7 @@ class CheckingAccountControllerTest {
         String body = objectMapper.writeValueAsString(checkingAccountDTO);
 
         MvcResult result = mockMvc.perform(
-                        put("/account/checking/" + testAccount1.getAccountNumber() + "/update")
+                        put("/api/account/checking/" + testAccount1.getAccountNumber() + "/update")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted())

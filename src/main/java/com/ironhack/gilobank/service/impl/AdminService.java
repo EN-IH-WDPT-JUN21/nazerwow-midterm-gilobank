@@ -35,7 +35,7 @@ public class AdminService implements IAdminService {
 
     @Override
     public ThirdParty updateThirdParty(ThirdPartyDTO thirdPartyDTO) {
-        return null;
+        return creationService.newThirdParty(thirdPartyDTO);
     }
 
 

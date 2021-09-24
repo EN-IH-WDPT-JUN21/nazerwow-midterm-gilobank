@@ -40,7 +40,45 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.httpBasic();
         http.csrf().disable();
         http.authorizeRequests()
-                .mvcMatchers(HttpMethod.GET, "/account/checking").hasRole("ACCOUNTHOLDER").anyRequest().permitAll();
+                .mvcMatchers(HttpMethod.GET, "/swagger-ui.html").permitAll()
+                .mvcMatchers(HttpMethod.GET, "/api/**").hasRole("ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
+                .mvcMatchers(HttpMethod.PATCH, "/api/**").hasRole("ADMIN")
+                .mvcMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
+                // Checking
+                .mvcMatchers(HttpMethod.GET, "/api/account/checking/{id}").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.GET, "/api/account/checking/{id}/{dateFrom}/{dateTo}").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/account/checking/credit").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/account/checking/debit").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/account/checking/transfer").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.GET, "/api/account/checking/{id}/balance").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                // CreditCard
+                .mvcMatchers(HttpMethod.GET, "/api/account/creditcard/{id}").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.GET, "/api/account/creditcard/{id}/{dateFrom}/{dateTo}").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/account/creditcard/credit").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/account/creditcard/debit").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/account/creditcard/transfer").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.GET, "/api/account/creditcard/{id}/balance").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                // Savings Accounts
+                .mvcMatchers(HttpMethod.GET, "/api/account/saving/{id}").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.GET, "/api/account/saving/{id}/{dateFrom}/{dateTo}").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/account/saving/credit").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/account/saving/debit").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/account/saving/transfer").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.GET, "/api/account/saving/{id}/balance").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                // Student Accounts
+                .mvcMatchers(HttpMethod.GET, "/api/account/student/{id}").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.GET, "/api/account/student/{id}/{dateFrom}/{dateTo}").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/account/student/credit").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/account/student/debit").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/account/student/transfer").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                .mvcMatchers(HttpMethod.GET, "/api/account/student/{id}/balance").hasAnyRole("ACCOUNTHOLDER", "ADMIN")
+                // Third Party
+                .mvcMatchers(HttpMethod.PUT, "/api/thirdparty/{hashedkey}/credit").hasAnyRole("THIRDPARTY", "ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/thirdparty/{hashedkey}/debit").hasAnyRole("THIRDPARTY", "ADMIN")
+                .mvcMatchers(HttpMethod.PUT, "/api/thirdparty/{hashedkey}/transfer").hasAnyRole("THIRDPARTY", "ADMIN")
+                .anyRequest().permitAll();
+
     }
 
 }

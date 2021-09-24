@@ -9,8 +9,6 @@ import com.ironhack.gilobank.security.CustomUserDetails;
 import com.ironhack.gilobank.security.IAuthenticationFacade;
 import com.ironhack.gilobank.service.interfaces.IThirdPartyService;
 import com.ironhack.gilobank.service.interfaces.ITransactionService;
-import com.ironhack.gilobank.utils.Money;
-import org.hibernate.annotations.Check;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import javax.transaction.Transactional;
@@ -29,7 +26,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static java.util.Collections.singleton;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @Transactional
@@ -162,7 +160,7 @@ class ThirdPartyServiceTest {
                 testAccount1.getAccountNumber(),
                 testAccount1.getSecretKey(),
                 null, null);
-        var result= thirdPartyService.creditAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
+        var result = thirdPartyService.creditAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
         assertEquals(new BigDecimal("2000.00"), result.getBalanceAfterTransaction());
     }
 
@@ -174,7 +172,7 @@ class ThirdPartyServiceTest {
                 null, null,
                 testAccount1.getAccountNumber(),
                 testAccount1.getSecretKey());
-        var result= thirdPartyService.debitAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
+        var result = thirdPartyService.debitAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
         assertEquals(new BigDecimal("999.00"), result.getBalanceAfterTransaction());
     }
 
@@ -219,6 +217,6 @@ class ThirdPartyServiceTest {
         var sizebefore = thirdPartyRepository.findAll().size();
         thirdPartyService.saveThirdParty(newThirdParty);
         var sizeAfter = thirdPartyRepository.findAll().size();
-        assertEquals(sizebefore +1, sizeAfter);
+        assertEquals(sizebefore + 1, sizeAfter);
     }
 }

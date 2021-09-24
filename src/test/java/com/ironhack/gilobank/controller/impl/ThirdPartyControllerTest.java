@@ -1,10 +1,7 @@
 package com.ironhack.gilobank.controller.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ironhack.gilobank.controller.dto.AccountHolderDTO;
-import com.ironhack.gilobank.controller.dto.AddressDTO;
-import com.ironhack.gilobank.controller.dto.LoginDetailsDTO;
-import com.ironhack.gilobank.controller.dto.ThirdPartyDTO;
+import com.ironhack.gilobank.controller.dto.ThirdPartyTransactionDTO;
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.repositories.*;
@@ -32,12 +29,11 @@ import java.util.List;
 import static java.util.Collections.singleton;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-class AdminControllerTest {
+class ThirdPartyControllerTest {
 
     @Autowired
     private AddressRepository addressRepository;
@@ -66,7 +62,7 @@ class AdminControllerTest {
     private AccountHolder testHolder2;
     private CheckingAccount testAccount1, testAccount2, testAccount3;
     private LoginDetails loginDetails1, loginDetails2, loginDetails3, loginDetails4, loginDetails5;
-    private Admin admin, admin2, admin3;
+    private Admin admin;
     private ThirdParty thirdParty, thirdParty2;
     private CustomUserDetails details1, details2, details3, details4, details5;
     private UsernamePasswordAuthenticationToken adminLogin, login1, login2, thirdPartyLogin, thirdPartyLogin2;
@@ -77,6 +73,7 @@ class AdminControllerTest {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private final LocalDate dateNow = LocalDate.now();
 
+    ThirdPartyTransactionDTO thirdPartyTransactionDTO;
 
     @BeforeEach
     void setUp() throws ParseException {
@@ -89,8 +86,6 @@ class AdminControllerTest {
         testHolder1 = new AccountHolder("Test1", "TestSur1", testDateOfBirth1, testAddress1, null);
         testHolder2 = new AccountHolder("Test2", "TestSur2", testDateOfBirth2, testAddress2, null);
         admin = new Admin("Admin");
-        admin2 = new Admin("Admin2");
-        admin3 = new Admin("Admin3");
         thirdParty = new ThirdParty("ThirdParty", "hashedKey");
         thirdParty2 = new ThirdParty("ThirdParty2", "haskedKey2");
 
@@ -139,7 +134,7 @@ class AdminControllerTest {
 
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
-        adminRepository.saveAll(List.of(admin, admin2, admin3));
+        adminRepository.save(admin);
         thirdPartyRepository.save(thirdParty);
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2, loginDetails4));
         checkingAccountRepository.saveAll(List.of(testAccount1, testAccount2, testAccount3));
@@ -167,155 +162,66 @@ class AdminControllerTest {
     }
 
     @Test
-    void getAll_ValidTest() throws Exception {
-        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+    void creditAccount() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
+        thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
+                new BigDecimal("1000.00"),
+                testAccount1.getAccountNumber(),
+                testAccount1.getSecretKey(),
+                null, null);
+        String body = objectMapper.writeValueAsString(thirdPartyTransactionDTO);
         MvcResult result = mockMvc.perform(
-                        get("/api/admin"))
+                        put("/api/thirdparty/" + thirdParty.getHashedKey() + "/credit")
+                                .content(body)
+                                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("Admin"));
-        assertTrue(result.getResponse().getContentAsString().contains("Admin2"));
-        assertTrue(result.getResponse().getContentAsString().contains("Admin3"));
+        CheckingAccount updatedAccount = checkingAccountRepository.findById(thirdPartyTransactionDTO.getCreditAccountNumber()).get();
+        assertEquals(testAccount1.getBalance().add(new BigDecimal("1000.00")), updatedAccount.getBalance());
+        assertTrue(result.getResponse().getContentAsString().contains("CREDIT"));
     }
 
-
     @Test
-    void createThirdParty() throws Exception {
-        SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        ThirdPartyDTO thirdPartyDTO = new ThirdPartyDTO("name", "newhash2344");
-        String body = objectMapper.writeValueAsString(thirdPartyDTO);
+    void debitAccount() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
+        thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
+                new BigDecimal("100.00"),
+                null, null,
+                testAccount1.getAccountNumber(),
+                testAccount1.getSecretKey());
+        String body = objectMapper.writeValueAsString(thirdPartyTransactionDTO);
         MvcResult result = mockMvc.perform(
-                        put("/api/admin/thirdparty/new")
+                        put("/api/thirdparty/" + thirdParty.getHashedKey() + "/debit")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted())
                 .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("newhash2344"));
+        CheckingAccount updatedAccount = checkingAccountRepository.findById(thirdPartyTransactionDTO.getDebitAccountNumber()).get();
+        assertEquals(testAccount1.getBalance().subtract(new BigDecimal("100.00")), updatedAccount.getBalance());
+        assertTrue(result.getResponse().getContentAsString().contains("DEBIT"));
     }
 
     @Test
-    void updateThirdParty() throws Exception {
-        SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        ThirdPartyDTO thirdPartyDTO = new ThirdPartyDTO("newName", "newhash2344");
-        thirdPartyDTO.setId(thirdParty.getId());
-        String body = objectMapper.writeValueAsString(thirdPartyDTO);
+    void transferBetweenAccounts() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
+        thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
+                new BigDecimal("100.00"),
+                testAccount2.getAccountNumber(),
+                testAccount2.getSecretKey(),
+                testAccount1.getAccountNumber(),
+                testAccount1.getSecretKey());
+        String body = objectMapper.writeValueAsString(thirdPartyTransactionDTO);
         MvcResult result = mockMvc.perform(
-                        put("/api/admin/thirdparty/update")
+                        put("/api/thirdparty/" + thirdParty.getHashedKey() + "/transfer")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted())
                 .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("newhash2344"));
-        assertTrue(thirdPartyRepository.findByHashedKey("newHash2344").isPresent());
-    }
+        CheckingAccount updatedAccount = checkingAccountRepository.findById(thirdPartyTransactionDTO.getDebitAccountNumber()).get();
+        CheckingAccount updatedCreditAccount = checkingAccountRepository.findById(thirdPartyTransactionDTO.getCreditAccountNumber()).get();
 
-    @Test
-    void newAddress() throws Exception {
-        SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        AddressDTO addressDTO = new AddressDTO();
-        addressDTO.setHouseNumber("25");
-        addressDTO.setStreet("New Street");
-        addressDTO.setCity("New City");
-        addressDTO.setPostcode("New Postcode");
-        String body = objectMapper.writeValueAsString(addressDTO);
-        MvcResult result = mockMvc.perform(
-                        put("/api/admin/address/new")
-                                .content(body)
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isAccepted())
-                .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("New City"));
-    }
-
-    @Test
-    void updateAddress() throws Exception {
-        SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        AddressDTO addressDTO = new AddressDTO();
-        addressDTO.setId(testAddress1.getId());
-        addressDTO.setHouseNumber("25");
-        addressDTO.setStreet("New Street");
-        addressDTO.setCity("New City");
-        addressDTO.setPostcode("New Postcode");
-        String body = objectMapper.writeValueAsString(addressDTO);
-        MvcResult result = mockMvc.perform(
-                        put("/api/admin/address/update")
-                                .content(body)
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isAccepted())
-                .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("New City"));
-        assertEquals("New Street", addressRepository.findById(testAddress1.getId()).get().getStreet());
-    }
-
-    @Test
-    void newAccountHolder() throws Exception {
-        SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        AccountHolderDTO accountHolderDTO = new AccountHolderDTO();
-        accountHolderDTO.setFirstName("NewFirstName");
-        accountHolderDTO.setSurname("NewSurname");
-        accountHolderDTO.setPrimaryAddress(testAddress1);
-        accountHolderDTO.setDateOfBirth(LocalDate.parse("2000-01-01"));
-        String body = objectMapper.writeValueAsString(accountHolderDTO);
-        MvcResult result = mockMvc.perform(
-                        put("/api/admin/accountholder/new")
-                                .content(body)
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isAccepted())
-                .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("NewFirstName"));
-    }
-
-    @Test
-    void updateAccountHolder() throws Exception {
-        SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        AccountHolderDTO accountHolderDTO = new AccountHolderDTO();
-        accountHolderDTO.setId(testHolder1.getId());
-        accountHolderDTO.setFirstName("NewFirstName");
-        accountHolderDTO.setSurname("NewSurname");
-        accountHolderDTO.setPrimaryAddress(testAddress1);
-        accountHolderDTO.setDateOfBirth(LocalDate.parse("2000-01-01"));
-        String body = objectMapper.writeValueAsString(accountHolderDTO);
-        MvcResult result = mockMvc.perform(
-                        put("/api/admin/accountholder/update")
-                                .content(body)
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isAccepted())
-                .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("NewFirstName"));
-        assertEquals("NewFirstName", accountHolderRepository.findById(testHolder1.getId()).get().getFirstName());
-    }
-
-    @Test
-    void newLoginDetails() throws Exception {
-        AccountHolder newHolder = new AccountHolder("newHolder", "newsurname", testDateOfBirth2, testAddress2, null);
-
-        SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        LoginDetailsDTO loginDetailsDTO = new LoginDetailsDTO("newUsername", "newPassword", newHolder);
-        String body = objectMapper.writeValueAsString(loginDetailsDTO);
-        MvcResult result = mockMvc.perform(
-                        put("/api/admin/logindetails/new")
-                                .content(body)
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isAccepted())
-                .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("newUsername"));
-    }
-
-    @Test
-    void updateLoginDetails() throws Exception {
-        AccountHolder newHolder = new AccountHolder("newHolder", "newsurname", testDateOfBirth2, testAddress2, null);
-
-        SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        LoginDetailsDTO loginDetailsDTO = new LoginDetailsDTO("newUsername", "newPassword", newHolder);
-        loginDetailsDTO.setId(loginDetails1.getId());
-        String body = objectMapper.writeValueAsString(loginDetailsDTO);
-        MvcResult result = mockMvc.perform(
-                        put("/api/admin/logindetails/update")
-                                .content(body)
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isAccepted())
-                .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("newUsername"));
-        assertEquals("newUsername", loginDetailsRepository.findById(loginDetails1.getId()).get().getUsername());
+        assertEquals(testAccount1.getBalance().subtract(new BigDecimal("100.00")), updatedAccount.getBalance());
+        assertEquals(testAccount2.getBalance().add(new BigDecimal("100.00")), updatedCreditAccount.getBalance());
+        assertTrue(result.getResponse().getContentAsString().contains("TRANSFER"));
     }
 }

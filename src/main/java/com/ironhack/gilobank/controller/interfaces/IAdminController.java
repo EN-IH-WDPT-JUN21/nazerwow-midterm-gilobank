@@ -11,15 +11,20 @@ import java.util.List;
 public interface IAdminController {
 
     List<Admin> getAll();
+
     ThirdParty newThirdParty(ThirdPartyDTO thirdPartyDTO);
+
     ThirdParty updateThirdParty(ThirdPartyDTO thirdPartyDTO);
 
     Address newAddress(AddressDTO addressDTO);
+
     Address updateAddress(AddressDTO addressDTO);
 
     AccountHolder newAccountHolder(AccountHolderDTO accountHolderDTO);
+
     AccountHolder updateAccountHolder(AccountHolderDTO accountHolderDTO);
 
     LoginDetails newLoginDetials(LoginDetailsDTO loginDetailsDTO);
+
     LoginDetails updateLoginDetails(LoginDetailsDTO loginDetailsDTO);
 }

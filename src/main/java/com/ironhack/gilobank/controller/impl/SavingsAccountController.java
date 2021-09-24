@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.controller.impl;
 
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.SavingsAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.controller.interfaces.ISavingsAccountController;
@@ -16,7 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/account/saving")
+@RequestMapping("/api/account/saving")
 public class SavingsAccountController implements ISavingsAccountController {
 
     @Autowired
@@ -34,6 +35,12 @@ public class SavingsAccountController implements ISavingsAccountController {
     @ResponseStatus(HttpStatus.OK)
     public SavingsAccount getByAccountNumber(@PathVariable(name = "id") Long accountNumber) {
         return savingsAccountService.findByAccountNumber(accountNumber);
+    }
+
+    @GetMapping("/{id}/balance")
+    @ResponseStatus(HttpStatus.OK)
+    public BalanceDTO getBalance(@PathVariable(name = "id") Long accountNumber) {
+        return savingsAccountService.getBalance(accountNumber);
     }
 
     @PutMapping("/credit")

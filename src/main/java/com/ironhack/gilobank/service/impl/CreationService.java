@@ -86,18 +86,18 @@ public class CreationService implements ICreationService {
         return accountHolder;
     }
 
-    public ThirdParty newThirdParty(ThirdPartyDTO thirdPartyDTO){
+    public ThirdParty newThirdParty(ThirdPartyDTO thirdPartyDTO) {
         ThirdParty thirdParty = new ThirdParty();
-        if(thirdPartyDTO.getId() != null){
+        if (thirdPartyDTO.getId() != null) {
             thirdParty = thirdPartyService.findById(thirdPartyDTO.getId());
         }
-        if(thirdPartyDTO.getName() != null) {
-            thirdParty.setName(thirdPartyDTO.getName());
-        }
-        if(thirdPartyDTO.getHashedKey() != null){
+        if (thirdPartyDTO.getHashedKey() != null) {
             thirdParty.setHashedKey(thirdPartyDTO.getHashedKey());
         }
-        if(thirdPartyDTO.getRole() != null){
+        if (thirdPartyDTO.getName() != null) {
+            thirdParty.setName(thirdPartyDTO.getName());
+        }
+        if (thirdPartyDTO.getRole() != null) {
             thirdParty.setRole(Role.THIRDPARTY);
         }
         thirdPartyService.saveThirdParty(thirdParty);

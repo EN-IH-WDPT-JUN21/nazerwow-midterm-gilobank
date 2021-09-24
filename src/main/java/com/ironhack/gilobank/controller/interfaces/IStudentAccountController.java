@@ -1,7 +1,9 @@
 package com.ironhack.gilobank.controller.interfaces;
 
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
+import com.ironhack.gilobank.dao.CheckingAccount;
 import com.ironhack.gilobank.dao.StudentAccount;
 import com.ironhack.gilobank.dao.Transaction;
 
@@ -25,4 +27,5 @@ public interface IStudentAccountController {
     StudentAccount createStudentAccount(CheckingAccountDTO checkingAccountDTO);
 
     StudentAccount updateStudentAccount(Long accountNumber, CheckingAccountDTO checkingAccountDTO);
+    BalanceDTO getBalance(Long  accountNumber);
 }

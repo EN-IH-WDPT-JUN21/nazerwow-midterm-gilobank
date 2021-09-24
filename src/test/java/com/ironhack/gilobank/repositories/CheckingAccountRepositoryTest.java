@@ -1,6 +1,9 @@
 package com.ironhack.gilobank.repositories;
 
-import com.ironhack.gilobank.dao.*;
+import com.ironhack.gilobank.dao.AccountHolder;
+import com.ironhack.gilobank.dao.Address;
+import com.ironhack.gilobank.dao.CheckingAccount;
+import com.ironhack.gilobank.dao.LoginDetails;
 import com.ironhack.gilobank.enums.Role;
 import com.ironhack.gilobank.enums.Status;
 import org.junit.jupiter.api.AfterEach;
@@ -8,9 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.TransactionSystemException;
 
 import java.math.BigDecimal;
@@ -18,8 +18,8 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
 
-import static java.util.Collections.singleton;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 class CheckingAccountRepositoryTest {
@@ -111,7 +111,7 @@ class CheckingAccountRepositoryTest {
     }
 
     @Test
-    void getAccountBalanceByAccountNumber(){
+    void getAccountBalanceByAccountNumber() {
         CheckingAccount testAccount = new CheckingAccount("secretKeyJoint", testHolder1, testHolder2, new BigDecimal("150.00"));
         checkingAccountRepository.save(testAccount);
         var result = checkingAccountRepository.getBalanceByAccountNumber(testAccount.getAccountNumber());

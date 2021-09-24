@@ -1,9 +1,6 @@
 package com.ironhack.gilobank.controller.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.CreditCardDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.*;
@@ -34,7 +31,6 @@ import java.util.List;
 
 import static java.util.Collections.singleton;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -77,11 +73,11 @@ class CreditCardControllerTest {
     private UsernamePasswordAuthenticationToken adminLogin, login1, login2, thirdPartyLogin, thirdPartyLogin2;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private  LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
+    private final LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private  LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
+    private final LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate dateNow = LocalDate.now();
+    private final LocalDate dateNow = LocalDate.now();
 
     @BeforeEach
     void setUp() throws ParseException {
@@ -176,7 +172,7 @@ class CreditCardControllerTest {
     void getByAccountNumber_TestValid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         MvcResult result = mockMvc.perform(
-                        get("/account/creditcard/" + testAccount1.getAccountNumber()))
+                        get("/api/account/creditcard/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getCreditLimit())));
@@ -188,7 +184,7 @@ class CreditCardControllerTest {
     void getAll_TestValid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         MvcResult result = mockMvc.perform(
-                        get("/account/creditcard/"))
+                        get("/api/account/creditcard/"))
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getCreditLimit())));
@@ -202,7 +198,7 @@ class CreditCardControllerTest {
         TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250.00"), TransactionType.CREDIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
-                        put("/account/creditcard/credit")
+                        put("/api/account/creditcard/credit")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -217,7 +213,7 @@ class CreditCardControllerTest {
         TransactionDTO transactionDTO = new TransactionDTO(new BigDecimal("250.00"), testAccount1.getAccountNumber(), TransactionType.DEBIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
-                        put("/account/creditcard/debit")
+                        put("/api/account/creditcard/debit")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -232,7 +228,7 @@ class CreditCardControllerTest {
         TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new BigDecimal("250"), testAccount2.getAccountNumber());
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
-                        put("/account/creditcard/transfer")
+                        put("/api/account/creditcard/transfer")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -265,7 +261,7 @@ class CreditCardControllerTest {
                 testTransaction11));
 
         MvcResult result = mockMvc.perform(
-                        get("/account/creditcard/"
+                        get("/api/account/creditcard/"
                                 + testAccount1.getAccountNumber()
                                 + "/2020-01-03/2020-05-03"))
                 .andExpect(status().isOk())
@@ -290,7 +286,7 @@ class CreditCardControllerTest {
         String body = objectMapper.writeValueAsString(creditCardDTO);
 
         MvcResult result = mockMvc.perform(
-                        put("/account/creditcard/new")
+                        put("/api/account/creditcard/new")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted())
@@ -309,7 +305,7 @@ class CreditCardControllerTest {
         String body = objectMapper.writeValueAsString(creditCardDTO);
 
         MvcResult result = mockMvc.perform(
-                        put("/account/creditcard/" + testAccount1.getAccountNumber() + "/update")
+                        put("/api/account/creditcard/" + testAccount1.getAccountNumber() + "/update")
                                 .content(body)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted())
@@ -318,6 +314,42 @@ class CreditCardControllerTest {
         var repoSizeAfter = creditCardRepository.findAll().size();
         assertEquals(repoSizeBefore, repoSizeAfter);
         assertEquals(new BigDecimal("-999.00"), creditCardRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+    }
+
+    @Test
+    void getByBalance_TestValid() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/creditcard/" + testAccount1.getAccountNumber() + "/balance"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getSecretKey())));
+    }
+
+    @Test
+    void getByBalance_Test_AccountOwner() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(login1);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/creditcard/" + testAccount1.getAccountNumber() + "/balance"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getSecretKey())));
+    }
+
+    @Test
+    void getByBalance_Test_NotAllowed() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(login2);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/creditcard/" + testAccount2.getAccountNumber() + "/balance"))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getBalance())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getSecretKey())));
     }
 }
 

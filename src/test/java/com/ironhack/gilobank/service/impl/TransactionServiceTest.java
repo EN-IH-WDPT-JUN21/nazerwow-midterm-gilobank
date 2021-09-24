@@ -20,7 +20,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -192,8 +191,6 @@ class TransactionServiceTest {
         assertEquals(LocalDateTime.parse("2012-01-01T10:15:30"), testTransaction.getTimeOfTrns());
     }
 
-    ;
-
 
     // Transfer
     @Test
@@ -203,8 +200,6 @@ class TransactionServiceTest {
         assertEquals(TransactionType.TRANSFER_DEBIT, debitTransaction.getType());
         assertEquals(TransactionType.TRANSFER_CREDIT, creditTransaction.getType());
     }
-
-    ;
 
     @Test
     void findByDateTimeBetween() {

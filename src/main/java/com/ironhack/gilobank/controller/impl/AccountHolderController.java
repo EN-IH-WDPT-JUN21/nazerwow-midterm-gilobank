@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/user/accholder")
+@RequestMapping("/api/user/accholder")
 public class AccountHolderController implements IAccountHolderController {
 
     @Autowired

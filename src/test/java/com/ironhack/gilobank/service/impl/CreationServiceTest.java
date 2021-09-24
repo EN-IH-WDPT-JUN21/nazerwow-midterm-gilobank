@@ -11,7 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -118,6 +117,7 @@ class CreationServiceTest {
         studentAccountRepository.deleteAll();
         checkingAccountRepository.deleteAll();
         loginDetailsRepository.deleteAll();
+        thirdPartyRepository.deleteAll();
         accountHolderRepository.deleteAll();
         addressRepository.deleteAll();
     }
@@ -134,7 +134,7 @@ class CreationServiceTest {
 
     @Test
     void newAddress_UpdateExisting() {
-        addressDTO = new AddressDTO(testAddress1.getId(),"13", "13", "Fake Street",
+        addressDTO = new AddressDTO(testAddress1.getId(), "13", "13", "Fake Street",
                 "Fake Town", "Fake City", "Fake Postcode");
         var repoSizeBefore = addressRepository.findAll().size();
         creationService.newAddress(addressDTO);
@@ -155,9 +155,9 @@ class CreationServiceTest {
 
     @Test
     void newAccountHolder_UpdateExisting() {
-        accountHolderDTO = new AccountHolderDTO(testHolder1.getId(),"firstName", "surname",
+        accountHolderDTO = new AccountHolderDTO(testHolder1.getId(), "firstName", "surname",
                 LocalDate.parse("1988-01-01"),
-                testAddress1, testAddress2, Role.ACCOUNTHOLDER );
+                testAddress1, testAddress2, Role.ACCOUNTHOLDER);
         var repoSizeBefore = accountHolderRepository.findAll().size();
         creationService.newAccountHolder(accountHolderDTO);
         var repoSizeAfter = accountHolderRepository.findAll().size();
@@ -180,10 +180,10 @@ class CreationServiceTest {
         thirdPartyRepository.save(thirdParty);
         ThirdPartyDTO thirdPartyDTO = new ThirdPartyDTO();
         thirdPartyDTO.setId(thirdParty.getId());
-        thirdPartyDTO.setHashedKey("hashedkey232");
+        thirdPartyDTO.setHashedKey("hashedkey6969");
         thirdPartyDTO.setName("newThirdParty");
         var result = creationService.newThirdParty(thirdPartyDTO);
-        assertEquals("hashedkey232", thirdPartyRepository.findById(thirdParty.getId()).get().getHashedKey());
+        assertEquals("hashedkey6969", thirdPartyRepository.findById(thirdParty.getId()).get().getHashedKey());
     }
 
     @Test
@@ -211,17 +211,17 @@ class CreationServiceTest {
 
     @Test
     void newCheckingAccount() {
-            checkingAccountDTO = new CheckingAccountDTO("secreKey", testHolder1, testHolder2, new BigDecimal("200.00"),
-                    new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
-            var repoSizeBefore = checkingAccountRepository.findAll().size();
-            creationService.newCheckingAccount(checkingAccountDTO);
-            var repoSizeAfter = checkingAccountRepository.findAll().size();
-            assertEquals(repoSizeBefore + 1, repoSizeAfter);
+        checkingAccountDTO = new CheckingAccountDTO("secreKey", testHolder1, testHolder2, new BigDecimal("200.00"),
+                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
+        var repoSizeBefore = checkingAccountRepository.findAll().size();
+        creationService.newCheckingAccount(checkingAccountDTO);
+        var repoSizeAfter = checkingAccountRepository.findAll().size();
+        assertEquals(repoSizeBefore + 1, repoSizeAfter);
     }
 
     @Test
     void newCheckingAccount_UpdateExisting() {
-        checkingAccountDTO = new CheckingAccountDTO(testAccount1.getAccountNumber(),"secrekey", testHolder1, testHolder2, new BigDecimal("200.00"),
+        checkingAccountDTO = new CheckingAccountDTO(testAccount1.getAccountNumber(), "secrekey", testHolder1, testHolder2, new BigDecimal("200.00"),
                 new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
         var repoSizeBefore = checkingAccountRepository.findAll().size();
         creationService.newCheckingAccount(checkingAccountDTO);

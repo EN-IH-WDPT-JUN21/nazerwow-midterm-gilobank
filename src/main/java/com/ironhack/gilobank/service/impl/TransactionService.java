@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.service.impl;
 
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Role;
@@ -128,13 +129,13 @@ public class TransactionService implements ITransactionService {
     }
 
     public void checkForFraud(TransactionDTO transactionDTO) {
-        if(transactionDTO.getDebitAccountNumber() != null){
+        if (transactionDTO.getDebitAccountNumber() != null) {
             Account debitAccount = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
-        if (fraudDetection.fraudDetector(debitAccount, transactionDTO.getAmount())) {
-            debitAccount.freezeAccount();
-            findAccountTypeAndSave(debitAccount);
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
-        }
+            if (fraudDetection.fraudDetector(debitAccount, transactionDTO.getAmount())) {
+                debitAccount.freezeAccount();
+                findAccountTypeAndSave(debitAccount);
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
+            }
         }
         if (transactionDTO.getCreditAccountNumber() != null) {
             Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
@@ -314,13 +315,19 @@ public class TransactionService implements ITransactionService {
         return false;
     }
 
-    public boolean verifySecretKey(String secretKey, Account account){
-        if(Objects.equals(account.getSecretKey(), secretKey)){
+    public boolean verifySecretKey(String secretKey, Account account) {
+        if (Objects.equals(account.getSecretKey(), secretKey)) {
             return true;
-        }
-        else{
+        } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Secret key: " + secretKey +
                     "does not match account: " + account.getAccountNumber());
         }
+    }
+
+    public BalanceDTO getBalance(Account account){
+        BalanceDTO balanceDTO = new BalanceDTO();
+        balanceDTO.setAccountNumber(account.getAccountNumber());
+        balanceDTO.setBalance(account.getBalanceAsMoney());
+        return balanceDTO;
     }
 }

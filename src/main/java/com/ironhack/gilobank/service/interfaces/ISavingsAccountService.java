@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.service.interfaces;
 
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.SavingsAccount;
 import com.ironhack.gilobank.dao.Transaction;
@@ -25,4 +26,5 @@ public interface ISavingsAccountService {
     List<Transaction> findTransactionBetween(Long accountNumber, LocalDate startDate, LocalDate endDate);
 
     void saveNewSavingsAccount(SavingsAccount savingsAccount);
+    BalanceDTO getBalance(Long accountNumber);
 }

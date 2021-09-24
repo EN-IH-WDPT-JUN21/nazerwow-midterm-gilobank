@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.service.impl;
 
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.CreditCard;
 import com.ironhack.gilobank.dao.Transaction;
@@ -49,6 +50,8 @@ public class CreditCardService implements ICreditCardService {
         return creditCard;
     }
 
+
+
     public Transaction creditFunds(TransactionDTO transactionDTO) {
         findByAccountNumber(transactionDTO.getCreditAccountNumber());
         return transactionService.creditFunds(transactionDTO);
@@ -78,5 +81,9 @@ public class CreditCardService implements ICreditCardService {
         creditCardRepository.save(creditCard);
     }
 
+    @Override
+    public BalanceDTO getBalance(Long accountNumber) {
+        return transactionService.getBalance(findByAccountNumber(accountNumber));
+    }
 
 }
