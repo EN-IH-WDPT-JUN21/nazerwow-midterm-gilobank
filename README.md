@@ -67,6 +67,9 @@ INSERT INTO ADDRESS (house_number, street, city, postcode) VALUES <br>
 INSERT INTO account_holder (id, first_name, surname, primary_address, date_of_birth, role) VALUES<br>
 (1, 'Nathan', 'Giles', 1, '1988-04-05', "ACCOUNTHOLDER"),<br>
 (2, 'Sarah', 'Break', 2, '1990-10-23', "ACCOUNTHOLDER");<br>
+   <br>
+INSERT INTO third_party (id, name, hashedkey, role) VALUES <br>
+(3, 'thirdparty', 'thekey', 'THIRDPARTY');<br>
 <br>
 INSERT INTO admin (id, name, role) VALUES<br>
 (4, 'admin', 'ADMIN');<br>
@@ -74,13 +77,14 @@ INSERT INTO admin (id, name, role) VALUES<br>
 INSERT INTO login_details (id, username, password, user_id) VALUES<br>
 (1, "hackerman", "$2a$10$MSzkrmfd5ZTipY0XkuCbAejBC9g74MAg2wrkeu8/m1wQGXDihaX3e", 1),<br>
 (2, 'testLogin2', "$2a$10$MSzkrmfd5ZTipY0XkuCbAejBC9g74MAg2wrkeu8/m1wQGXDihaX3e", 2),<br>
-(4, 'admin2', "$2a$10$MSzkrmfd5ZTipY0XkuCbAejBC9g74MAg2wrkeu8/m1wQGXDihaX3e", 4);<br>
+(3, 'thirdparty1', "$2a$10$MSzkrmfd5ZTipY0XkuCbAejBC9g74MAg2wrkeu8/m1wQGXDihaX3e", 3), <br>
+(4, 'admin1', "$2a$10$MSzkrmfd5ZTipY0XkuCbAejBC9g74MAg2wrkeu8/m1wQGXDihaX3e", 4);<br>
 
 INSERT INTO checking_account (account_number, balance, open_date, penalty_fee, status, primary_holder, secondary_holder, minimum_balance, monthly_maintenance_fee, secret_key) VALUES <br>
-(32165487, 2500.00, '2021-05-05', 40, 'ACTIVE', 1, 2, 0, 12, 'secretkey'),<br>
-(32165488, 2500.00, '2021-05-05', 40, 'ACTIVE', 2, 1, 0, 12, 'secretkey'),<br>
-(32165489, 2500.00, '2021-05-05', 40, 'ACTIVE', 1, null, 0, 12, 'secretkey'),<br>
-(32165481, 2500.00, '2021-05-05', 40, 'ACTIVE', 2, null, 0, 12, 'secretkey');<br>
+(32165487, 2500.00, '2021-05-05', 40, 'ACTIVE', 1, 2, 0, 12, 'secretkey1'),<br>
+(32165488, 2500.00, '2021-05-05', 40, 'ACTIVE', 2, 1, 0, 12, 'secretkey2'),<br>
+(32165489, 2500.00, '2021-05-05', 40, 'ACTIVE', 1, null, 0, 12, 'secretkey3'),<br>
+(32165481, 2500.00, '2021-05-05', 40, 'ACTIVE', 2, null, 0, 12, 'secretkey4');<br>
 <br>
 INSERT INTO transaction (id, amount, balance_after_transaction, name, time_of_trns, type, account_id) VALUES<br>
 -- Day 1 - Total debit = 300.00<br>
