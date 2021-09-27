@@ -7,9 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,11 +23,16 @@ public class CheckingAccount extends Account {
 
     @NotNull
     @Embedded
-    @Column(insertable = false, updatable = false)
+    @AttributeOverrides({
+            @AttributeOverride( name = "currency", column = @Column(name = "checkingMonthlyMaintCurrency")),
+            @AttributeOverride( name = "amount", column = @Column(name = "checkingMonthlyMaintenance"))})
     private Money monthlyMaintenanceFee = new Money(new BigDecimal("12.00"));
+
     @NotNull
     @Embedded
-    @Column(insertable = false, updatable = false)
+    @AttributeOverrides({
+            @AttributeOverride( name = "currency", column = @Column(name = "checkingMinCurrency")),
+            @AttributeOverride( name = "amount", column = @Column(name = "checkingMinBalance"))})
     private Money minimumBalance = new Money(new BigDecimal("250.00"));
 
     public CheckingAccount(String secretKey, AccountHolder primaryHolder, Money balance) {

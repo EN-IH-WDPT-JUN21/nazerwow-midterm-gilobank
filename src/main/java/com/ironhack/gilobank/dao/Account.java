@@ -50,10 +50,16 @@ public abstract class Account {
     private List<Transaction> transaction;
 
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride( name = "currency", column = @Column(name = "currencyBalance")),
+            @AttributeOverride( name = "amount", column = @Column(name = "balance"))})
     private Money balance = new Money(new BigDecimal("0.00"));
 
     @NotNull
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride( name = "currency", column = @Column(name = "penaltyCurrency")),
+            @AttributeOverride( name = "amount", column = @Column(name = "penalty_amount"))})
     private Money penaltyFee = new Money(new BigDecimal("40.00"));
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

@@ -28,7 +28,17 @@ public class Transaction {
     @JsonManagedReference
     private Account account;
     private String name;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride( name = "currency", column = @Column(name = "transactionCurrency")),
+            @AttributeOverride( name = "amount", column = @Column(name = "transactionAmount"))})
     private Money amount;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride( name = "currency", column = @Column(name = "transactionBalCurrenct")),
+            @AttributeOverride( name = "lastName", column = @Column(name = "transactionBalAmount"))})
     private Money balanceAfterTransaction;
 
     @Enumerated(EnumType.STRING)
