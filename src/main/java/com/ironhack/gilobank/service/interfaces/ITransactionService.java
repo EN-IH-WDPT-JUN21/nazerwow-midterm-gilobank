@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.service.interfaces;
 
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.Account;
 import com.ironhack.gilobank.dao.Transaction;
@@ -51,5 +52,8 @@ public interface ITransactionService {
     boolean checkAuthentication(Long accountNumber);
 
     boolean verifyThirdParty(String hashKey);
+
     boolean verifySecretKey(String secretKey, Account account);
+
+    BalanceDTO getBalance(Account account);
 }

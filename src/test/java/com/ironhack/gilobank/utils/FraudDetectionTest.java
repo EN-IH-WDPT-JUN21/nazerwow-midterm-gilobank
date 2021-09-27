@@ -134,10 +134,25 @@ class FraudDetectionTest {
     }
 
     @Test
+    void debitsWithin1SecondLast24Hours_Test_Detected1() {
+        String timeAsString = LocalDateTime.now().toString();
+        LocalDateTime now = LocalDateTime.parse(timeAsString);
+        Transaction test1 = new Transaction(testAccount1, "Test6", new Money(new BigDecimal("10.00")), testAccount1.getBalance(), TransactionType.DEBIT, now);
+        Transaction test2 = new Transaction(testAccount1, "Test7", new Money(new BigDecimal("10.00")), testAccount1.getBalance(), TransactionType.DEBIT, now);
+        Transaction test3 = new Transaction(testAccount1, "Test8", new Money(new BigDecimal("10.00")), testAccount1.getBalance(), TransactionType.DEBIT, now);
+        transactionRepository.saveAll(List.of(test1, test2, test3));
+        var transactionTotal = fraudDetection.debitsWithin1SecondLast24Hours(testAccount1);
+        assertTrue(transactionTotal);
+    }
+
+    @Test
     void debitsWithin1SecondLast24Hours_Test_Detected() {
-        Transaction test1 = new Transaction(testAccount1, "Test6", new Money(new BigDecimal("10.00")), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
-        Transaction test2 = new Transaction(testAccount1, "Test7", new Money(new BigDecimal("10.00")), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now());
-        Transaction test3 = new Transaction(testAccount1, "Test8", new Money(new BigDecimal("10.00")), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(1));
+        String timeAsString = LocalDateTime.now().toString();
+        LocalDateTime now = LocalDateTime.parse(timeAsString);
+        Transaction test1 = new Transaction(testAccount1, "Test6", new Money(new BigDecimal("10.00")), testAccount1.getBalance(), TransactionType.DEBIT, now);
+        Transaction test2 = new Transaction(testAccount1, "Test7", new Money(new BigDecimal("10.00")), testAccount1.getBalance(), TransactionType.DEBIT, now);
+        Transaction test3 = new Transaction(testAccount1, "Test8", new Money(new BigDecimal("10.00")), testAccount1.getBalance(), TransactionType.DEBIT, now);
+
         transactionRepository.saveAll(List.of(test1, test2, test3));
         var transactionTotal = fraudDetection.fraudDetector(testAccount1, new BigDecimal("10.00"));
         assertTrue(transactionTotal);

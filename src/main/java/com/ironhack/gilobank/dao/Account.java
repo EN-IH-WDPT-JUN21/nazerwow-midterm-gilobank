@@ -38,28 +38,31 @@ public abstract class Account {
     @ManyToOne
     @JoinColumn(name = "primaryHolder", referencedColumnName = "id")
     @JsonIgnore
+    @Embedded
     private AccountHolder primaryHolder;
 
     @ManyToOne
     @JoinColumn(name = "secondaryHolder", referencedColumnName = "id")
     @JsonIgnore
+    @Embedded
     private AccountHolder secondaryHolder;
 
     @OneToMany(mappedBy = "account")
     @JsonBackReference
+    @Embedded
     private List<Transaction> transaction;
 
     @Embedded
     @AttributeOverrides({
             @AttributeOverride( name = "currency", column = @Column(name = "currencyBalance")),
-            @AttributeOverride( name = "amount", column = @Column(name = "balance"))})
+            @AttributeOverride( name = "amount", column = @Column(name = "accountBalance"))})
     private Money balance = new Money(new BigDecimal("0.00"));
 
     @NotNull
     @Embedded
     @AttributeOverrides({
             @AttributeOverride( name = "currency", column = @Column(name = "penaltyCurrency")),
-            @AttributeOverride( name = "amount", column = @Column(name = "penalty_amount"))})
+            @AttributeOverride( name = "amount", column = @Column(name = "penaltyAmount"))})
     private Money penaltyFee = new Money(new BigDecimal("40.00"));
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

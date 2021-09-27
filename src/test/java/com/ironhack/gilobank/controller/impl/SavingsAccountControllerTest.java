@@ -1,7 +1,6 @@
 package com.ironhack.gilobank.controller.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.SavingsAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.*;
@@ -32,7 +31,6 @@ import java.util.List;
 
 import static java.util.Collections.singleton;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -169,9 +167,9 @@ class SavingsAccountControllerTest {
                         get("/api/account/saving/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getMinimumBalance())));
-        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getMinimumBalance())));
-        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getMinimumBalance())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getMinimumBalance().getAmount())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getMinimumBalance().getAmount())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getMinimumBalance().getAmount())));
     }
 
     @Test
@@ -181,9 +179,9 @@ class SavingsAccountControllerTest {
                         get("/api/account/saving/"))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getMinimumBalance())));
-        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getMinimumBalance())));
-        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getMinimumBalance())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getMinimumBalance().getAmount())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getMinimumBalance().getAmount())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getMinimumBalance().getAmount())));
     }
 
     @Test
@@ -198,13 +196,13 @@ class SavingsAccountControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
         SavingsAccount updatedAccount = savingsAccountRepository.findById(transactionDTO.getCreditAccountNumber()).get();
-        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance().getAmount());
     }
 
     @Test
     void debitFunds_Valid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(),new Money( new BigDecimal("250.00")), TransactionType.DEBIT);
+        TransactionDTO transactionDTO = new TransactionDTO(new Money( new BigDecimal("250.00")), testAccount1.getAccountNumber(), TransactionType.DEBIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
                         put("/api/account/saving/debit")
@@ -213,13 +211,13 @@ class SavingsAccountControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
         SavingsAccount updatedAccount = savingsAccountRepository.findById(transactionDTO.getDebitAccountNumber()).get();
-        assertEquals(testAccount1.getBalance().decreaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance());
+        assertEquals(testAccount1.getBalance().decreaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance().getAmount());
     }
 
     @Test
     void transferFunds_Valid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(),new Money( new BigDecimal("250.00")), TransactionType.CREDIT);
+        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(),new Money( new BigDecimal("250.00")), testAccount2.getAccountNumber());
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
                         put("/api/account/saving/transfer")
@@ -229,8 +227,8 @@ class SavingsAccountControllerTest {
                 .andReturn();
         SavingsAccount debitedAccount = savingsAccountRepository.findById(transactionDTO.getDebitAccountNumber()).get();
         SavingsAccount creditedAccount = savingsAccountRepository.findById(transactionDTO.getCreditAccountNumber()).get();
-        assertEquals(testAccount2.getBalance().decreaseAmount(new BigDecimal("250.00")), debitedAccount.getBalance());
-        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), creditedAccount.getBalance());
+        assertEquals(testAccount2.getBalance().decreaseAmount(new BigDecimal("250.00")), debitedAccount.getBalance().getAmount());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), creditedAccount.getBalance().getAmount());
     }
 
     @Test
@@ -304,7 +302,43 @@ class SavingsAccountControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("secretKey"));
         var repoSizeAfter = savingsAccountRepository.findAll().size();
         assertEquals(repoSizeBefore, repoSizeAfter);
-        assertEquals(new BigDecimal("999.00"), savingsAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+        assertEquals(new BigDecimal("6000.00"), savingsAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
+    }
+
+    @Test
+    void getByBalance_TestValid() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/saving/" + testAccount1.getAccountNumber() + "/balance"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance().getAmount())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getSecretKey())));
+    }
+
+    @Test
+    void getByBalance_Test_AccountOwner() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(login1);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/saving/" + testAccount1.getAccountNumber() + "/balance"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance().getAmount())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getSecretKey())));
+    }
+
+    @Test
+    void getByBalance_Test_NotAllowed() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(login2);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/saving/" + testAccount2.getAccountNumber() + "/balance"))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getBalance().getAmount())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getSecretKey())));
     }
 
 }

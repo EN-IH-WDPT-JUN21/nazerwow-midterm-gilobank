@@ -5,9 +5,9 @@ import com.ironhack.gilobank.controller.dto.ThirdPartyTransactionDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.ThirdParty;
 import com.ironhack.gilobank.dao.Transaction;
+import com.ironhack.gilobank.enums.Role;
 import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.ThirdPartyRepository;
-import com.ironhack.gilobank.service.interfaces.ICreationService;
 import com.ironhack.gilobank.service.interfaces.IThirdPartyService;
 import com.ironhack.gilobank.service.interfaces.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +26,9 @@ public class ThirdPartyService implements IThirdPartyService {
     @Autowired
     private ITransactionService transactionService;
 
-    public ThirdParty findById(Long id){
-        Optional<ThirdParty> optionalThirdParty=  thirdPartyRepository.findById(id);
-        if(optionalThirdParty.isEmpty()){
+    public ThirdParty findById(Long id) {
+        Optional<ThirdParty> optionalThirdParty = thirdPartyRepository.findById(id);
+        if (optionalThirdParty.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Third Party found with id: " + id);
         }
         return optionalThirdParty.get();
@@ -36,9 +36,10 @@ public class ThirdPartyService implements IThirdPartyService {
 
     @Override
     public Transaction creditAccount(String hashedKey, ThirdPartyTransactionDTO thirdPartyTransactionDTO) {
-        if(transactionService.verifyThirdParty(hashedKey) &&
-                transactionService.verifySecretKey(thirdPartyTransactionDTO.getCreditAccountSecretKey(),
-                        transactionService.findAccountTypeAndReturn(thirdPartyTransactionDTO.getCreditAccountNumber()))){
+        if (transactionService.verifyThirdParty(hashedKey) &&
+                transactionService.verifySecretKey(
+                        thirdPartyTransactionDTO.getCreditAccountSecretKey(),
+                        transactionService.findAccountTypeAndReturn(thirdPartyTransactionDTO.getCreditAccountNumber()))) {
             TransactionDTO transactionDTO = new TransactionDTO(
                     thirdPartyTransactionDTO.getCreditAccountNumber(),
                     thirdPartyTransactionDTO.getAmount(),
@@ -48,11 +49,11 @@ public class ThirdPartyService implements IThirdPartyService {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 
-    @Override
     public Transaction debitAccount(String hashedKey, ThirdPartyTransactionDTO thirdPartyTransactionDTO) {
-        if(transactionService.verifyThirdParty(hashedKey) &&
-                transactionService.verifySecretKey(thirdPartyTransactionDTO.getDebitAccountSecretKey(),
-                        transactionService.findAccountTypeAndReturn(thirdPartyTransactionDTO.getDebitAccountNumber()))){
+        if (transactionService.verifyThirdParty(hashedKey) &&
+                transactionService.verifySecretKey(
+                        thirdPartyTransactionDTO.getDebitAccountSecretKey(),
+                        transactionService.findAccountTypeAndReturn(thirdPartyTransactionDTO.getDebitAccountNumber()))) {
             TransactionDTO transactionDTO = new TransactionDTO();
             transactionDTO.setAmount(thirdPartyTransactionDTO.getAmount());
             transactionDTO.setDebitAccountNumber(thirdPartyTransactionDTO.getDebitAccountNumber());
@@ -62,7 +63,6 @@ public class ThirdPartyService implements IThirdPartyService {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 
-    @Override
     public Transaction transferBetweenAccounts(String hashedKey, ThirdPartyTransactionDTO thirdPartyTransactionDTO) {
         if(transactionService.verifyThirdParty(hashedKey) &&
                 transactionService.verifySecretKey(thirdPartyTransactionDTO.getDebitAccountSecretKey(),
@@ -78,15 +78,29 @@ public class ThirdPartyService implements IThirdPartyService {
 
     @Override
     public ThirdParty addThirdParty(ThirdPartyDTO thirdPartyDTO) {
-        return null;
+        ThirdParty thirdParty = new ThirdParty();
+        if (thirdPartyDTO.getId() != null) {
+            thirdParty = thirdPartyRepository.findById(thirdPartyDTO.getId()).get();
+        }
+        if (thirdPartyDTO.getHashedKey() != null) {
+            thirdParty.setHashedKey(thirdPartyDTO.getHashedKey());
+        }
+        if (thirdPartyDTO.getName() != null) {
+            thirdParty.setName(thirdPartyDTO.getName());
+        }
+        if (thirdPartyDTO.getRole() != null) {
+            thirdParty.setRole(Role.THIRDPARTY);
+        }
+        thirdPartyRepository.save(thirdParty);
+        return thirdParty;
     }
 
     @Override
     public ThirdParty updateThirdParty(ThirdPartyDTO thirdPartyDTO) {
-        return null;
+        return addThirdParty(thirdPartyDTO);
     }
 
-    public void saveThirdParty(ThirdParty thirdParty){
+    public void saveThirdParty(ThirdParty thirdParty) {
         thirdPartyRepository.save(thirdParty);
     }
 }

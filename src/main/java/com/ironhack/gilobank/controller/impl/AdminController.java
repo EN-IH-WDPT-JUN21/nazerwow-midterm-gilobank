@@ -8,13 +8,12 @@ import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.service.interfaces.IAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.config.web.servlet.headers.HttpPublicKeyPinningDsl;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/user/admin")
+@RequestMapping("/api/admin")
 public class AdminController {
 
     @Autowired
@@ -28,49 +27,49 @@ public class AdminController {
 
     @PutMapping("/thirdparty/new")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public ThirdParty createThirdParty(ThirdPartyDTO thirdPartyDTO){
-       return adminService.newThirdParty(thirdPartyDTO);
+    public ThirdParty createThirdParty(@RequestBody ThirdPartyDTO thirdPartyDTO) {
+        return adminService.newThirdParty(thirdPartyDTO);
     }
 
     @PutMapping("/thirdparty/update")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public ThirdParty updateThirdParty(ThirdPartyDTO thirdPartyDTO){
+    public ThirdParty updateThirdParty(@RequestBody ThirdPartyDTO thirdPartyDTO) {
         return adminService.newThirdParty(thirdPartyDTO);
     }
 
     @PutMapping("/address/new")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public Address newAddress(AddressDTO addressDTO){
+    public Address newAddress(@RequestBody AddressDTO addressDTO) {
         return adminService.newAddress(addressDTO);
     }
 
     @PutMapping("/address/update")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public Address updateAddress(AddressDTO addressDTO){
+    public Address updateAddress(@RequestBody AddressDTO addressDTO) {
         return adminService.newAddress(addressDTO);
     }
 
     @PutMapping("/accountholder/new")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public AccountHolder newAccountHolder(AccountHolderDTO accountHolderDTO){
+    public AccountHolder newAccountHolder(@RequestBody AccountHolderDTO accountHolderDTO) {
         return adminService.newAccountHolder(accountHolderDTO);
     }
 
     @PutMapping("/accountholder/update")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public AccountHolder updateAccountHolder(AccountHolderDTO accountHolderDTO){
+    public AccountHolder updateAccountHolder(@RequestBody AccountHolderDTO accountHolderDTO) {
         return adminService.newAccountHolder(accountHolderDTO);
     }
 
     @PutMapping("/logindetails/new")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public LoginDetails newLoginDetails(LoginDetailsDTO loginDetailsDTO){
+    public LoginDetails newLoginDetails(@RequestBody LoginDetailsDTO loginDetailsDTO) {
         return adminService.newLoginDetails(loginDetailsDTO);
     }
 
     @PutMapping("/logindetails/update")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public LoginDetails updateLoginDetails(LoginDetailsDTO loginDetailsDTO){
+    public LoginDetails updateLoginDetails(@RequestBody LoginDetailsDTO loginDetailsDTO) {
         return adminService.newLoginDetails(loginDetailsDTO);
     }
 }

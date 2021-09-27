@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.controller.impl;
 
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.CreditCardDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.controller.interfaces.ICreditCardController;
@@ -34,6 +35,12 @@ public class CreditCardController implements ICreditCardController {
     @ResponseStatus(HttpStatus.OK)
     public List<CreditCard> getAll() {
         return creditCardService.findAll();
+    }
+
+    @GetMapping("/{id}/balance")
+    @ResponseStatus(HttpStatus.OK)
+    public BalanceDTO getBalance(@PathVariable(name = "id") Long accountNumber) {
+        return creditCardService.getBalance(accountNumber);
     }
 
     @PutMapping("/credit")

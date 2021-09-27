@@ -8,6 +8,7 @@ import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.repositories.AdminRepository;
 import com.ironhack.gilobank.service.interfaces.IAdminService;
 import com.ironhack.gilobank.service.interfaces.ICreationService;
+import com.ironhack.gilobank.service.interfaces.IThirdPartyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,8 @@ public class AdminService implements IAdminService {
     private AdminRepository adminRepository;
     @Autowired
     private ICreationService creationService;
+    @Autowired
+    private IThirdPartyService thirdPartyService;
 
     @Override
     public List<Admin> findAll() {
@@ -29,6 +32,12 @@ public class AdminService implements IAdminService {
     public ThirdParty newThirdParty(ThirdPartyDTO thirdPartyDTO) {
         return creationService.newThirdParty(thirdPartyDTO);
     }
+
+    @Override
+    public ThirdParty updateThirdParty(ThirdPartyDTO thirdPartyDTO) {
+        return creationService.newThirdParty(thirdPartyDTO);
+    }
+
 
     public Address newAddress(AddressDTO addressDTO) {
         return creationService.newAddress(addressDTO);
@@ -41,4 +50,5 @@ public class AdminService implements IAdminService {
     public AccountHolder newAccountHolder(AccountHolderDTO accountHolderDTO) {
         return creationService.newAccountHolder(accountHolderDTO);
     }
+
 }

@@ -9,8 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -20,7 +20,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
+@Transactional
 class TransactionRepositoryTest {
 
     @Autowired
@@ -114,7 +114,7 @@ class TransactionRepositoryTest {
         Transaction test3 = new Transaction(testAccount1, "Test8",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.now());
         transactionRepository.saveAll(List.of(test1, test2, test3));
         var transactionList = transactionRepository.allDebitsFromLast24Hour(testAccount1);
-        assertEquals(2, transactionList.size());
+        assertEquals(3, transactionList.size());
     }
 
     @Test
@@ -124,13 +124,13 @@ class TransactionRepositoryTest {
         Transaction test3 = new Transaction(testAccount1, "Test8",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), TransactionType.CREDIT, LocalDateTime.now());
         transactionRepository.saveAll(List.of(test1, test2, test3));
         var total = transactionRepository.totalOfAllDebitsFromLast24Hours(testAccount1);
-        assertEquals(new BigDecimal("500.00"), total);
+        assertEquals(new BigDecimal("750.00"), total);
     }
 
     @Test
     void historicDailyTotals_Test() {
         var total = transactionRepository.historicDailyTotals(testAccount1);
-        assertEquals(4, total.size());
+        assertEquals(9, total.size());
     }
 
     @Test

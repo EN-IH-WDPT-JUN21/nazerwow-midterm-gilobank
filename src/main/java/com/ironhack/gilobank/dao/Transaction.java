@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Embeddable
 public class Transaction {
 
     @Id
@@ -27,6 +28,7 @@ public class Transaction {
     @JoinColumn(name = "account_id", referencedColumnName = "accountNumber")
     @JsonManagedReference
     private Account account;
+
     private String name;
 
     @Embedded
@@ -37,8 +39,8 @@ public class Transaction {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride( name = "currency", column = @Column(name = "transactionBalCurrenct")),
-            @AttributeOverride( name = "lastName", column = @Column(name = "transactionBalAmount"))})
+            @AttributeOverride( name = "currency", column = @Column(name = "BalanceCurrency")),
+            @AttributeOverride( name = "amount", column = @Column(name = "BalanceAmount"))})
     private Money balanceAfterTransaction;
 
     @Enumerated(EnumType.STRING)

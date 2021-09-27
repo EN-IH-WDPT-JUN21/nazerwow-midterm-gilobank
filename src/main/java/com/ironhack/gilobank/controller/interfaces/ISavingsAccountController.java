@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.controller.interfaces;
 
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.SavingsAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.SavingsAccount;
@@ -25,4 +26,6 @@ public interface ISavingsAccountController {
     SavingsAccount createSavingsAccount(SavingsAccountDTO savingsAccountDTO);
 
     SavingsAccount updateSavingsAccount(Long accountNumber, SavingsAccountDTO savingsAccountDTO);
+
+    BalanceDTO getBalance(Long accountNumber);
 }

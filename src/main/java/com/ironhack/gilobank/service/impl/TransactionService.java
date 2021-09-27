@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.service.impl;
 
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Role;
@@ -85,6 +86,7 @@ public class TransactionService implements ITransactionService {
 
     public Transaction creditFunds(TransactionDTO transactionDTO) {
         Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
+        checkForFraud(transactionDTO);
         checkAccountStatus(creditAccount);
         creditAccount.getBalance().increaseAmount(transactionDTO.getAmount());
         findAccountTypeAndSave(creditAccount);
@@ -96,7 +98,7 @@ public class TransactionService implements ITransactionService {
         Account debitAccount = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
         checkForFraud(transactionDTO);
         checkAccountStatus(debitAccount);
-        debitAccount.getBalance().decreaseAmount(transactionDTO.getAmount());
+        debitAccount.getBalance().decreaseAmount(transactionDTO.getAmount().getAmount().abs());
         findAccountTypeAndSave(debitAccount);
         return createTransactionLog(debitAccount, transactionDTO);
     }
@@ -124,11 +126,21 @@ public class TransactionService implements ITransactionService {
     }
 
     public void checkForFraud(TransactionDTO transactionDTO) {
-        Account account = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
-        if (fraudDetection.fraudDetector(account, transactionDTO.getAmount().getAmount())) {
-            account.freezeAccount();
-            findAccountTypeAndSave(account);
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
+        if (transactionDTO.getDebitAccountNumber() != null) {
+            Account debitAccount = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
+            if (fraudDetection.fraudDetector(debitAccount, transactionDTO.getAmount().getAmount())) {
+                debitAccount.freezeAccount();
+                findAccountTypeAndSave(debitAccount);
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
+            }
+        }
+        if (transactionDTO.getCreditAccountNumber() != null) {
+            Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
+            if (fraudDetection.fraudDetector(creditAccount, transactionDTO.getAmount().getAmount())) {
+                creditAccount.freezeAccount();
+                findAccountTypeAndSave(creditAccount);
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
+            }
         }
     }
 
@@ -199,7 +211,7 @@ public class TransactionService implements ITransactionService {
     }
 
     public void checkAvailableFunds(Account account, BigDecimal amount) {
-        if (account.getBalance().decreaseAmount(amount).compareTo(new BigDecimal("0")) < 0) {
+        if (account.getBalance().decreaseAmount(amount).compareTo(new BigDecimal("0.00")) < 0) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Insufficient Funds");
         }
     }
@@ -303,10 +315,16 @@ public class TransactionService implements ITransactionService {
         System.out.println(account.getSecretKey());
         if(Objects.equals(account.getSecretKey(), secretKey)){
             return true;
-        }
-        else{
+        } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Secret key: " + secretKey +
                     " does not match account: " + account.getAccountNumber());
         }
+    }
+
+    public BalanceDTO getBalance(Account account) {
+        BalanceDTO balanceDTO = new BalanceDTO();
+        balanceDTO.setAccountNumber(account.getAccountNumber());
+        balanceDTO.setBalance(account.getBalance());
+        return balanceDTO;
     }
 }

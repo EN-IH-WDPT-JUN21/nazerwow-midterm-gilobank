@@ -1,10 +1,6 @@
 package com.ironhack.gilobank.controller.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.*;
@@ -62,7 +58,7 @@ class CheckingAccountControllerTest {
     private WebApplicationContext webApplicationContext;
 
     private MockMvc mockMvc;
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private Address testAddress1;
     private Address testAddress2;
@@ -75,11 +71,11 @@ class CheckingAccountControllerTest {
     private CustomUserDetails details1, details2, details3, details4, details5;
     private UsernamePasswordAuthenticationToken adminLogin, login1, login2, thirdPartyLogin, thirdPartyLogin2;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private  LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
+    private final LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private  LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
+    private final LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate dateNow = LocalDate.now();
+    private final LocalDate dateNow = LocalDate.now();
 
     @BeforeEach
     void setUp() throws ParseException {
@@ -179,9 +175,9 @@ class CheckingAccountControllerTest {
                         get("/api/account/checking/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
-        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getBalance())));
-        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getBalance())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance().getAmount())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getBalance().getAmount())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getBalance().getAmount())));
     }
 
     @Test
@@ -191,9 +187,45 @@ class CheckingAccountControllerTest {
                         get("/api/account/checking/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance().getAmount())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getBalance().getAmount())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getBalance().getAmount())));
+    }
+
+    @Test
+    void getByBalance_TestValid() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/checking/" + testAccount1.getAccountNumber() + "/balance"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance().getAmount())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getSecretKey())));
+    }
+
+    @Test
+    void getByBalance_Test_AccountOwner() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(login1);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/checking/" + testAccount1.getAccountNumber() + "/balance"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance().getAmount())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getSecretKey())));
+    }
+
+    @Test
+    void getByBalance_Test_NotAllowed() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(login2);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/checking/" + testAccount2.getAccountNumber() + "/balance"))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
         assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getBalance())));
-        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getBalance())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getSecretKey())));
     }
 
     @Test
@@ -216,9 +248,9 @@ class CheckingAccountControllerTest {
                         get("/api/account/checking"))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getMinimumBalance())));
-        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getMinimumBalance())));
-        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getMinimumBalance())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getMinimumBalance().getAmount())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getMinimumBalance().getAmount())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getMinimumBalance().getAmount())));
     }
 
     @Test
@@ -233,7 +265,7 @@ class CheckingAccountControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
         CheckingAccount updatedAccount = checkingAccountRepository.findById(transactionDTO.getCreditAccountNumber()).get();
-        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance().getAmount());
     }
 
     @Test
@@ -248,7 +280,7 @@ class CheckingAccountControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
         CheckingAccount updatedAccount = checkingAccountRepository.findById(transactionDTO.getDebitAccountNumber()).get();
-        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance());
+        assertEquals(testAccount1.getBalance().decreaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance().getAmount());
     }
 
     @Test
@@ -264,8 +296,8 @@ class CheckingAccountControllerTest {
                 .andReturn();
         CheckingAccount debitedAccount = checkingAccountRepository.findById(transactionDTO.getDebitAccountNumber()).get();
         CheckingAccount creditedAccount = checkingAccountRepository.findById(transactionDTO.getCreditAccountNumber()).get();
-        assertEquals(testAccount2.getBalance().decreaseAmount(new BigDecimal("250.00")), debitedAccount.getBalance());
-        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), creditedAccount.getBalance());
+        assertEquals(testAccount2.getBalance().decreaseAmount(new BigDecimal("250.00")), debitedAccount.getBalance().getAmount());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), creditedAccount.getBalance().getAmount());
     }
 
     @Test
@@ -342,6 +374,6 @@ class CheckingAccountControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("secretKey"));
         var repoSizeAfter = checkingAccountRepository.findAll().size();
         assertEquals(repoSizeBefore, repoSizeAfter);
-        assertEquals(new BigDecimal("999.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+        assertEquals(new BigDecimal("999.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
     }
 }

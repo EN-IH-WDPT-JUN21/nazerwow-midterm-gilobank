@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.dao;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,7 @@ import javax.persistence.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Embeddable
 public class LoginDetails {
 
     @Id
@@ -24,6 +26,7 @@ public class LoginDetails {
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "userId")
+    @JsonIgnore
     private User user;
 
     public LoginDetails(String username, String password, User user) {

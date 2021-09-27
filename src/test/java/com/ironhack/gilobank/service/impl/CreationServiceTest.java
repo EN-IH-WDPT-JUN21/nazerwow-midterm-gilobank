@@ -41,6 +41,8 @@ class CreationServiceTest {
     private SavingsAccountRepository savingsAccountRepository;
     @Autowired
     private TransactionRepository transactionRepository;
+    @Autowired
+    private ThirdPartyRepository thirdPartyRepository;
 
     private AddressDTO addressDTO;
     private AccountHolderDTO accountHolderDTO;
@@ -116,6 +118,7 @@ class CreationServiceTest {
         studentAccountRepository.deleteAll();
         checkingAccountRepository.deleteAll();
         loginDetailsRepository.deleteAll();
+        thirdPartyRepository.deleteAll();
         accountHolderRepository.deleteAll();
         addressRepository.deleteAll();
     }
@@ -132,7 +135,7 @@ class CreationServiceTest {
 
     @Test
     void newAddress_UpdateExisting() {
-        addressDTO = new AddressDTO(testAddress1.getId(),"13", "13", "Fake Street",
+        addressDTO = new AddressDTO(testAddress1.getId(), "13", "13", "Fake Street",
                 "Fake Town", "Fake City", "Fake Postcode");
         var repoSizeBefore = addressRepository.findAll().size();
         creationService.newAddress(addressDTO);
@@ -153,14 +156,35 @@ class CreationServiceTest {
 
     @Test
     void newAccountHolder_UpdateExisting() {
-        accountHolderDTO = new AccountHolderDTO(testHolder1.getId(),"firstName", "surname",
+        accountHolderDTO = new AccountHolderDTO(testHolder1.getId(), "firstName", "surname",
                 LocalDate.parse("1988-01-01"),
-                testAddress1, testAddress2, Role.ACCOUNTHOLDER );
+                testAddress1, testAddress2, Role.ACCOUNTHOLDER);
         var repoSizeBefore = accountHolderRepository.findAll().size();
         creationService.newAccountHolder(accountHolderDTO);
         var repoSizeAfter = accountHolderRepository.findAll().size();
         assertEquals(repoSizeBefore, repoSizeAfter);
         assertEquals("firstName", accountHolderRepository.findById(testHolder1.getId()).get().getFirstName());
+    }
+
+    @Test
+    void addThirdParty() {
+        ThirdPartyDTO thirdPartyDTO = new ThirdPartyDTO();
+        thirdPartyDTO.setHashedKey("hashedkey232");
+        thirdPartyDTO.setName("newThirdParty");
+        var result = creationService.newThirdParty(thirdPartyDTO);
+        assertTrue(thirdPartyRepository.findByHashedKey("hashedkey232").isPresent());
+    }
+
+    @Test
+    void updateThirdParty() {
+        ThirdParty thirdParty = new ThirdParty("name", "name");
+        thirdPartyRepository.save(thirdParty);
+        ThirdPartyDTO thirdPartyDTO = new ThirdPartyDTO();
+        thirdPartyDTO.setId(thirdParty.getId());
+        thirdPartyDTO.setHashedKey("hashedkey6969");
+        thirdPartyDTO.setName("newThirdParty");
+        var result = creationService.newThirdParty(thirdPartyDTO);
+        assertEquals("hashedkey6969", thirdPartyRepository.findById(thirdParty.getId()).get().getHashedKey());
     }
 
     @Test

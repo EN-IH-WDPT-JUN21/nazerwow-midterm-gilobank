@@ -1,9 +1,9 @@
 package com.ironhack.gilobank.service.impl;
 
+import com.ironhack.gilobank.controller.dto.ThirdPartyDTO;
 import com.ironhack.gilobank.controller.dto.ThirdPartyTransactionDTO;
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Status;
-import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.*;
 import com.ironhack.gilobank.security.CustomUserDetails;
 import com.ironhack.gilobank.security.IAuthenticationFacade;
@@ -20,15 +20,18 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
 
 import static java.util.Collections.singleton;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
+@Transactional
 class ThirdPartyServiceTest {
 
     @Autowired
@@ -114,7 +117,7 @@ class ThirdPartyServiceTest {
                 LocalDate.parse("2013-03-03"),  // open date
                 Status.ACTIVE,                  // Status
                 new Money( new BigDecimal("300")),      // monthly maintenance
-                        new Money( new BigDecimal("3")));      // minimum balance
+                new Money( new BigDecimal("3")));      // minimum balance
 
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
@@ -157,7 +160,7 @@ class ThirdPartyServiceTest {
                 null, null);
         var result = thirdPartyService.creditAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
         assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("1000.00")),
-                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
     }
 
     @Test
@@ -170,7 +173,7 @@ class ThirdPartyServiceTest {
                 testAccount1.getSecretKey());
         var result = thirdPartyService.debitAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
         assertEquals(testAccount1.getBalance().decreaseAmount(new BigDecimal("1000.00")),
-                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
     }
 
     @Test
@@ -184,20 +187,40 @@ class ThirdPartyServiceTest {
                 testAccount1.getSecretKey());
         var result = thirdPartyService.transferBetweenAccounts(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
         assertEquals(testAccount1.getBalance().decreaseAmount(new BigDecimal("1000.00")),
-                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
         assertEquals(testAccount2.getBalance().increaseAmount(new BigDecimal("1000.00")),
-                checkingAccountRepository.findById(testAccount2.getAccountNumber()).get().getBalance());
+                checkingAccountRepository.findById(testAccount2.getAccountNumber()).get().getBalance().getAmount());
     }
 
     @Test
     void addThirdParty() {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        ThirdPartyDTO thirdPartyDTO = new ThirdPartyDTO();
+        thirdPartyDTO.setHashedKey("hashedkey232");
+        thirdPartyDTO.setName("newThirdParty");
+        var result = thirdPartyService.addThirdParty(thirdPartyDTO);
+        assertTrue(thirdPartyRepository.findByHashedKey("hashedkey232").isPresent());
     }
 
     @Test
     void updateThirdParty() {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        ThirdPartyDTO thirdPartyDTO = new ThirdPartyDTO();
+        thirdPartyDTO.setId(thirdParty.getId());
+        thirdPartyDTO.setHashedKey("hashedkey232");
+        thirdPartyDTO.setName("newThirdParty");
+        var result = thirdPartyService.addThirdParty(thirdPartyDTO);
+        assertEquals("hashedkey232", thirdPartyRepository.findById(thirdParty.getId()).get().getHashedKey());
     }
 
     @Test
     void saveThirdParty() {
+        ThirdParty newThirdParty = new ThirdParty();
+        newThirdParty.setName("New");
+        newThirdParty.setHashedKey("newhashedkey");
+        var sizebefore = thirdPartyRepository.findAll().size();
+        thirdPartyService.saveThirdParty(newThirdParty);
+        var sizeAfter = thirdPartyRepository.findAll().size();
+        assertEquals(sizebefore + 1, sizeAfter);
     }
 }

@@ -1,9 +1,6 @@
 package com.ironhack.gilobank.controller.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.CreditCardDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.*;
@@ -35,7 +32,6 @@ import java.util.List;
 
 import static java.util.Collections.singleton;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -78,11 +74,11 @@ class CreditCardControllerTest {
     private UsernamePasswordAuthenticationToken adminLogin, login1, login2, thirdPartyLogin, thirdPartyLogin2;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private  LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
+    private final LocalDate testDateOfBirth1 = LocalDate.parse("1988-01-01");
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private  LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
+    private final LocalDate testDateOfBirth2 = LocalDate.parse("1994-01-01");
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate dateNow = LocalDate.now();
+    private final LocalDate dateNow = LocalDate.now();
 
     @BeforeEach
     void setUp() throws ParseException {
@@ -180,9 +176,9 @@ class CreditCardControllerTest {
                         get("/api/account/creditcard/" + testAccount1.getAccountNumber()))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getCreditLimit())));
-        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getCreditLimit())));
-        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getCreditLimit())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getCreditLimit().getAmount())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getCreditLimit().getAmount())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getCreditLimit().getAmount())));
     }
 
     @Test
@@ -192,9 +188,9 @@ class CreditCardControllerTest {
                         get("/api/account/creditcard/"))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getCreditLimit())));
-        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getCreditLimit())));
-        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getCreditLimit())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getCreditLimit().getAmount())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getCreditLimit().getAmount())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount3.getCreditLimit().getAmount())));
     }
 
     @Test
@@ -209,7 +205,7 @@ class CreditCardControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
         CreditCard updatedAccount = creditCardRepository.findById(transactionDTO.getCreditAccountNumber()).get();
-        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance().getAmount());
     }
 
     @Test
@@ -224,7 +220,7 @@ class CreditCardControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
         CreditCard updatedAccount = creditCardRepository.findById(transactionDTO.getDebitAccountNumber()).get();
-        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance());
+        assertEquals(testAccount1.getBalance().decreaseAmount(new BigDecimal("250.00")), updatedAccount.getBalance().getAmount());
     }
 
     @Test
@@ -240,8 +236,8 @@ class CreditCardControllerTest {
                 .andReturn();
         CreditCard debitedAccount = creditCardRepository.findById(transactionDTO.getDebitAccountNumber()).get();
         CreditCard creditedAccount = creditCardRepository.findById(transactionDTO.getCreditAccountNumber()).get();
-        assertEquals(testAccount2.getBalance().decreaseAmount(new BigDecimal("250.00")), debitedAccount.getBalance());
-        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), creditedAccount.getBalance());
+        assertEquals(testAccount2.getBalance().decreaseAmount(new BigDecimal("250.00")), debitedAccount.getBalance().getAmount());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), creditedAccount.getBalance().getAmount());
     }
 
     @Test
@@ -318,7 +314,43 @@ class CreditCardControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("secretKey"));
         var repoSizeAfter = creditCardRepository.findAll().size();
         assertEquals(repoSizeBefore, repoSizeAfter);
-        assertEquals(new BigDecimal("-999.00"), creditCardRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+        assertEquals(new BigDecimal("-999.00"), creditCardRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
+    }
+
+    @Test
+    void getByBalance_TestValid() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/creditcard/" + testAccount1.getAccountNumber() + "/balance"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance().getAmount())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getSecretKey())));
+    }
+
+    @Test
+    void getByBalance_Test_AccountOwner() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(login1);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/creditcard/" + testAccount1.getAccountNumber() + "/balance"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getBalance().getAmount())));
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getSecretKey())));
+    }
+
+    @Test
+    void getByBalance_Test_NotAllowed() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(login2);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/creditcard/" + testAccount2.getAccountNumber() + "/balance"))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getBalance())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getAccountNumber())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getSecretKey())));
     }
 }
 

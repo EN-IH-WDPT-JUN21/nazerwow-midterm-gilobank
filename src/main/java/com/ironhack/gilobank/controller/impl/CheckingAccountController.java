@@ -3,6 +3,7 @@ package com.ironhack.gilobank.controller.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.controller.interfaces.ICheckingAccountController;
@@ -43,6 +44,12 @@ public class CheckingAccountController implements ICheckingAccountController {
     @ResponseStatus(HttpStatus.OK)
     public CheckingAccount getByAccountNumber(@PathVariable(name = "id") Long accountNumber) {
         return checkingAccountService.findByAccountNumber(accountNumber);
+    }
+
+    @GetMapping("/{id}/balance")
+    @ResponseStatus(HttpStatus.OK)
+    public BalanceDTO getBalance(@PathVariable(name = "id") Long accountNumber) {
+        return checkingAccountService.getBalance(accountNumber);
     }
 
     @GetMapping

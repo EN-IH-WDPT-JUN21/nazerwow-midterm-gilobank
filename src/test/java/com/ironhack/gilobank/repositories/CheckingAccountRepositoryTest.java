@@ -1,6 +1,9 @@
 package com.ironhack.gilobank.repositories;
 
-import com.ironhack.gilobank.dao.*;
+import com.ironhack.gilobank.dao.AccountHolder;
+import com.ironhack.gilobank.dao.Address;
+import com.ironhack.gilobank.dao.CheckingAccount;
+import com.ironhack.gilobank.dao.LoginDetails;
 import com.ironhack.gilobank.enums.Role;
 import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.utils.Money;
@@ -9,9 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.TransactionSystemException;
 
 import java.math.BigDecimal;
@@ -19,8 +19,8 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
 
-import static java.util.Collections.singleton;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 class CheckingAccountRepositoryTest {
@@ -101,7 +101,7 @@ class CheckingAccountRepositoryTest {
         checkingAccountRepository.save(testAccount);
         var repoSizeAfter = checkingAccountRepository.findAll().size();
         assertEquals(repoSizeAfter, repoSizeBefore + 1);
-        assertEquals(new BigDecimal("40.00"), testAccount.getPenaltyFee());
+        assertEquals(new BigDecimal("40.00"), testAccount.getPenaltyFee().getAmount());
         assertEquals(Status.ACTIVE, testAccount.getStatus());
     }
 
@@ -116,7 +116,7 @@ class CheckingAccountRepositoryTest {
         CheckingAccount testAccount = new CheckingAccount("secretKeyJoint", testHolder1, testHolder2,new Money( new BigDecimal("150.00")));
         checkingAccountRepository.save(testAccount);
         var result = checkingAccountRepository.getBalanceByAccountNumber(testAccount.getAccountNumber());
-        assertEquals(new BigDecimal("150.00"), result);
+        assertEquals(new BigDecimal("150.00"), result.getAmount());
     }
 
 }

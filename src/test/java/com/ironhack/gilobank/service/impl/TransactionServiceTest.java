@@ -192,8 +192,6 @@ class TransactionServiceTest {
         assertEquals(LocalDateTime.parse("2012-01-01T10:15:30"), testTransaction.getTimeOfTrns());
     }
 
-    ;
-
 
     // Transfer
     @Test
@@ -203,8 +201,6 @@ class TransactionServiceTest {
         assertEquals(TransactionType.TRANSFER_DEBIT, debitTransaction.getType());
         assertEquals(TransactionType.TRANSFER_CREDIT, creditTransaction.getType());
     }
-
-    ;
 
     @Test
     void findByDateTimeBetween() {
@@ -233,7 +229,7 @@ class TransactionServiceTest {
         TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(),new Money( new BigDecimal("250")), TransactionType.CREDIT);
         transactionService.creditFunds(transactionDTO);
         var updatedAccount = checkingAccountRepository.findById(transactionDTO.getCreditAccountNumber());
-        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedAccount.get().getBalance());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedAccount.get().getBalance().getAmount());
     }
 
     @Test
@@ -241,7 +237,7 @@ class TransactionServiceTest {
         TransactionDTO transactionDTO = new TransactionDTO(new Money( new BigDecimal("250")), testAccount1.getAccountNumber(), TransactionType.DEBIT);
         transactionService.debitFunds(transactionDTO);
         var updatedAccount = checkingAccountRepository.findById(transactionDTO.getDebitAccountNumber());
-        assertEquals(testAccount1.getBalance().decreaseAmount(new BigDecimal("250.00")), updatedAccount.get().getBalance());
+        assertEquals(testAccount1.getBalance().decreaseAmount(new BigDecimal("250.00")), updatedAccount.get().getBalance().getAmount());
     }
 
     @Test
@@ -250,8 +246,8 @@ class TransactionServiceTest {
         transactionService.transferBetweenAccounts(transactionDTO);
         var updatedDebitedAccount = checkingAccountRepository.findById(transactionDTO.getDebitAccountNumber());
         var updatedCreditAccount = checkingAccountRepository.findById(transactionDTO.getCreditAccountNumber());
-        assertEquals(testAccount2.getBalance().decreaseAmount(new BigDecimal("250.00")), updatedDebitedAccount.get().getBalance());
-        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedCreditAccount.get().getBalance());
+        assertEquals(testAccount2.getBalance().decreaseAmount(new BigDecimal("250.00")), updatedDebitedAccount.get().getBalance().getAmount());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("250.00")), updatedCreditAccount.get().getBalance().getAmount());
     }
 
     @Test
@@ -296,7 +292,9 @@ class TransactionServiceTest {
         Transaction test3 = new Transaction(testAccount1, "Test8",new Money( new BigDecimal("10.00")), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(5));
         transactionRepository.saveAll(List.of(test1, test2, test3));
 
+
         TransactionDTO transactionDTO = new TransactionDTO(new Money( new BigDecimal("250")), testAccount1.getAccountNumber(), TransactionType.DEBIT);
+
 
         assertThrows(ResponseStatusException.class, () -> transactionService.checkForFraud(transactionDTO));
     }
@@ -308,7 +306,9 @@ class TransactionServiceTest {
         Transaction test3 = new Transaction(testAccount1, "Test8",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), TransactionType.DEBIT, LocalDateTime.now().plusSeconds(5));
         transactionRepository.saveAll(List.of(test1, test2, test3));
 
+
         TransactionDTO transactionDTO = new TransactionDTO(new Money( new BigDecimal("2500000")), testAccount1.getAccountNumber(), TransactionType.DEBIT);
+
         assertThrows(ResponseStatusException.class, () -> transactionService.checkForFraud(transactionDTO));
     }
 
@@ -346,7 +346,7 @@ class TransactionServiceTest {
 
     @Test
     void checkAvailableFunds_ThrowsException() {
-        assertThrows(ResponseStatusException.class, () -> transactionService.checkAvailableFunds(testAccount1, testAccount1.getBalance().increaseAmount(testAccount1.getBalance())));
+        assertThrows(ResponseStatusException.class, () -> transactionService.checkAvailableFunds(testAccount1, testAccount1.getBalance().getAmount().multiply(new BigDecimal("10"))));
     }
 
     @Test
@@ -358,14 +358,14 @@ class TransactionServiceTest {
     void penaltyCheck_Deducts_Penalty() {
         testAccount1.setBalance(new Money( new BigDecimal("99.00")));
         var balanceAfterFee = transactionService.penaltyCheck(testAccount1, testAccount1.getMinimumBalance(), testAccount1.getPenaltyFee());
-        assertEquals(new BigDecimal("99.00").subtract(testAccount1.getPenaltyFee().getAmount()), balanceAfterFee);
+        assertEquals(new BigDecimal("99.00").subtract(testAccount1.getPenaltyFee().getAmount()), balanceAfterFee.getAmount());
     }
 
     @Test
     void penaltyCheck_Does_Not_Deduct() {
         testAccount1.setBalance(new Money( new BigDecimal("100.00")));
         var balanceAfterFee = transactionService.penaltyCheck(testAccount1, testAccount1.getMinimumBalance(), testAccount1.getPenaltyFee());
-        assertEquals(new BigDecimal("100.00"), balanceAfterFee);
+        assertEquals(new BigDecimal("100.00"), balanceAfterFee.getAmount());
     }
 
     @Test
@@ -398,7 +398,7 @@ class TransactionServiceTest {
         var testCase = checkingAccountRepository.findById(testAccount1.getAccountNumber());
 
         assertEquals(Status.FROZEN, testCase.get().getStatus());
-        assertEquals(new BigDecimal("999.99"), testCase.get().getBalance());
+        assertEquals(new BigDecimal("999.99"), testCase.get().getBalance().getAmount());
         assertEquals(testHolder1.getFirstName(), testCase.get().getPrimaryHolder().getFirstName());
 
     }
@@ -407,7 +407,7 @@ class TransactionServiceTest {
     void applyInterestYearly_Credit() {
         var transBefore = transactionRepository.findAll().size();
         transactionService.applyInterestYearly(testAccount1.getAccountNumber(),new Money( new BigDecimal("100.00")), new BigDecimal(".10"));
-        assertEquals(new BigDecimal("1010.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+        assertEquals(new BigDecimal("1010.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
         var transAfter = transactionRepository.findAll().size();
         assertEquals(transAfter, transBefore + 1);
     }
@@ -416,7 +416,7 @@ class TransactionServiceTest {
     void applyInterestYearly_Debit() {
         var transBefore = transactionRepository.findAll().size();
         transactionService.applyInterestYearly(testAccount1.getAccountNumber(),new Money( new BigDecimal("-100.00")), new BigDecimal(".10"));
-        assertEquals(new BigDecimal("990.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+        assertEquals(new BigDecimal("990.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
         var transAfter = transactionRepository.findAll().size();
         assertEquals(transAfter, transBefore + 1);
     }
@@ -425,7 +425,7 @@ class TransactionServiceTest {
     void applyInterestYearly_Zero() {
         var transBefore = transactionRepository.findAll().size();
         transactionService.applyInterestYearly(testAccount1.getAccountNumber(),new Money( new BigDecimal("0.00")), new BigDecimal(".10"));
-        assertEquals(new BigDecimal("1000.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+        assertEquals(new BigDecimal("1000.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
         var transAfter = transactionRepository.findAll().size();
         assertEquals(transAfter, transBefore);
     }
@@ -436,7 +436,7 @@ class TransactionServiceTest {
         checkingAccountRepository.save(testAccount1);
         var transBefore = transactionRepository.findAll().size();
         transactionService.applyInterestYearly(testAccount1.getAccountNumber(),new Money( new BigDecimal("0.00")), new BigDecimal(".10"));
-        assertEquals(new BigDecimal("1000.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+        assertEquals(new BigDecimal("1000.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
         var transAfter = transactionRepository.findAll().size();
         assertEquals(transAfter, transBefore);
     }
@@ -454,7 +454,7 @@ class TransactionServiceTest {
     void applyInterestMonthly_Credit() {
         var transBefore = transactionRepository.findAll().size();
         transactionService.applyInterestMonthly(testAccount1.getAccountNumber(), new Money(new BigDecimal("100.00")), new BigDecimal("1.20"));
-        assertEquals(new BigDecimal("1010.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+        assertEquals(new BigDecimal("1010.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
         var transAfter = transactionRepository.findAll().size();
         assertEquals(transAfter, transBefore + 1);
     }
@@ -463,7 +463,7 @@ class TransactionServiceTest {
     void applyInterestMonthly_Debit() {
         var transBefore = transactionRepository.findAll().size();
         transactionService.applyInterestMonthly(testAccount1.getAccountNumber(), new Money(new BigDecimal("-100.00")), new BigDecimal("1.20"));
-        assertEquals(new BigDecimal("990.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+        assertEquals(new BigDecimal("990.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
         var transAfter = transactionRepository.findAll().size();
         assertEquals(transAfter, transBefore + 1);
     }
@@ -472,7 +472,7 @@ class TransactionServiceTest {
     void applyInterestMonthly_Zero() {
         var transBefore = transactionRepository.findAll().size();
         transactionService.applyInterestMonthly(testAccount1.getAccountNumber(), new Money(new BigDecimal("0.00")), new BigDecimal("1.20"));
-        assertEquals(new BigDecimal("1000.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+        assertEquals(new BigDecimal("1000.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
         var transAfter = transactionRepository.findAll().size();
         assertEquals(transAfter, transBefore);
     }
@@ -483,7 +483,7 @@ class TransactionServiceTest {
         checkingAccountRepository.save(testAccount1);
         var transBefore = transactionRepository.findAll().size();
         transactionService.applyInterestMonthly(testAccount1.getAccountNumber(),new Money( new BigDecimal("0.00")), new BigDecimal("1.20"));
-        assertEquals(new BigDecimal("1000.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance());
+        assertEquals(new BigDecimal("1000.00"), checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
         var transAfter = transactionRepository.findAll().size();
         assertEquals(transAfter, transBefore);
     }

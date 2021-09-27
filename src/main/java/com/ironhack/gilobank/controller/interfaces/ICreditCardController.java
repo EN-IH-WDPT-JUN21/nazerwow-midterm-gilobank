@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.controller.interfaces;
 
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.CreditCardDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.CreditCard;
@@ -25,4 +26,6 @@ public interface ICreditCardController {
     CreditCard createCreditCard(CreditCardDTO creditCardDTO);
 
     CreditCard updateCreditCard(Long accountNumber, CreditCardDTO creditCardDTO);
+
+    BalanceDTO getBalance(Long accountNumber);
 }

@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.service.impl;
 
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.StudentAccount;
 import com.ironhack.gilobank.dao.Transaction;
@@ -75,4 +76,8 @@ public class StudentAccountService implements IStudentAccountService {
         studentAccountRepository.save(studentAccount);
     }
 
+    @Override
+    public BalanceDTO getBalance(Long accountNumber) {
+        return transactionService.getBalance(findByAccountNumber(accountNumber));
+    }
 }

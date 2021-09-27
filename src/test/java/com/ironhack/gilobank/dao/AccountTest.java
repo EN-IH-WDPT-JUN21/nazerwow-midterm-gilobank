@@ -59,7 +59,7 @@ class AccountTest {
         Money startAmount = new Money(new BigDecimal("1000.00"));
         BigDecimal endAmount = startAmount.increaseAmount(new BigDecimal("250"));
         testAccount1.getBalance().increaseAmount(new BigDecimal("250"));
-        assertEquals(endAmount, testAccount1.getBalance());
+        assertEquals(endAmount, testAccount1.getBalance().getAmount());
     }
 
     @Test
@@ -67,7 +67,7 @@ class AccountTest {
         Money startAmount = new Money(new BigDecimal("1000.00"));
         BigDecimal endAmount = startAmount.decreaseAmount(new BigDecimal("250"));
         testAccount1.getBalance().decreaseAmount(new BigDecimal("250"));
-        assertEquals(endAmount, testAccount1.getBalance());
+        assertEquals(endAmount, testAccount1.getBalance().getAmount());
     }
 
     @Test

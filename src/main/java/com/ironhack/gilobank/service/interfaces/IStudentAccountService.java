@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.service.interfaces;
 
+import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.StudentAccount;
 import com.ironhack.gilobank.dao.Transaction;
@@ -25,4 +26,6 @@ public interface IStudentAccountService {
     Transaction transferBetweenAccounts(TransactionDTO transactionDTO);
 
     List<Transaction> findTransactionBetween(Long accountNumber, LocalDate startDate, LocalDate endDate);
+
+    BalanceDTO getBalance(Long accountNumber);
 }

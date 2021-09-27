@@ -7,7 +7,6 @@ import lombok.Setter;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.validation.constraints.NotNull;
 
 @NoArgsConstructor
 @Getter
