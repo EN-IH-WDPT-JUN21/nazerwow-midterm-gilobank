@@ -23,7 +23,7 @@ public class SavingsAccount extends Account {
 
     @NotNull
 //    @DecimalMin(value = "100.00", message = "Account cannot go below $100.00")
-    @Digits(integer = 30, fraction = 2)
+//    @Digits(integer = 30, fraction = 2)
     @AttributeOverrides({
             @AttributeOverride( name = "currency", column = @Column(name = "savingsCurrency")),
             @AttributeOverride( name = "amount", column = @Column(name = "savingsBalance"))})
