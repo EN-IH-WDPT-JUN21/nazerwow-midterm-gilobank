@@ -43,16 +43,14 @@ For a more detailed look at what routes are available to your please visit local
   
   <strong><em> What would I change? </em> </strong> 
   <ul>
-  <li> <b> Money Handling </b> I feel that I originally misunderstood the use of the Money class, I used BigDecimal then converted it to money before any 
-    credits or debits. But upon reflection I should have embedded the money class into the Account Objects. </li>
   <li> <b> Transaction Service </b> Although I am pleased with the methods in this class, I feel the class itself does too much, and upon reflection I would
     reorganise where some of these methods are.</li>
   <li> <b> ID types </b> I have used Long for the ID (accountNumbers) which could cause scaling issues. I think String's would have been a better choice. </li>
   <li> <b> Dirties Context </b> In order to get all my tests to work together I have had to utilise the "Dirties Context" due to the time I had available. 
-    I would like to find out if I could structure my tests in a different way to prevent the need for Dirties. </li>
-  
+    I would like to find out if I could structure my tests in a different way to prevent the need for Dirties. </li> <br>
+  <br>
   I believe the project meets all the requirements and this can be tested with my unit tests, rather than manually having to use postman. To try it out for 
-  yourself just download the project and run the GiloBankApplication (Or right click and run the tests). 
+  yourself just download the project and run the GiloBankApplication (Or right click and run the tests). </ul>
   
 
 
@@ -79,29 +77,65 @@ INSERT INTO login_details (id, username, password, user_id) VALUES<br>
 (3, 'thirdparty1', "$2a$10$MSzkrmfd5ZTipY0XkuCbAejBC9g74MAg2wrkeu8/m1wQGXDihaX3e", 3), <br>
 (4, 'admin1', "$2a$10$MSzkrmfd5ZTipY0XkuCbAejBC9g74MAg2wrkeu8/m1wQGXDihaX3e", 4);<br>
 
-INSERT INTO checking_account (account_number, balance, open_date, penalty_fee, status, primary_holder, secondary_holder, minimum_balance, monthly_maintenance_fee, secret_key) VALUES <br>
-(32165487, 2500.00, '2021-05-05', 40, 'ACTIVE', 1, 2, 0, 12, 'secretkey1'),<br>
-(32165488, 2500.00, '2021-05-05', 40, 'ACTIVE', 2, 1, 0, 12, 'secretkey2'),<br>
-(32165489, 2500.00, '2021-05-05', 40, 'ACTIVE', 1, null, 0, 12, 'secretkey3'),<br>
-(32165481, 2500.00, '2021-05-05', 40, 'ACTIVE', 2, null, 0, 12, 'secretkey4');<br>
+INSERT INTO checking_account (account_number, account_balance, open_date, penalty_amount, status, primary_holder, secondary_holder, checking_min_balance, checking_monthly_maintenance, secret_key, currency_balance) VALUES <br>
+(32165487, 2500.00, '2021-05-05', 40, 'ACTIVE', 1, 2, 0, 12, 'secretkey', 'USD'), <br>
+(32165488, 2500.00, '2021-05-05', 40, 'ACTIVE', 2, 1, 0, 12, 'secretkey', 'USD'), <br>
+(32165489, 2500.00, '2021-05-05', 40, 'ACTIVE', 1, null, 0, 12, 'secretkey', 'USD'), <br>
+(32165481, 2500.00, '2021-05-05', 40, 'ACTIVE', 2, null, 0, 12, 'secretkey', 'USD'); <br>
+
 <br>
-INSERT INTO transaction (id, amount, balance_after_transaction, name, time_of_trns, type, account_id) VALUES<br>
--- Day 1 - Total debit = 300.00<br>
+INSERT INTO transaction (id, transaction_amount, balance_amount, name, time_of_trns, type, account_id) VALUES <br>
+-- Day 1 - Total debit = 300.00 <br>
 (1, 100.00, 900.00, '250 Debit', '2021-09-17 08:00:00', 'DEBIT' ,32165487),<br>
-(2, 200.00, 700.00, '200 Debit', '2021-09-17 09:00:00', 'DEBIT' ,32165487),<br>
+(2, 200.00, 700.00, '200 Debit', '2021-09-17 09:00:00', 'DEBIT' ,32165487),<br><br>
 -- Day 2 - Total Debit = 1200<br>
 (3, 300.00, 900.00, '300 Debit', '2021-09-15 08:00:00', 'DEBIT' ,32165487),<br>
 (4, 400.00, 500.00, '400 Debit', '2021-09-15 10:00:00', 'DEBIT' ,32165487),<br>
-(5, 500.00, 0.00, '500 Debit', '2021-09-15 11:00:00', 'DEBIT' ,32165487),<br>
+(5, 500.00, 0.00, '500 Debit', '2021-09-15 11:00:00', 'DEBIT' ,32165487),<br><br>
 -- Day 3 - Total Debit = 2000<br>
 (6, 500.00, 2500.00, '500 Debit', '2021-09-13 06:00:00', 'DEBIT' ,32165487),<br>
 (7, 500.00, 2000.00, '500 Debit', '2021-09-13 08:35:20', 'DEBIT' ,32165487),<br>
 (8, 500.00, 1500.00, '500 Debit', '2021-09-13 08:00:21', 'DEBIT' ,32165487),<br>
-(9, 500.00, 1000.00, '500 Debit', '2021-09-13 12:00:59', 'DEBIT' ,32165487),<br>
-<br>
--- Credits <br>
-(10, 250.00, 750.00, '250 Debit', '2021-09-14 08:00:00', 'CREDIT' ,32165487),<br>
-(11, 250.00, 750.00, '250 Debit', '2021-09-17 08:11:00', 'CREDIT' ,32165487),<br>
-(12, 250.00, 750.00, '250 Debit', '2021-09-11 08:50:00', 'CREDIT' ,32165487);<br>
+(9, 500.00, 1000.00, '500 Debit', '2021-09-13 12:00:59', 'DEBIT' ,32165487),<br><br>
+-- Account 32165488<br>
+-- Day 1 - Total debit = 300.00<br>
+(10, 100.00, 900.00, '250 Debit', '2021-09-17 08:00:00', 'DEBIT' ,32165488),<br>
+(11, 200.00, 700.00, '200 Debit', '2021-09-17 09:00:00', 'DEBIT' ,32165488),<br><br>
+-- Day 2 - Total Debit = 1200<br>
+(12, 300.00, 900.00, '300 Debit', '2021-09-15 08:00:00', 'DEBIT' ,32165488),<br>
+(13, 400.00, 500.00, '400 Debit', '2021-09-15 10:00:00', 'DEBIT' ,32165488),<br>
+(14, 500.00, 0.00, '500 Debit', '2021-09-15 11:00:00', 'DEBIT' ,32165488),<br><br>
+-- Day 3 - Total Debit = 2000<br>
+(15, 500.00, 2500.00, '500 Debit', '2021-09-13 06:00:00', 'DEBIT' ,32165488),<br>
+(16, 500.00, 2000.00, '500 Debit', '2021-09-13 08:35:20', 'DEBIT' ,32165488),<br>
+(17, 500.00, 1500.00, '500 Debit', '2021-09-13 08:00:21', 'DEBIT' ,32165488),<br>
+(18, 500.00, 1000.00, '500 Debit', '2021-09-13 12:00:59', 'DEBIT' ,32165488),<br><br>
+-- Account 32165489<br>
+-- Day 1 - Total debit = 300.00<br>
+(19, 100.00, 900.00, '250 Debit', '2021-09-17 08:00:00', 'DEBIT' ,32165489),<br>
+(20, 200.00, 700.00, '200 Debit', '2021-09-17 09:00:00', 'DEBIT' ,32165489),<br><br>
+-- Day 2 - Total Debit = 1200<br>
+(21, 300.00, 900.00, '300 Debit', '2021-09-15 08:00:00', 'DEBIT' ,32165489),<br>
+(22, 400.00, 500.00, '400 Debit', '2021-09-15 10:00:00', 'DEBIT' ,32165489),<br>
+(23, 500.00, 0.00, '500 Debit', '2021-09-15 11:00:00', 'DEBIT' ,32165489),<br><br>
+-- Day 3 - Total Debit = 2000<br>
+(24, 500.00, 2500.00, '500 Debit', '2021-09-13 06:00:00', 'DEBIT' ,32165489),<br>
+(25, 500.00, 2000.00, '500 Debit', '2021-09-13 08:35:20', 'DEBIT' ,32165489),<br>
+(26, 500.00, 1500.00, '500 Debit', '2021-09-13 08:00:21', 'DEBIT' ,32165489),<br>
+(27, 500.00, 1000.00, '500 Debit', '2021-09-13 12:00:59', 'DEBIT' ,32165489),<br><br>
+
+-- Account 32165481<br>
+-- Day 1 - Total debit = 300.00<br>
+(28, 100.00, 900.00, '250 Debit', '2021-09-17 08:00:00', 'DEBIT' ,32165481),<br>
+(29, 200.00, 700.00, '200 Debit', '2021-09-17 09:00:00', 'DEBIT' ,32165481),<br>
+-- Day 2 - Total Debit = 1200<br>
+(30, 300.00, 900.00, '300 Debit', '2021-09-15 08:00:00', 'DEBIT' ,32165481),<br>
+(31, 400.00, 500.00, '400 Debit', '2021-09-15 10:00:00', 'DEBIT' ,32165481),<br>
+(32, 500.00, 0.00, '500 Debit', '2021-09-15 11:00:00', 'DEBIT' ,32165481),<br>
+-- Day 3 - Total Debit = 2000 <br>
+(33, 500.00, 2500.00, '500 Debit', '2021-09-13 06:00:00', 'DEBIT' ,32165481),<br>
+(34, 500.00, 2000.00, '500 Debit', '2021-09-13 08:35:20', 'DEBIT' ,32165481),<br>
+(35, 500.00, 1500.00, '500 Debit', '2021-09-13 08:00:21', 'DEBIT' ,32165481),<br>
+(36, 500.00, 1000.00, '500 Debit', '2021-09-13 12:00:59', 'DEBIT' ,32165481),<br>
 
 

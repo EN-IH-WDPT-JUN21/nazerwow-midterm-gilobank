@@ -96,4 +96,17 @@ public class CheckingAccountDTO {
         this.monthlyMaintenanceFee = monthlyMaintenanceFee;
         this.minimumBalance = minimumBalance;
     }
+
+    public CheckingAccountDTO(String secretKey, AccountHolder primaryHolder, BigDecimal balance) {
+        this.secretKey = secretKey;
+        this.primaryHolder = primaryHolder;
+        this.balance = balance;
+    }
+
+    public CheckingAccountDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance) {
+        this.secretKey = secretKey;
+        this.primaryHolder = primaryHolder;
+        this.secondaryHolder = secondaryHolder;
+        this.balance = balance;
+    }
 }

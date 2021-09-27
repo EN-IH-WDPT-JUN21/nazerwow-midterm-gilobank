@@ -51,7 +51,7 @@ public class TransactionService implements ITransactionService {
     public Transaction createTransactionLog(Account account, TransactionDTO transactionDTO) {
         LocalDateTime transactionDate = LocalDateTime.now();
         if (transactionDTO.getTimeOfTrns() != null) transactionDate = transactionDTO.getTimeOfTrns();
-        String transactionName = transactionDTO.getAmount() + transactionDTO.getType().toString();
+        String transactionName = transactionDTO.getAmount() + " " + transactionDTO.getType().toString();
         Transaction transaction = new Transaction(account, transactionName, transactionDTO.getAmount(), account.getBalance(), transactionDTO.getType(), transactionDate);
         transactionRepository.save(transaction);
         return transaction;
