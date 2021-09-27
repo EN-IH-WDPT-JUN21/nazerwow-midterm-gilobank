@@ -4,6 +4,7 @@ import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.Account;
 import com.ironhack.gilobank.dao.Transaction;
+import com.ironhack.gilobank.utils.Money;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,9 +15,9 @@ public interface ITransactionService {
 
     Transaction createTransactionLog(Account account, TransactionDTO transactionDTO);
 
-    List<Transaction> createTransactionLogTransfer(Account debitAccount, BigDecimal amount, Account creditAccount);
+    List<Transaction> createTransactionLogTransfer(Account debitAccount, Money amount, Account creditAccount);
 
-    List<Transaction> createTransactionLogTransfer(Account debitAccount, BigDecimal amount, Account creditAccount, LocalDateTime date);
+    List<Transaction> createTransactionLogTransfer(Account debitAccount, Money amount, Account creditAccount, LocalDateTime date);
 
     List<Transaction> findByDateTimeBetween(Account account, LocalDateTime startPoint, LocalDateTime endPoint);
 
@@ -38,15 +39,15 @@ public interface ITransactionService {
 
     void checkAvailableFunds(Account account, BigDecimal amount);
 
-    BigDecimal penaltyCheck(Account account, BigDecimal minimumBalance, BigDecimal penaltyFee);
+    Money penaltyCheck(Account account, Money minimumBalance, Money penaltyFee);
 
     boolean interestMonthlyCheck(Long accountNumber);
 
     boolean interestYearlyCheck(Long accountNumber);
 
-    void applyInterestYearly(Long accountNumber, BigDecimal balance, BigDecimal interestRate);
+    void applyInterestYearly(Long accountNumber, Money balance, BigDecimal interestRate);
 
-    void applyInterestMonthly(Long accountNumber, BigDecimal balance, BigDecimal interestRate);
+    void applyInterestMonthly(Long accountNumber, Money balance, BigDecimal interestRate);
 
     boolean checkAuthentication(Long accountNumber);
 

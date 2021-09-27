@@ -6,6 +6,7 @@ import com.ironhack.gilobank.enums.Role;
 import com.ironhack.gilobank.enums.Status;
 import com.ironhack.gilobank.repositories.*;
 import com.ironhack.gilobank.service.interfaces.ICreationService;
+import com.ironhack.gilobank.utils.Money;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,32 +77,32 @@ class CreationServiceTest {
 
         testAccount1 = new CheckingAccount(
                 "secretKey1",
-                testHolder1,                        // Primary Holder
-                testHolder2,                        // Secondary Holder
-                new BigDecimal("1000.00"),      // balance
-                new BigDecimal("10.00"),        // penaltyFee
-                LocalDate.parse("2011-01-01"),      // open date
-                Status.ACTIVE,                      // Status
-                new BigDecimal("11.00"),        // Monthly Maintenance Fee
-                new BigDecimal("100.00"));     // Minimum Balance
+                testHolder1,                    // Primary Holder
+                testHolder2,                    // Secondary Holder
+                new Money( new BigDecimal("1000")),     // balance
+                new Money( new BigDecimal("10")),       // penaltyFee
+                LocalDate.parse("2011-01-01"),  // open date
+                Status.ACTIVE,                  // Status
+                new Money(   new BigDecimal("11")),      // monthly maintenance Balance
+                new Money(   new BigDecimal("100")));      // minimum balance
         testAccount2 = new CheckingAccount(
                 "secretKey2",
-                testHolder1,                        // Primary Holder
+                testHolder1,                    // Primary Holder
                 null,
-                new BigDecimal("2000.00"),      // balance
-                new BigDecimal("20.00"),        // penaltyFee
-                LocalDate.parse("2012-02-02"),      // open date
-                Status.ACTIVE,                      // Status
-                new BigDecimal("22.00"),        // Monthly Maintenance Fee
-                new BigDecimal("200.00"));     // Minimum Balance
+                new Money(    new BigDecimal("2000")),     // balance
+                new Money(    new BigDecimal("20")),       // penaltyFee
+                LocalDate.parse("2012-02-02"),  // open date
+                Status.ACTIVE,                  // Status
+                new Money(   new BigDecimal("22")),      // monthly maintenance
+                new Money(   new BigDecimal("200")));      // minimum balance
         testAccount3 = new StudentAccount(
                 "secretKey3",
-                testHolder2,                        // Primary Holder
+                testHolder2,                    // Primary Holder
                 null,
-                new BigDecimal("3000.00"),      // balance
-                new BigDecimal("30.00"),        // penaltyFee
-                LocalDate.parse("2013-03-03"),      // open date
-                Status.ACTIVE);                      // Status
+                new Money(     new BigDecimal("3000")),     // balance
+                new Money(      new BigDecimal("30")),       // penaltyFee
+                LocalDate.parse("2013-03-03"),  // open date
+                Status.ACTIVE)   ;               // Status
 
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
@@ -211,18 +212,18 @@ class CreationServiceTest {
 
     @Test
     void newCheckingAccount() {
-        checkingAccountDTO = new CheckingAccountDTO("secreKey", testHolder1, testHolder2, new BigDecimal("200.00"),
-                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
-        var repoSizeBefore = checkingAccountRepository.findAll().size();
-        creationService.newCheckingAccount(checkingAccountDTO);
-        var repoSizeAfter = checkingAccountRepository.findAll().size();
-        assertEquals(repoSizeBefore + 1, repoSizeAfter);
+            checkingAccountDTO = new CheckingAccountDTO("secreKey", testHolder1, testHolder2,new Money( new BigDecimal("200.00")),
+                    new Money(  new BigDecimal("40.00")), LocalDate.now(), Status.ACTIVE,new Money(  new BigDecimal("12.00")),new Money(  new BigDecimal("100.00")));
+            var repoSizeBefore = checkingAccountRepository.findAll().size();
+            creationService.newCheckingAccount(checkingAccountDTO);
+            var repoSizeAfter = checkingAccountRepository.findAll().size();
+            assertEquals(repoSizeBefore + 1, repoSizeAfter);
     }
 
     @Test
     void newCheckingAccount_UpdateExisting() {
-        checkingAccountDTO = new CheckingAccountDTO(testAccount1.getAccountNumber(), "secrekey", testHolder1, testHolder2, new BigDecimal("200.00"),
-                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
+        checkingAccountDTO = new CheckingAccountDTO(testAccount1.getAccountNumber(),"secreKey", testHolder1, testHolder2,new Money( new BigDecimal("200.00")),
+                new Money(  new BigDecimal("40.00")), LocalDate.now(), Status.ACTIVE,new Money(  new BigDecimal("12.00")),new Money(  new BigDecimal("100.00")));
         var repoSizeBefore = checkingAccountRepository.findAll().size();
         creationService.newCheckingAccount(checkingAccountDTO);
         var repoSizeAfter = checkingAccountRepository.findAll().size();
@@ -234,8 +235,8 @@ class CreationServiceTest {
         testHolder1.setDateOfBirth(LocalDate.now());
         testHolder2.setDateOfBirth(LocalDate.now());
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
-        checkingAccountDTO = new CheckingAccountDTO("secreKey", testHolder1, testHolder2, new BigDecimal("200.00"),
-                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
+        checkingAccountDTO = new CheckingAccountDTO("secreKey", testHolder1, testHolder2,new Money( new BigDecimal("200.00")),
+                new Money(  new BigDecimal("40.00")), LocalDate.now(), Status.ACTIVE,new Money(  new BigDecimal("12.00")),new Money(  new BigDecimal("100.00")));
         var repoSizeBefore = studentAccountRepository.findAll().size();
         creationService.newStudentAccount(checkingAccountDTO);
         var repoSizeAfter = studentAccountRepository.findAll().size();
@@ -247,8 +248,8 @@ class CreationServiceTest {
         testHolder1.setDateOfBirth(LocalDate.now());
         testHolder2.setDateOfBirth(LocalDate.now());
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
-        checkingAccountDTO = new CheckingAccountDTO(testAccount3.getAccountNumber(), "secretKey", testHolder1, testHolder2, new BigDecimal("200.00"),
-                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
+        checkingAccountDTO = new CheckingAccountDTO(testAccount3.getAccountNumber(), "secreKey", testHolder1, testHolder2,new Money( new BigDecimal("200.00")),
+                new Money(  new BigDecimal("40.00")), LocalDate.now(), Status.ACTIVE,new Money(  new BigDecimal("12.00")),new Money(  new BigDecimal("100.00")));
         var repoSizeBefore = studentAccountRepository.findAll().size();
         creationService.newStudentAccount(checkingAccountDTO);
         var repoSizeAfter = studentAccountRepository.findAll().size();
@@ -257,8 +258,8 @@ class CreationServiceTest {
 
     @Test
     void newCreditCard() {
-        creditCardDTO = new CreditCardDTO("secreKey", testHolder1, testHolder2, new BigDecimal("-200.00"),
-                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("-2000.00"), new BigDecimal("0.20"));
+        creditCardDTO = new CreditCardDTO("secreKey", testHolder1, testHolder2,new Money( new BigDecimal("-200.00")),
+                new Money(    new BigDecimal("40.00")), LocalDate.now(), Status.ACTIVE,new Money(  new BigDecimal("-2000.00")), new BigDecimal("0.20"));
         var repoSizeBefore = creditCardRepository.findAll().size();
         creationService.newCreditCard(creditCardDTO);
         var repoSizeAfter = creditCardRepository.findAll().size();
@@ -267,10 +268,10 @@ class CreationServiceTest {
 
     @Test
     void newCreditCard_UpdateExisting() {
-        CreditCard creditCard = new CreditCard("secretKey1", testHolder1, new BigDecimal("-100.00"));
+        CreditCard creditCard = new CreditCard("secretKey1", testHolder1,new Money( new BigDecimal("-100.00")));
         creditCardRepository.save(creditCard);
-        creditCardDTO = new CreditCardDTO(creditCard.getAccountNumber(), "secretKey", testHolder1, testHolder2, new BigDecimal("-200.00"),
-                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("-2000.00"), new BigDecimal("0.20"));
+        creditCardDTO = new CreditCardDTO(creditCard.getAccountNumber(), "secreKey", testHolder1, testHolder2,new Money( new BigDecimal("-200.00")),
+                new Money(    new BigDecimal("40.00")), LocalDate.now(), Status.ACTIVE,new Money(  new BigDecimal("-2000.00")), new BigDecimal("0.20"));
         var repoSizeBefore = creditCardRepository.findAll().size();
         creationService.newCreditCard(creditCardDTO);
         var repoSizeAfter = creditCardRepository.findAll().size();
@@ -279,8 +280,8 @@ class CreationServiceTest {
 
     @Test
     void newSavingsAccount() {
-        savingsAccountDTO = new SavingsAccountDTO("secretKey", testHolder1, testHolder2, new BigDecimal("2000.00"),
-                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("200.00"), new BigDecimal("0.20"));
+        savingsAccountDTO = new SavingsAccountDTO("secretKey", testHolder1, testHolder2,new Money( new BigDecimal("2000.00")),
+                new Money( new BigDecimal("40.00")), LocalDate.now(), Status.ACTIVE,new Money( new BigDecimal("200.00")), new BigDecimal("0.20"));
         var repoSizeBefore = savingsAccountRepository.findAll().size();
         creationService.newSavingsAccount(savingsAccountDTO);
         var repoSizeAfter = savingsAccountRepository.findAll().size();
@@ -289,10 +290,10 @@ class CreationServiceTest {
 
     @Test
     void newSavingsAccount_UpdateExisting() {
-        SavingsAccount savingsAccount = new SavingsAccount("secretKey1", testHolder1, new BigDecimal("1000.00"));
+        SavingsAccount savingsAccount = new SavingsAccount("secretKey1", testHolder1,new Money( new BigDecimal("1000.00")));
         savingsAccountRepository.save(savingsAccount);
-        SavingsAccountDTO savingsAccountDTO = new SavingsAccountDTO(savingsAccount.getAccountNumber(), "secretKey", testHolder1, testHolder2, new BigDecimal("2000.00"),
-                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("200.00"), new BigDecimal("0.20"));
+        SavingsAccountDTO savingsAccountDTO = new SavingsAccountDTO(savingsAccount.getAccountNumber(), "secretKey", testHolder1, testHolder2,new Money( new BigDecimal("2000.00")),
+                new Money(  new BigDecimal("40.00")), LocalDate.now(), Status.ACTIVE,new Money( new BigDecimal("200.00")), new BigDecimal("0.20"));
         var repoSizeBefore = savingsAccountRepository.findAll().size();
         creationService.newSavingsAccount(savingsAccountDTO);
         var repoSizeAfter = savingsAccountRepository.findAll().size();

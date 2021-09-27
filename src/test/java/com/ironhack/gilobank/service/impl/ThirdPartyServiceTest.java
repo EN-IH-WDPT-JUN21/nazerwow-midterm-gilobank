@@ -9,6 +9,7 @@ import com.ironhack.gilobank.security.CustomUserDetails;
 import com.ironhack.gilobank.security.IAuthenticationFacade;
 import com.ironhack.gilobank.service.interfaces.IThirdPartyService;
 import com.ironhack.gilobank.service.interfaces.ITransactionService;
+import com.ironhack.gilobank.utils.Money;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,8 +44,6 @@ class ThirdPartyServiceTest {
     private LoginDetailsRepository loginDetailsRepository;
     @Autowired
     private CheckingAccountRepository checkingAccountRepository;
-    @Autowired
-    private TransactionRepository transactionRepository;
     @Autowired
     private ITransactionService transactionService;
     @Autowired
@@ -93,32 +92,32 @@ class ThirdPartyServiceTest {
                 "secretKey1",
                 testHolder1,                    // Primary Holder
                 testHolder2,                    // Secondary Holder
-                new BigDecimal("1000"),     // balance
-                new BigDecimal("10"),       // penaltyFee
+                new Money(new BigDecimal("3000")),     // balance
+                new Money(new BigDecimal("10")),       // penaltyFee
                 LocalDate.parse("2011-01-01"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("11"),      // monthly maintenance Balance
-                new BigDecimal("100"));      // minimum balance
+                new Money(new BigDecimal("11")),      // monthly maintenance Balance
+                new Money(new BigDecimal("100")));      // minimum balance
         testAccount2 = new CheckingAccount(
                 "secretKey2",
                 testHolder1,                    // Primary Holder
                 null,
-                new BigDecimal("2000"),     // balance
-                new BigDecimal("20"),       // penaltyFee
+                new Money(new BigDecimal("2000")),     // balance
+                new Money(new BigDecimal("20")),       // penaltyFee
                 LocalDate.parse("2012-02-02"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("22"),      // monthly maintenance
-                new BigDecimal("200"));      // minimum balance
+                new Money( new BigDecimal("22")),      // monthly maintenance
+                new Money( new BigDecimal("200")));      // minimum balance
         testAccount3 = new CheckingAccount(
                 "secretKey3",
                 testHolder2,                    // Primary Holder
                 null,
-                new BigDecimal("3000"),     // balance
-                new BigDecimal("30"),       // penaltyFee
+                new Money(  new BigDecimal("3000")),     // balance
+                new Money(  new BigDecimal("30")),       // penaltyFee
                 LocalDate.parse("2013-03-03"),  // open date
                 Status.ACTIVE,                  // Status
-                new BigDecimal("300"),      // monthly maintenance
-                new BigDecimal("3"));      // minimum balance
+                new Money( new BigDecimal("300")),      // monthly maintenance
+                new Money( new BigDecimal("3")));      // minimum balance
 
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
@@ -137,7 +136,6 @@ class ThirdPartyServiceTest {
 
     @AfterEach
     void tearDown() {
-        transactionRepository.deleteAll();
         checkingAccountRepository.deleteAll();
         loginDetailsRepository.deleteAll();
         thirdPartyRepository.deleteAll();
@@ -156,36 +154,42 @@ class ThirdPartyServiceTest {
     void creditAccount() {
         SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
         thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
-                new BigDecimal("1000.00"),
+                new Money(   new BigDecimal("1000.00")),
                 testAccount1.getAccountNumber(),
                 testAccount1.getSecretKey(),
                 null, null);
         var result = thirdPartyService.creditAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
-        assertEquals(new BigDecimal("2000.00"), result.getBalanceAfterTransaction());
+        assertEquals(testAccount1.getBalance().increaseAmount(new BigDecimal("1000.00")),
+                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
     }
 
     @Test
     void debitAccount() {
         SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
         thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
-                new BigDecimal("1.00"),
+                new Money(    new BigDecimal("1000.00")),
                 null, null,
                 testAccount1.getAccountNumber(),
                 testAccount1.getSecretKey());
         var result = thirdPartyService.debitAccount(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
-        assertEquals(new BigDecimal("999.00"), result.getBalanceAfterTransaction());
+        assertEquals(testAccount1.getBalance().decreaseAmount(new BigDecimal("1000.00")),
+                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
     }
 
     @Test
     void transferBetweenAccounts() {
         SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
         thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
-                new BigDecimal("100.00"),
+                new Money(    new BigDecimal("1000.00")),
                 testAccount2.getAccountNumber(),
                 testAccount2.getSecretKey(),
                 testAccount1.getAccountNumber(),
                 testAccount1.getSecretKey());
-        thirdPartyService.transferBetweenAccounts(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
+        var result = thirdPartyService.transferBetweenAccounts(thirdParty.getHashedKey(), thirdPartyTransactionDTO);
+        assertEquals(testAccount1.getBalance().decreaseAmount(new BigDecimal("1000.00")),
+                checkingAccountRepository.findById(testAccount1.getAccountNumber()).get().getBalance().getAmount());
+        assertEquals(testAccount2.getBalance().increaseAmount(new BigDecimal("1000.00")),
+                checkingAccountRepository.findById(testAccount2.getAccountNumber()).get().getBalance().getAmount());
     }
 
     @Test

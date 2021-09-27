@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.ironhack.gilobank.dao.AccountHolder;
 import com.ironhack.gilobank.enums.Status;
+import com.ironhack.gilobank.utils.Money;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,9 +41,9 @@ public class CheckingAccountDTO {
 
     @DecimalMin(value = "0.00")
     @Digits(integer = 30, fraction = 2, message = "Error: Incorrect format for Amount")
-    private BigDecimal balance;
+    private Money balance;
 
-    private BigDecimal penaltyFee;
+    private Money penaltyFee;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @JsonDeserialize(using = LocalDateDeserializer.class)
@@ -53,16 +54,16 @@ public class CheckingAccountDTO {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    private BigDecimal monthlyMaintenanceFee;
+    private Money monthlyMaintenanceFee;
 
-    private BigDecimal minimumBalance;
+    private Money minimumBalance;
 
 
     public CheckingAccountDTO(Long accountNumber) {
         this.accountNumber = accountNumber;
     }
 
-    public CheckingAccountDTO(Long accountNumber, AccountHolder primaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
+    public CheckingAccountDTO(Long accountNumber, AccountHolder primaryHolder, Money balance, Money penaltyFee, LocalDate openDate, Status status) {
         this.accountNumber = accountNumber;
         this.primaryHolder = primaryHolder;
         this.balance = balance;
@@ -82,7 +83,7 @@ public class CheckingAccountDTO {
         this.primaryHolder = primaryHolder;
     }
 
-    public CheckingAccountDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status, BigDecimal monthlyMaintenanceFee, BigDecimal minimumBalance) {
+    public CheckingAccountDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, Money balance, Money penaltyFee, LocalDate openDate, Status status, Money monthlyMaintenanceFee, Money minimumBalance) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;

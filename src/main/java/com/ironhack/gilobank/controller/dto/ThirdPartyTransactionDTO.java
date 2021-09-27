@@ -1,5 +1,6 @@
 package com.ironhack.gilobank.controller.dto;
 
+import com.ironhack.gilobank.utils.Money;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,10 +14,11 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class ThirdPartyTransactionDTO {
 
-    private BigDecimal amount;
+    private Money amount;
     private Long creditAccountNumber;
     private String creditAccountSecretKey;
     private Long debitAccountNumber;
     private String debitAccountSecretKey;
+
 
 }

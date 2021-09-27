@@ -64,9 +64,9 @@ public class ThirdPartyService implements IThirdPartyService {
     }
 
     public Transaction transferBetweenAccounts(String hashedKey, ThirdPartyTransactionDTO thirdPartyTransactionDTO) {
-        if (transactionService.verifyThirdParty(hashedKey) &&
+        if(transactionService.verifyThirdParty(hashedKey) &&
                 transactionService.verifySecretKey(thirdPartyTransactionDTO.getDebitAccountSecretKey(),
-                        transactionService.findAccountTypeAndReturn(thirdPartyTransactionDTO.getDebitAccountNumber()))) {
+                        transactionService.findAccountTypeAndReturn(thirdPartyTransactionDTO.getDebitAccountNumber()))){
             TransactionDTO transactionDTO = new TransactionDTO();
             transactionDTO.setAmount(thirdPartyTransactionDTO.getAmount());
             transactionDTO.setDebitAccountNumber(thirdPartyTransactionDTO.getDebitAccountNumber());
