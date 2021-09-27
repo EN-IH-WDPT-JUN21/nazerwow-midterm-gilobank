@@ -24,15 +24,15 @@ public class CheckingAccount extends Account {
     @NotNull
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride( name = "currency", column = @Column(name = "checkingMonthlyMaintCurrency")),
-            @AttributeOverride( name = "amount", column = @Column(name = "checkingMonthlyMaintenance"))})
+            @AttributeOverride(name = "currency", column = @Column(name = "checkingMonthlyMaintCurrency")),
+            @AttributeOverride(name = "amount", column = @Column(name = "checkingMonthlyMaintenance"))})
     private Money monthlyMaintenanceFee = new Money(new BigDecimal("12.00"));
 
     @NotNull
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride( name = "currency", column = @Column(name = "checkingMinCurrency")),
-            @AttributeOverride( name = "amount", column = @Column(name = "checkingMinBalance"))})
+            @AttributeOverride(name = "currency", column = @Column(name = "checkingMinCurrency")),
+            @AttributeOverride(name = "amount", column = @Column(name = "checkingMinBalance"))})
     private Money minimumBalance = new Money(new BigDecimal("250.00"));
 
     public CheckingAccount(String secretKey, AccountHolder primaryHolder, Money balance) {

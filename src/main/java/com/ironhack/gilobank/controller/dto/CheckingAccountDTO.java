@@ -7,7 +7,6 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.ironhack.gilobank.dao.AccountHolder;
 import com.ironhack.gilobank.enums.Status;
-import com.ironhack.gilobank.utils.Money;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +15,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.ManyToOne;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Digits;
 import java.math.BigDecimal;
@@ -32,18 +30,18 @@ public class CheckingAccountDTO {
 
     private String secretKey;
 
-
     private AccountHolder primaryHolder;
 
-    @ManyToOne
     private AccountHolder secondaryHolder;
 
 
     @DecimalMin(value = "0.00")
     @Digits(integer = 30, fraction = 2, message = "Error: Incorrect format for Amount")
-    private Money balance;
+    private BigDecimal balance;
 
-    private Money penaltyFee;
+    @DecimalMin(value = "0.00")
+    @Digits(integer = 30, fraction = 2, message = "Error: Incorrect format for penalty fee")
+    private BigDecimal penaltyFee = new BigDecimal("40.00");
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @JsonDeserialize(using = LocalDateDeserializer.class)
@@ -54,16 +52,20 @@ public class CheckingAccountDTO {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    private Money monthlyMaintenanceFee;
+    @DecimalMin(value = "0.00")
+    @Digits(integer = 30, fraction = 2, message = "Error: Incorrect format for monthly maintenance fee")
+    private BigDecimal monthlyMaintenanceFee = new BigDecimal("12.00");
 
-    private Money minimumBalance;
+    @DecimalMin(value = "0.00")
+    @Digits(integer = 30, fraction = 2, message = "Error: Incorrect format for minimum balance")
+    private BigDecimal minimumBalance = new BigDecimal("250.00");
 
 
     public CheckingAccountDTO(Long accountNumber) {
         this.accountNumber = accountNumber;
     }
 
-    public CheckingAccountDTO(Long accountNumber, AccountHolder primaryHolder, Money balance, Money penaltyFee, LocalDate openDate, Status status) {
+    public CheckingAccountDTO(Long accountNumber, AccountHolder primaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status) {
         this.accountNumber = accountNumber;
         this.primaryHolder = primaryHolder;
         this.balance = balance;
@@ -83,7 +85,7 @@ public class CheckingAccountDTO {
         this.primaryHolder = primaryHolder;
     }
 
-    public CheckingAccountDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, Money balance, Money penaltyFee, LocalDate openDate, Status status, Money monthlyMaintenanceFee, Money minimumBalance) {
+    public CheckingAccountDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status, BigDecimal monthlyMaintenanceFee, BigDecimal minimumBalance) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;

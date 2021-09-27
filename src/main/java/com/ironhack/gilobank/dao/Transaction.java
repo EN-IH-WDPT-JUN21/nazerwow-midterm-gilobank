@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -33,14 +32,14 @@ public class Transaction {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride( name = "currency", column = @Column(name = "transactionCurrency")),
-            @AttributeOverride( name = "amount", column = @Column(name = "transactionAmount"))})
+            @AttributeOverride(name = "currency", column = @Column(name = "transactionCurrency")),
+            @AttributeOverride(name = "amount", column = @Column(name = "transactionAmount"))})
     private Money amount;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride( name = "currency", column = @Column(name = "BalanceCurrency")),
-            @AttributeOverride( name = "amount", column = @Column(name = "BalanceAmount"))})
+            @AttributeOverride(name = "currency", column = @Column(name = "BalanceCurrency")),
+            @AttributeOverride(name = "amount", column = @Column(name = "BalanceAmount"))})
     private Money balanceAfterTransaction;
 
     @Enumerated(EnumType.STRING)

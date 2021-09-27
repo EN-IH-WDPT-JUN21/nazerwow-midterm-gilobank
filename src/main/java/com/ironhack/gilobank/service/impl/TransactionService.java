@@ -86,7 +86,7 @@ public class TransactionService implements ITransactionService {
 
     public Transaction creditFunds(TransactionDTO transactionDTO) {
         Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
-        checkForFraud(transactionDTO);
+        checkForFraud_CreditAccount(transactionDTO);
         checkAccountStatus(creditAccount);
         creditAccount.getBalance().increaseAmount(transactionDTO.getAmount());
         findAccountTypeAndSave(creditAccount);
@@ -96,7 +96,7 @@ public class TransactionService implements ITransactionService {
 
     public Transaction debitFunds(TransactionDTO transactionDTO) {
         Account debitAccount = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
-        checkForFraud(transactionDTO);
+        checkForFraud_DebitAccount(transactionDTO);
         checkAccountStatus(debitAccount);
         debitAccount.getBalance().decreaseAmount(transactionDTO.getAmount().getAmount().abs());
         findAccountTypeAndSave(debitAccount);
@@ -107,7 +107,8 @@ public class TransactionService implements ITransactionService {
     public Transaction transferBetweenAccounts(TransactionDTO transactionDTO) {
         Account debitAccount = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
         Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
-        checkForFraud(transactionDTO);
+        checkForFraud_CreditAccount(transactionDTO);
+        checkForFraud_DebitAccount(transactionDTO);
         checkAccountStatus(debitAccount);
         checkAccountStatus(creditAccount);
         debitAccount.getBalance().decreaseAmount(transactionDTO.getAmount());
@@ -125,22 +126,21 @@ public class TransactionService implements ITransactionService {
         return findByDateTimeBetween(checkingAccount, convertedStartDate, convertedEndDate);
     }
 
-    public void checkForFraud(TransactionDTO transactionDTO) {
-        if (transactionDTO.getDebitAccountNumber() != null) {
-            Account debitAccount = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
-            if (fraudDetection.fraudDetector(debitAccount, transactionDTO.getAmount().getAmount())) {
-                debitAccount.freezeAccount();
-                findAccountTypeAndSave(debitAccount);
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
-            }
+    public void checkForFraud_CreditAccount(TransactionDTO transactionDTO) {
+        Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
+        if (fraudDetection.fraudDetector(creditAccount, transactionDTO.getAmount().getAmount())) {
+            creditAccount.freezeAccount();
+            findAccountTypeAndSave(creditAccount);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
         }
-        if (transactionDTO.getCreditAccountNumber() != null) {
-            Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
-            if (fraudDetection.fraudDetector(creditAccount, transactionDTO.getAmount().getAmount())) {
-                creditAccount.freezeAccount();
-                findAccountTypeAndSave(creditAccount);
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
-            }
+    }
+
+    public void checkForFraud_DebitAccount(TransactionDTO transactionDTO) {
+        Account debitAccount = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
+        if (fraudDetection.fraudDetector(debitAccount, transactionDTO.getAmount().getAmount())) {
+            debitAccount.freezeAccount();
+            findAccountTypeAndSave(debitAccount);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
         }
     }
 
@@ -310,10 +310,10 @@ public class TransactionService implements ITransactionService {
         return false;
     }
 
-    public boolean verifySecretKey(String secretKey, Account account){
+    public boolean verifySecretKey(String secretKey, Account account) {
         System.out.println(secretKey);
         System.out.println(account.getSecretKey());
-        if(Objects.equals(account.getSecretKey(), secretKey)){
+        if (Objects.equals(account.getSecretKey(), secretKey)) {
             return true;
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Secret key: " + secretKey +

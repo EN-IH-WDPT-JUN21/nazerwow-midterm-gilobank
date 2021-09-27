@@ -102,24 +102,24 @@ class StudentAccountControllerTest {
                 "secretKey1",
                 testHolder1,                    // Primary Holder
                 testHolder2,                    // Secondary Holder
-           new Money(new BigDecimal("1000")),     // balance
-            new Money(new BigDecimal("10")),       // penaltyFee
+                new Money(new BigDecimal("1000")),     // balance
+                new Money(new BigDecimal("10")),       // penaltyFee
                 LocalDate.parse("2011-01-01"),  // open date
                 Status.ACTIVE);                 // Status
         testAccount2 = new StudentAccount(
                 "secretKey2",
                 testHolder1,                    // Primary Holder
                 null,
-           new Money(     new BigDecimal("2000")),     // balance
-             new Money(   new BigDecimal("20")),       // penaltyFee
+                new Money(new BigDecimal("2000")),     // balance
+                new Money(new BigDecimal("20")),       // penaltyFee
                 LocalDate.parse("2012-02-02"),  // open date
                 Status.ACTIVE);                 // Status
         testAccount3 = new StudentAccount(
                 "secretKey3",
                 testHolder2,                    // Primary Holder
                 null,
-          new Money(      new BigDecimal("3000")),     // balance
-          new Money(      new BigDecimal("30")),       // penaltyFee
+                new Money(new BigDecimal("3000")),     // balance
+                new Money(new BigDecimal("30")),       // penaltyFee
                 LocalDate.parse("2013-03-03"),  // open date
                 Status.ACTIVE);                 // Status
 
@@ -179,7 +179,7 @@ class StudentAccountControllerTest {
     @Test
     void creditFunds_Valid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(),new Money( new BigDecimal("250.00")), TransactionType.CREDIT);
+        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new Money(new BigDecimal("250.00")), TransactionType.CREDIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
                         put("/api/account/student/credit")
@@ -194,7 +194,7 @@ class StudentAccountControllerTest {
     @Test
     void debitFunds_Valid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        TransactionDTO transactionDTO = new TransactionDTO(new Money( new BigDecimal("250.00")), testAccount1.getAccountNumber(), TransactionType.DEBIT);
+        TransactionDTO transactionDTO = new TransactionDTO(new Money(new BigDecimal("250.00")), testAccount1.getAccountNumber(), TransactionType.DEBIT);
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
                         put("/api/account/student/debit")
@@ -209,7 +209,7 @@ class StudentAccountControllerTest {
     @Test
     void transferFunds_Valid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
-        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(),new Money( new BigDecimal("250.00")), testAccount2.getAccountNumber());
+        TransactionDTO transactionDTO = new TransactionDTO(testAccount1.getAccountNumber(), new Money(new BigDecimal("250.00")), testAccount2.getAccountNumber());
         String body = objectMapper.writeValueAsString(transactionDTO);
         MvcResult result = mockMvc.perform(
                         put("/api/account/student/transfer")
@@ -227,18 +227,18 @@ class StudentAccountControllerTest {
     void getTransactionsByDateBetween() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
 
-        Transaction testTransaction1 = new Transaction(testAccount1, "Test1",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
-        Transaction testTransaction2 = new Transaction(testAccount1, "Test2",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
-        Transaction testTransaction3 = new Transaction(testAccount1, "Test2",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-03-03T10:15:30"));
-        Transaction testTransaction4 = new Transaction(testAccount1, "Test3",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-04-03T10:15:30"));
-        Transaction testTransaction5 = new Transaction(testAccount1, "Test4",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-05-03T10:15:30"));
-        Transaction testTransaction6 = new Transaction(testAccount1, "Test5",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-06-03T10:15:30"));
-        Transaction testTransaction7 = new Transaction(testAccount1, "Test6",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-07-03T10:15:30"));
-        Transaction testTransaction8 = new Transaction(testAccount1, "Test7",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-08-03T10:15:30"));
-        Transaction testTransaction9 = new Transaction(testAccount1, "Test8",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-09-03T10:15:30"));
+        Transaction testTransaction1 = new Transaction(testAccount1, "Test1", new Money(new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
+        Transaction testTransaction2 = new Transaction(testAccount1, "Test2", new Money(new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
+        Transaction testTransaction3 = new Transaction(testAccount1, "Test2", new Money(new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-03-03T10:15:30"));
+        Transaction testTransaction4 = new Transaction(testAccount1, "Test3", new Money(new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-04-03T10:15:30"));
+        Transaction testTransaction5 = new Transaction(testAccount1, "Test4", new Money(new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-05-03T10:15:30"));
+        Transaction testTransaction6 = new Transaction(testAccount1, "Test5", new Money(new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-06-03T10:15:30"));
+        Transaction testTransaction7 = new Transaction(testAccount1, "Test6", new Money(new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-07-03T10:15:30"));
+        Transaction testTransaction8 = new Transaction(testAccount1, "Test7", new Money(new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-08-03T10:15:30"));
+        Transaction testTransaction9 = new Transaction(testAccount1, "Test8", new Money(new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-09-03T10:15:30"));
 
-        Transaction testTransaction10 = new Transaction(testAccount2, "Test10",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
-        Transaction testTransaction11 = new Transaction(testAccount2, "Test11",new Money( new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
+        Transaction testTransaction10 = new Transaction(testAccount2, "Test10", new Money(new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-01-03T10:15:30"));
+        Transaction testTransaction11 = new Transaction(testAccount2, "Test11", new Money(new BigDecimal("250.00")), testAccount1.getBalance(), LocalDateTime.parse("2020-02-03T10:15:30"));
         transactionRepository.saveAll(List.of(testTransaction1, testTransaction2, testTransaction3, testTransaction4,
                 testTransaction5, testTransaction6, testTransaction7, testTransaction8, testTransaction9, testTransaction10,
                 testTransaction11));
@@ -264,8 +264,8 @@ class StudentAccountControllerTest {
     void createNewStudentAccount() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         var repoSizeBefore = studentAccountRepository.findAll().size();
-        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO("secreKey", testHolder1, testHolder2,new Money(new BigDecimal("200.00")),
-             new Money(  new BigDecimal("40.00")), LocalDate.now(), Status.ACTIVE,new Money(new BigDecimal("12.00")),new Money(new BigDecimal("100.00")));
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO("secreKey", testHolder1, testHolder2, new BigDecimal("200.00"),
+                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
         String body = objectMapper.writeValueAsString(checkingAccountDTO);
 
         MvcResult result = mockMvc.perform(
@@ -283,8 +283,8 @@ class StudentAccountControllerTest {
     void updateStudentAccount() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         var repoSizeBefore = studentAccountRepository.findAll().size();
-        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO("secretKey", testHolder1, testHolder2,new Money(new BigDecimal("999.00")),
-             new Money(   new BigDecimal("40.00")), LocalDate.now(), Status.ACTIVE,new Money(new BigDecimal("12.00")),new Money( new BigDecimal("100.00")));
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO("secreKey", testHolder1, testHolder2, new BigDecimal("999.00"),
+                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
         String body = objectMapper.writeValueAsString(checkingAccountDTO);
 
         MvcResult result = mockMvc.perform(

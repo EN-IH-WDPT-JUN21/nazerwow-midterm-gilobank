@@ -9,7 +9,6 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,8 +24,8 @@ public class CreditCard extends Account {
 //    @Digits(integer = 30, fraction = 2)
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride( name = "currency", column = @Column(name = "creditCardCurrency")),
-            @AttributeOverride( name = "amount", column = @Column(name = "creditCardBalance"))})
+            @AttributeOverride(name = "currency", column = @Column(name = "creditCardCurrency")),
+            @AttributeOverride(name = "amount", column = @Column(name = "creditCardBalance"))})
     private Money balance = new Money(new BigDecimal("-100.00"));
 
     @NotNull
@@ -34,8 +33,8 @@ public class CreditCard extends Account {
 //    @DecimalMin(value = "-100000.00")
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride( name = "currency", column = @Column(name = "creditLimitCurrency")),
-            @AttributeOverride( name = "amount", column = @Column(name = "CreditLimitAmount"))})
+            @AttributeOverride(name = "currency", column = @Column(name = "creditLimitCurrency")),
+            @AttributeOverride(name = "amount", column = @Column(name = "CreditLimitAmount"))})
     private Money creditLimit = new Money(new BigDecimal("-100.00"));
 
     @NotNull

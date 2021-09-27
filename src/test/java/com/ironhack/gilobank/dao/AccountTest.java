@@ -40,12 +40,12 @@ class AccountTest {
                 "secretKey1",
                 testHolder1,                        // Primary Holder
                 testHolder2,                        // Secondary Holder
-             new Money(   new BigDecimal("1000.00")),      // balance
-                     new Money(  new BigDecimal("10.00")),        // penaltyFee
+                new Money(new BigDecimal("1000.00")),      // balance
+                new Money(new BigDecimal("10.00")),        // penaltyFee
                 LocalDate.parse("2011-01-01"),      // open date
                 Status.ACTIVE,                      // Status
-                             new Money(   new BigDecimal("11.00")),        // Monthly Maintenance Fee
-                                     new Money(   new BigDecimal("100.00")));     // Minimum Balance
+                new Money(new BigDecimal("11.00")),        // Monthly Maintenance Fee
+                new Money(new BigDecimal("100.00")));     // Minimum Balance
     }
 
     @Test

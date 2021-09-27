@@ -106,18 +106,18 @@ class ThirdPartyServiceTest {
                 new Money(new BigDecimal("20")),       // penaltyFee
                 LocalDate.parse("2012-02-02"),  // open date
                 Status.ACTIVE,                  // Status
-                new Money( new BigDecimal("22")),      // monthly maintenance
-                new Money( new BigDecimal("200")));      // minimum balance
+                new Money(new BigDecimal("22")),      // monthly maintenance
+                new Money(new BigDecimal("200")));      // minimum balance
         testAccount3 = new CheckingAccount(
                 "secretKey3",
                 testHolder2,                    // Primary Holder
                 null,
-                new Money(  new BigDecimal("3000")),     // balance
-                new Money(  new BigDecimal("30")),       // penaltyFee
+                new Money(new BigDecimal("3000")),     // balance
+                new Money(new BigDecimal("30")),       // penaltyFee
                 LocalDate.parse("2013-03-03"),  // open date
                 Status.ACTIVE,                  // Status
-                new Money( new BigDecimal("300")),      // monthly maintenance
-                new Money( new BigDecimal("3")));      // minimum balance
+                new Money(new BigDecimal("300")),      // monthly maintenance
+                new Money(new BigDecimal("3")));      // minimum balance
 
         addressRepository.saveAll(List.of(testAddress1, testAddress2));
         accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
@@ -154,7 +154,7 @@ class ThirdPartyServiceTest {
     void creditAccount() {
         SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
         thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
-                new Money(   new BigDecimal("1000.00")),
+                new Money(new BigDecimal("1000.00")),
                 testAccount1.getAccountNumber(),
                 testAccount1.getSecretKey(),
                 null, null);
@@ -167,7 +167,7 @@ class ThirdPartyServiceTest {
     void debitAccount() {
         SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
         thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
-                new Money(    new BigDecimal("1000.00")),
+                new Money(new BigDecimal("1000.00")),
                 null, null,
                 testAccount1.getAccountNumber(),
                 testAccount1.getSecretKey());
@@ -180,7 +180,7 @@ class ThirdPartyServiceTest {
     void transferBetweenAccounts() {
         SecurityContextHolder.getContext().setAuthentication(thirdPartyLogin);
         thirdPartyTransactionDTO = new ThirdPartyTransactionDTO(
-                new Money(    new BigDecimal("1000.00")),
+                new Money(new BigDecimal("1000.00")),
                 testAccount2.getAccountNumber(),
                 testAccount2.getSecretKey(),
                 testAccount1.getAccountNumber(),
@@ -209,7 +209,7 @@ class ThirdPartyServiceTest {
         thirdPartyDTO.setId(thirdParty.getId());
         thirdPartyDTO.setHashedKey("hashedkey232");
         thirdPartyDTO.setName("newThirdParty");
-        var result = thirdPartyService.addThirdParty(thirdPartyDTO);
+        var result = thirdPartyService.updateThirdParty(thirdPartyDTO);
         assertEquals("hashedkey232", thirdPartyRepository.findById(thirdParty.getId()).get().getHashedKey());
     }
 

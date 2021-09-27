@@ -11,7 +11,6 @@ import javax.persistence.Enumerated;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter

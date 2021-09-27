@@ -11,8 +11,6 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -54,15 +52,15 @@ public abstract class Account {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride( name = "currency", column = @Column(name = "currencyBalance")),
-            @AttributeOverride( name = "amount", column = @Column(name = "accountBalance"))})
+            @AttributeOverride(name = "currency", column = @Column(name = "currencyBalance")),
+            @AttributeOverride(name = "amount", column = @Column(name = "accountBalance"))})
     private Money balance = new Money(new BigDecimal("0.00"));
 
     @NotNull
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride( name = "currency", column = @Column(name = "penaltyCurrency")),
-            @AttributeOverride( name = "amount", column = @Column(name = "penaltyAmount"))})
+            @AttributeOverride(name = "currency", column = @Column(name = "penaltyCurrency")),
+            @AttributeOverride(name = "amount", column = @Column(name = "penaltyAmount"))})
     private Money penaltyFee = new Money(new BigDecimal("40.00"));
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

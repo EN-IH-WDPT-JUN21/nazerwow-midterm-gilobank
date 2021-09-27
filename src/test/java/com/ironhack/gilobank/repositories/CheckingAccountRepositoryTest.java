@@ -75,7 +75,7 @@ class CheckingAccountRepositoryTest {
     @Test
     void CheckingAccountCreation_TEST_PositiveSingleAccount() throws ParseException {
         var repoSizeBefore = checkingAccountRepository.findAll().size();
-        CheckingAccount testAccount = new CheckingAccount("secretKey1", testHolder1, new Money( new BigDecimal("150")));
+        CheckingAccount testAccount = new CheckingAccount("secretKey1", testHolder1, new Money(new BigDecimal("150")));
         checkingAccountRepository.save(testAccount);
         var repoSizeAfter = checkingAccountRepository.findAll().size();
         assertEquals(repoSizeAfter, repoSizeBefore + 1);
@@ -86,7 +86,7 @@ class CheckingAccountRepositoryTest {
     @Test
     void CheckingAccountCreation_TEST_PositiveJointAccount() throws ParseException {
         var repoSizeBefore = checkingAccountRepository.findAll().size();
-        CheckingAccount testAccount = new CheckingAccount("secretKeyJoint", testHolder1, testHolder2,new Money( new BigDecimal("150")));
+        CheckingAccount testAccount = new CheckingAccount("secretKeyJoint", testHolder1, testHolder2, new Money(new BigDecimal("150")));
         checkingAccountRepository.save(testAccount);
         var repoSizeAfter = checkingAccountRepository.findAll().size();
         assertEquals(repoSizeAfter, repoSizeBefore + 1);
@@ -97,7 +97,7 @@ class CheckingAccountRepositoryTest {
     @Test
     void CheckingAccountCreation_TEST_PositiveOnlyHoldersAndBalance() throws ParseException {
         var repoSizeBefore = checkingAccountRepository.findAll().size();
-        CheckingAccount testAccount = new CheckingAccount("secretKeyJoint", testHolder1, testHolder2,new Money( new BigDecimal("150")));
+        CheckingAccount testAccount = new CheckingAccount("secretKeyJoint", testHolder1, testHolder2, new Money(new BigDecimal("150")));
         checkingAccountRepository.save(testAccount);
         var repoSizeAfter = checkingAccountRepository.findAll().size();
         assertEquals(repoSizeAfter, repoSizeBefore + 1);
@@ -112,8 +112,8 @@ class CheckingAccountRepositoryTest {
     }
 
     @Test
-    void getAccountBalanceByAccountNumber(){
-        CheckingAccount testAccount = new CheckingAccount("secretKeyJoint", testHolder1, testHolder2,new Money( new BigDecimal("150.00")));
+    void getAccountBalanceByAccountNumber() {
+        CheckingAccount testAccount = new CheckingAccount("secretKeyJoint", testHolder1, testHolder2, new Money(new BigDecimal("150.00")));
         checkingAccountRepository.save(testAccount);
         var result = checkingAccountRepository.getBalanceByAccountNumber(testAccount.getAccountNumber());
         assertEquals(new BigDecimal("150.00"), result.getAmount());

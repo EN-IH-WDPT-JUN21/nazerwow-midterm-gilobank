@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
@@ -26,7 +27,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     // AND type LIKE '%debit%'
     @Query(value = "SELECT SUM(transaction_amount) FROM transaction WHERE account_id = :account AND time_of_trns > DATE_SUB(NOW(), INTERVAL 24 HOUR)", nativeQuery = true)
-    BigDecimal totalOfAllDebitsFromLast24Hours(@Param("account") Account account);
+    Optional<BigDecimal> totalOfAllDebitsFromLast24Hours(@Param("account") Account account);
 
     //  AND type LIKE '%debit%'
     @Query(value = "SELECT SUM(transaction_amount) FROM transaction WHERE account_id = :account GROUP BY DATE(time_of_trns)", nativeQuery = true)
@@ -44,5 +45,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query(value = "SELECT time_of_trns FROM transaction WHERE account_id = :account AND type LIKE '%INTEREST%' AND time_of_trns > DATE_SUB(NOW(), INTERVAL 1 YEAR)", nativeQuery = true)
     List<Timestamp> interestYear(@Param("account") Account account);
+
+    @Query(value = "SELECT t FROM Transaction t where t.account = :account")
+    List<Transaction> findAllForAccount(@Param("account") Account account);
 
 }

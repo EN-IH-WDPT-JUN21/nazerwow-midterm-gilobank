@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @Getter
 @Setter
 @AllArgsConstructor
@@ -15,9 +13,13 @@ import java.math.BigDecimal;
 public class ThirdPartyTransactionDTO {
 
     private Money amount;
+
     private Long creditAccountNumber;
+
     private String creditAccountSecretKey;
+
     private Long debitAccountNumber;
+
     private String debitAccountSecretKey;
 
 

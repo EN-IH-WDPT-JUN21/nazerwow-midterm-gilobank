@@ -1,11 +1,8 @@
 package com.ironhack.gilobank.utils;
 
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
-import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.persistence.OneToMany;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Currency;
@@ -20,7 +17,7 @@ public class Money {
     private final Currency currency;
     private BigDecimal amount;
 
-    public Money(){
+    public Money() {
         this.currency = USD;
     }
 

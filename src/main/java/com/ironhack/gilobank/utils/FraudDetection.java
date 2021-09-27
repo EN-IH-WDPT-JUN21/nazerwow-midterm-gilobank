@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class FraudDetection {
@@ -22,7 +23,7 @@ public class FraudDetection {
     // Calculates the highest 24 Spending allowed
     // Utilises current 24 spend method to check against highest allowed
     public boolean fraudDetector(Account account, BigDecimal payment) {
-        if (transactionRepository.findAll().isEmpty()) {
+        if (transactionRepository.findAllForAccount(account).isEmpty()) {
             return false;
         }
         if (debitsWithin1SecondLast24Hours(account)) {
@@ -54,8 +55,9 @@ public class FraudDetection {
 
     // Returns total of new payment + spending in last 4 hours
     public BigDecimal current24Spend(Account account, BigDecimal payment) {
-        BigDecimal totalLast24Hours = transactionRepository.totalOfAllDebitsFromLast24Hours(account);
-        return totalLast24Hours.add(payment);
+        Optional<BigDecimal> totalLast24Hours = transactionRepository.totalOfAllDebitsFromLast24Hours(account);
+        if (totalLast24Hours.isEmpty()) return new BigDecimal("0.00");
+        return totalLast24Hours.get().add(payment);
     }
 
 

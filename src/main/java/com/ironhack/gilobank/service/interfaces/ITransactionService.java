@@ -29,7 +29,9 @@ public interface ITransactionService {
 
     List<Transaction> findTransactionBetween(Long accountNumber, LocalDate startDate, LocalDate endDate);
 
-    void checkForFraud(TransactionDTO transactionDTO);
+    void checkForFraud_CreditAccount(TransactionDTO transactionDTO);
+
+    void checkForFraud_DebitAccount(TransactionDTO transactionDTO);
 
     void checkAccountStatus(Account checkingAccount);
 

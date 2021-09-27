@@ -4,6 +4,7 @@ import com.ironhack.gilobank.controller.dto.*;
 import com.ironhack.gilobank.dao.*;
 import com.ironhack.gilobank.enums.Role;
 import com.ironhack.gilobank.service.interfaces.*;
+import com.ironhack.gilobank.utils.Money;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -125,13 +126,18 @@ public class CreationService implements ICreationService {
     public CheckingAccount newCheckingAccount(CheckingAccountDTO checkingAccountDTO) throws TransactionSystemException {
         CheckingAccount checkingAccount = new CheckingAccount();
         if (checkingAccountDTO.getPrimaryHolder() != null) {
-            if (!checkIfOver24(checkingAccountDTO.getPrimaryHolder()) &&
-                    !checkIfOver24(checkingAccountDTO.getSecondaryHolder()) ||
-                    !checkIfOver24(checkingAccountDTO.getPrimaryHolder()) && checkingAccountDTO.getSecondaryHolder() == null) {
+            if (!checkIfOver24(checkingAccountDTO.getPrimaryHolder())) {
                 newStudentAccount(checkingAccountDTO);
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Student Account Opened Instead");
-            } else if (checkIfOver24(checkingAccountDTO.getPrimaryHolder()) != checkIfOver24(checkingAccountDTO.getSecondaryHolder())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot open / edit due to 1 holder being a Student and One Holder Non-Student");
+            }
+            if (checkingAccountDTO.getSecondaryHolder() != null) {
+                if (!checkIfOver24(checkingAccountDTO.getPrimaryHolder()) &&
+                        !checkIfOver24(checkingAccountDTO.getSecondaryHolder()) ||
+                        !checkIfOver24(checkingAccountDTO.getPrimaryHolder()) && checkingAccountDTO.getSecondaryHolder() == null) {
+                    newStudentAccount(checkingAccountDTO);
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Student Account Opened Instead");
+                } else if (checkIfOver24(checkingAccountDTO.getPrimaryHolder()) != checkIfOver24(checkingAccountDTO.getSecondaryHolder())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot open / edit due to 1 holder being a Student and One Holder Non-Student");
+                }
             }
         }
         if (checkingAccountDTO.getAccountNumber() != null) {
@@ -148,10 +154,12 @@ public class CreationService implements ICreationService {
             checkingAccount.setSecretKey(checkingAccountDTO.getSecretKey());
         }
         if (checkingAccountDTO.getBalance() != null) {
-            checkingAccount.setBalance(checkingAccountDTO.getBalance());
+            Money amountAsMoney = new Money(checkingAccountDTO.getBalance());
+            checkingAccount.setBalance(amountAsMoney);
         }
         if (checkingAccountDTO.getPenaltyFee() != null) {
-            checkingAccount.setPenaltyFee(checkingAccountDTO.getPenaltyFee());
+            Money amountAsMoney = new Money(checkingAccountDTO.getPenaltyFee());
+            checkingAccount.setPenaltyFee(amountAsMoney);
         }
         if (checkingAccountDTO.getOpenDate() != null) {
             checkingAccount.setOpenDate(checkingAccountDTO.getOpenDate());
@@ -160,10 +168,12 @@ public class CreationService implements ICreationService {
             checkingAccount.setStatus(checkingAccountDTO.getStatus());
         }
         if (checkingAccountDTO.getMonthlyMaintenanceFee() != null) {
-            checkingAccount.setMonthlyMaintenanceFee(checkingAccountDTO.getMonthlyMaintenanceFee());
+            Money amountAsMoney = new Money(checkingAccountDTO.getMonthlyMaintenanceFee());
+            checkingAccount.setMonthlyMaintenanceFee(amountAsMoney);
         }
         if (checkingAccountDTO.getMinimumBalance() != null) {
-            checkingAccount.setMinimumBalance(checkingAccountDTO.getMinimumBalance());
+            Money amountAsMoney = new Money(checkingAccountDTO.getMinimumBalance());
+            checkingAccount.setMinimumBalance(amountAsMoney);
         }
         checkingAccountService.saveCheckingAccount(checkingAccount);
         return checkingAccount;
@@ -194,10 +204,12 @@ public class CreationService implements ICreationService {
                 studentAccount.setSecretKey(checkingAccountDTO.getSecretKey());
             }
             if (checkingAccountDTO.getBalance() != null) {
-                studentAccount.setBalance(checkingAccountDTO.getBalance());
+                Money amountAsMoney = new Money(checkingAccountDTO.getBalance());
+                studentAccount.setBalance(amountAsMoney);
             }
             if (checkingAccountDTO.getPenaltyFee() != null) {
-                studentAccount.setPenaltyFee(checkingAccountDTO.getPenaltyFee());
+                Money amountAsMoney = new Money(checkingAccountDTO.getPenaltyFee());
+                studentAccount.setPenaltyFee(amountAsMoney);
             }
             if (checkingAccountDTO.getOpenDate() != null) {
                 studentAccount.setOpenDate(checkingAccountDTO.getOpenDate());
@@ -226,10 +238,12 @@ public class CreationService implements ICreationService {
             creditCard.setSecretKey(creditCardDTO.getSecretKey());
         }
         if (creditCardDTO.getBalance() != null) {
-            creditCard.setBalance(creditCardDTO.getBalance());
+            Money amountAsMoney = new Money(creditCardDTO.getBalance());
+            creditCard.setBalance(amountAsMoney);
         }
         if (creditCardDTO.getPenaltyFee() != null) {
-            creditCard.setPenaltyFee(creditCardDTO.getPenaltyFee());
+            Money amountAsMoney = new Money(creditCardDTO.getPenaltyFee());
+            creditCard.setPenaltyFee(amountAsMoney);
         }
         if (creditCardDTO.getOpenDate() != null) {
             creditCard.setOpenDate(creditCardDTO.getOpenDate());
@@ -238,7 +252,8 @@ public class CreationService implements ICreationService {
             creditCard.setStatus(creditCardDTO.getStatus());
         }
         if (creditCardDTO.getCreditLimit() != null) {
-            creditCard.setCreditLimit(creditCardDTO.getCreditLimit());
+            Money amountAsMoney = new Money(creditCardDTO.getCreditLimit());
+            creditCard.setCreditLimit(amountAsMoney);
         }
         if (creditCardDTO.getInterestRate() != null) {
             creditCard.setInterestRate(creditCardDTO.getInterestRate());
@@ -263,10 +278,12 @@ public class CreationService implements ICreationService {
             savingsAccount.setSecretKey(savingsAccountDTO.getSecretKey());
         }
         if (savingsAccountDTO.getBalance() != null) {
-            savingsAccount.setBalance(savingsAccountDTO.getBalance());
+            Money amountAsMoney = new Money(savingsAccountDTO.getBalance());
+            savingsAccount.setBalance(amountAsMoney);
         }
         if (savingsAccountDTO.getPenaltyFee() != null) {
-            savingsAccount.setPenaltyFee(savingsAccountDTO.getPenaltyFee());
+            Money amountAsMoney = new Money(savingsAccountDTO.getPenaltyFee());
+            savingsAccount.setPenaltyFee(amountAsMoney);
         }
         if (savingsAccountDTO.getOpenDate() != null) {
             savingsAccount.setOpenDate(savingsAccountDTO.getOpenDate());
@@ -275,7 +292,8 @@ public class CreationService implements ICreationService {
             savingsAccount.setStatus(savingsAccountDTO.getStatus());
         }
         if (savingsAccountDTO.getMinimumBalance() != null) {
-            savingsAccount.setMinimumBalance(savingsAccountDTO.getMinimumBalance());
+            Money amountAsMoney = new Money(savingsAccountDTO.getMinimumBalance());
+            savingsAccount.setMinimumBalance(amountAsMoney);
         }
         if (savingsAccountDTO.getInterestRate() != null) {
             savingsAccount.setInterestRate(savingsAccountDTO.getInterestRate());

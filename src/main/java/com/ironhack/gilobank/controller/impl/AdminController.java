@@ -34,7 +34,7 @@ public class AdminController {
     @PutMapping("/thirdparty/update")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ThirdParty updateThirdParty(@RequestBody ThirdPartyDTO thirdPartyDTO) {
-        return adminService.newThirdParty(thirdPartyDTO);
+        return adminService.updateThirdParty(thirdPartyDTO);
     }
 
     @PutMapping("/address/new")

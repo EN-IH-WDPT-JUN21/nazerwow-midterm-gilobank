@@ -7,7 +7,6 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.ironhack.gilobank.dao.AccountHolder;
 import com.ironhack.gilobank.enums.Status;
-import com.ironhack.gilobank.utils.Money;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,10 +36,12 @@ public class CreditCardDTO {
     private AccountHolder secondaryHolder;
 
     @DecimalMax(value = "0.00")
-    @Digits(integer = 30, fraction = 2, message = "Error: Incorrect format for Amount")
-    private Money balance;
+    @Digits(integer = 30, fraction = 2, message = "Error: Incorrect format for Amount Credit Cards need a Negative Value")
+    private BigDecimal balance;
 
-    private Money penaltyFee;
+    @DecimalMin(value = "0.00")
+    @Digits(integer = 30, fraction = 2, message = "Error: Incorrect format for penalty fee")
+    private BigDecimal penaltyFee;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @JsonDeserialize(using = LocalDateDeserializer.class)
@@ -54,7 +55,7 @@ public class CreditCardDTO {
     @DecimalMax(value = "-100.00")
     @DecimalMin(value = "-100000.00")
     @Digits(integer = 8, fraction = 2, message = "Max digits 8, Max fraction 2, Reminder: start with '-'")
-    private Money creditLimit = new Money(new BigDecimal("-100.00"));
+    private BigDecimal creditLimit = new BigDecimal("-100.00");
 
     @DecimalMax(value = "1.00")
     @DecimalMin(value = "0.1")
@@ -66,20 +67,20 @@ public class CreditCardDTO {
         this.secondaryHolder = secondaryHolder;
     }
 
-    public CreditCardDTO(String secretKey, AccountHolder primaryHolder, Money creditLimit) {
+    public CreditCardDTO(String secretKey, AccountHolder primaryHolder, BigDecimal creditLimit) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.creditLimit = creditLimit;
     }
 
-    public CreditCardDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, Money creditLimit) {
+    public CreditCardDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal creditLimit) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;
         this.creditLimit = creditLimit;
     }
 
-    public CreditCardDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, Money balance, Money penaltyFee, LocalDate openDate, Status status, Money creditLimit, BigDecimal interestRate) {
+    public CreditCardDTO(String secretKey, AccountHolder primaryHolder, AccountHolder secondaryHolder, BigDecimal balance, BigDecimal penaltyFee, LocalDate openDate, Status status, BigDecimal creditLimit, BigDecimal interestRate) {
         this.secretKey = secretKey;
         this.primaryHolder = primaryHolder;
         this.secondaryHolder = secondaryHolder;

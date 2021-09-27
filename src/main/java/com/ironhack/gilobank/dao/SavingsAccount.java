@@ -9,7 +9,6 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,15 +24,15 @@ public class SavingsAccount extends Account {
 //    @DecimalMin(value = "100.00", message = "Account cannot go below $100.00")
 //    @Digits(integer = 30, fraction = 2)
     @AttributeOverrides({
-            @AttributeOverride( name = "currency", column = @Column(name = "savingsCurrency")),
-            @AttributeOverride( name = "amount", column = @Column(name = "savingsBalance"))})
+            @AttributeOverride(name = "currency", column = @Column(name = "savingsCurrency")),
+            @AttributeOverride(name = "amount", column = @Column(name = "savingsBalance"))})
     private Money balance = new Money(new BigDecimal("100"));
 
     @NotNull
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride( name = "currency", column = @Column(name = "savingsMinCurrency")),
-            @AttributeOverride( name = "amount", column = @Column(name = "savingsMinBalance"))})
+            @AttributeOverride(name = "currency", column = @Column(name = "savingsMinCurrency")),
+            @AttributeOverride(name = "amount", column = @Column(name = "savingsMinBalance"))})
     private Money minimumBalance = new Money(new BigDecimal("1000.00"));
 
     @NotNull

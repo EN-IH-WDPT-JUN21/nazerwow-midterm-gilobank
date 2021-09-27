@@ -24,7 +24,6 @@ public class AdminService implements IAdminService {
     @Autowired
     private IThirdPartyService thirdPartyService;
 
-    @Override
     public List<Admin> findAll() {
         return adminRepository.findAll();
     }
@@ -33,11 +32,9 @@ public class AdminService implements IAdminService {
         return creationService.newThirdParty(thirdPartyDTO);
     }
 
-    @Override
     public ThirdParty updateThirdParty(ThirdPartyDTO thirdPartyDTO) {
         return creationService.newThirdParty(thirdPartyDTO);
     }
-
 
     public Address newAddress(AddressDTO addressDTO) {
         return creationService.newAddress(addressDTO);
