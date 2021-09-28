@@ -8,6 +8,7 @@ import com.ironhack.gilobank.dao.CreditCard;
 import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.service.interfaces.ICreationService;
 import com.ironhack.gilobank.service.interfaces.ICreditCardService;
+import com.ironhack.gilobank.utils.Money;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,12 @@ public class CreditCardController implements ICreditCardController {
     @ResponseStatus(HttpStatus.OK)
     public BalanceDTO getBalance(@PathVariable(name = "id") Long accountNumber) {
         return creditCardService.getBalance(accountNumber);
+    }
+
+    @GetMapping("/{id}/remainingbalance")
+    @ResponseStatus(HttpStatus.OK)
+    public Money getRemainingBalance(@PathVariable(name = "id") Long accountNumber) {
+        return creditCardService.getRemainingBalance(accountNumber);
     }
 
     @PutMapping("/credit")

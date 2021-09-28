@@ -49,9 +49,9 @@ use the ID for existing account holders if they already exist when passing the b
   <li> <b> Transaction Service </b> Although I am pleased with the methods in this class, I feel the class itself does too much, and upon reflection I would
     reorganise where some of these methods are.</li>
   <li> <b> ID types </b> I have used Long for the ID (accountNumbers) which could cause scaling issues. I think String's would have been a better choice. </li>
-  <br>
+   </ul>
   I believe the project meets all the requirements and this can be tested with my unit tests, rather than manually having to use postman. To try it out for 
-  yourself just download the project and run the GiloBankApplication (Or right click and run the tests). </ul>
+  yourself just download the project and run the GiloBankApplication (Or right click and run the tests). <br> <br>
 
 <strong> // Helpful Tips // </strong>
 

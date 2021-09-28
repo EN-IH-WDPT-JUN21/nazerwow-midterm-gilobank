@@ -4,6 +4,7 @@ import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.dao.CreditCard;
 import com.ironhack.gilobank.dao.Transaction;
+import com.ironhack.gilobank.utils.Money;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,6 +29,8 @@ public interface ICreditCardService {
     void saveNewCreditCard(CreditCard creditCard);
 
     BalanceDTO getBalance(Long accountNumber);
+
+    Money getRemainingBalance(Long accountNumber);
 
     boolean availableFunds(TransactionDTO transactionDTO);
 }

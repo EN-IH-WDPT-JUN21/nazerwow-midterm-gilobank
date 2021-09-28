@@ -318,7 +318,7 @@ class CreditCardControllerTest {
     }
 
     @Test
-    void getByBalance_TestValid() throws Exception {
+    void getBalance_TestValid() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         MvcResult result = mockMvc.perform(
                         get("/api/account/creditcard/" + testAccount1.getAccountNumber() + "/balance"))
@@ -330,7 +330,7 @@ class CreditCardControllerTest {
     }
 
     @Test
-    void getByBalance_Test_AccountOwner() throws Exception {
+    void getBalance_Test_AccountOwner() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(login1);
         MvcResult result = mockMvc.perform(
                         get("/api/account/creditcard/" + testAccount1.getAccountNumber() + "/balance"))
@@ -342,7 +342,7 @@ class CreditCardControllerTest {
     }
 
     @Test
-    void getByBalance_Test_NotAllowed() throws Exception {
+    void getBalance_Test_NotAllowed() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(login2);
         MvcResult result = mockMvc.perform(
                         get("/api/account/creditcard/" + testAccount2.getAccountNumber() + "/balance"))
@@ -352,5 +352,18 @@ class CreditCardControllerTest {
         assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getAccountNumber())));
         assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount2.getSecretKey())));
     }
+
+    @Test
+    void getRemainingBalance() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(adminLogin);
+        MvcResult result = mockMvc.perform(
+                        get("/api/account/creditcard/" + testAccount1.getAccountNumber() + "/remainingbalance"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.remainingBalance().getAmount())));
+        assertFalse(result.getResponse().getContentAsString().contains(String.valueOf(testAccount1.getSecretKey())));
+    }
+
+
 }
 

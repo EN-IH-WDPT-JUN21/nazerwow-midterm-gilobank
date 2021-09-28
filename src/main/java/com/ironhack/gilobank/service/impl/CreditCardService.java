@@ -8,6 +8,7 @@ import com.ironhack.gilobank.repositories.CreditCardRepository;
 import com.ironhack.gilobank.service.interfaces.ICreditCardService;
 import com.ironhack.gilobank.service.interfaces.ITransactionService;
 import com.ironhack.gilobank.utils.FraudDetection;
+import com.ironhack.gilobank.utils.Money;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -93,6 +94,10 @@ public class CreditCardService implements ICreditCardService {
             return false;
         }
         return true;
+    }
+
+    public Money getRemainingBalance(Long accountNumber){
+        return findByAccountNumber(accountNumber).remainingBalance();
     }
 
 }
