@@ -110,7 +110,6 @@ class CreationServiceTest {
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         checkingAccountRepository.saveAll(List.of(testAccount1, testAccount2));
         studentAccountRepository.save(testAccount3);
-
     }
 
     @AfterEach

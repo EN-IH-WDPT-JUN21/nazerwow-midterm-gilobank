@@ -32,7 +32,6 @@ import static java.util.Collections.singleton;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 class TransactionServiceTest {
 
     @Autowired

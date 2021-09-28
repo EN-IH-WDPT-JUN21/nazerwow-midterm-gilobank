@@ -9,8 +9,7 @@ import com.ironhack.gilobank.enums.TransactionType;
 import com.ironhack.gilobank.repositories.*;
 import com.ironhack.gilobank.security.CustomUserDetails;
 import com.ironhack.gilobank.security.IAuthenticationFacade;
-import com.ironhack.gilobank.service.interfaces.ICheckingAccountService;
-import com.ironhack.gilobank.service.interfaces.ITransactionService;
+import com.ironhack.gilobank.service.interfaces.*;
 import com.ironhack.gilobank.utils.FraudDetection;
 import com.ironhack.gilobank.utils.Money;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,11 +34,11 @@ public class TransactionService implements ITransactionService {
     @Autowired
     private ICheckingAccountService checkingAccountService;
     @Autowired
-    private SavingsAccountRepository savingsAccountRepository;
+    private ISavingsAccountService savingsAccountService;
     @Autowired
-    private StudentAccountRepository studentAccountRepository;
+    private IStudentAccountService studentAccountService;
     @Autowired
-    private CreditCardRepository creditCardRepository;
+    private ICreditCardService creditCardService;
     @Autowired
     private ThirdPartyRepository thirdPartyRepository;
 
@@ -178,7 +177,7 @@ public class TransactionService implements ITransactionService {
             checkingAccount.get().setStatus(account.getStatus());
             checkingAccountService.saveCheckingAccount(checkingAccount.get());
         }
-        Optional<SavingsAccount> savingsAccount = savingsAccountRepository.findById(account.getAccountNumber());
+        Optional<SavingsAccount> savingsAccount = savingsAccountService.findByAccountNumberOptional(account.getAccountNumber());
         if (savingsAccount.isPresent()) {
             // If balance equal or above minimum balance penalty checker will be called
             // If balance already below minimum balance the customer will not be charged again for the new transaction
@@ -188,19 +187,19 @@ public class TransactionService implements ITransactionService {
                         savingsAccount.get().getPenaltyFee()));
             }
             savingsAccount.get().setStatus(account.getStatus());
-            savingsAccountRepository.save(savingsAccount.get());
+            savingsAccountService.saveNewSavingsAccount(savingsAccount.get());
         }
-        Optional<StudentAccount> studentAccount = studentAccountRepository.findById(account.getAccountNumber());
+        Optional<StudentAccount> studentAccount = studentAccountService.findByAccountNumberOptional(account.getAccountNumber());
         if (studentAccount.isPresent()) {
             studentAccount.get().setBalance(account.getBalance());
             studentAccount.get().setStatus(account.getStatus());
-            studentAccountRepository.save(studentAccount.get());
+            studentAccountService.saveNewStudentAccount(studentAccount.get());
         }
-        Optional<CreditCard> creditCard = creditCardRepository.findById(account.getAccountNumber());
+        Optional<CreditCard> creditCard = creditCardService.findByAccountNumberOptional(account.getAccountNumber());
         if (creditCard.isPresent()) {
             creditCard.get().setBalance(account.getBalance());
             creditCard.get().setStatus(account.getStatus());
-            creditCardRepository.save(creditCard.get());
+            creditCardService.saveNewCreditCard(creditCard.get());
         }
     }
     // Checks all account repositories and returns the account if found
@@ -209,15 +208,15 @@ public class TransactionService implements ITransactionService {
         if (checkingAccount.isPresent()) {
             return checkingAccount.get();
         }
-        Optional<SavingsAccount> savingsAccount = savingsAccountRepository.findById(accountNumber);
+        Optional<SavingsAccount> savingsAccount = savingsAccountService.findByAccountNumberOptional(accountNumber);
         if (savingsAccount.isPresent()) {
             return savingsAccount.get();
         }
-        Optional<StudentAccount> studentAccount = studentAccountRepository.findById(accountNumber);
+        Optional<StudentAccount> studentAccount = studentAccountService.findByAccountNumberOptional(accountNumber);
         if (studentAccount.isPresent()) {
             return studentAccount.get();
         }
-        Optional<CreditCard> creditCard = creditCardRepository.findById(accountNumber);
+        Optional<CreditCard> creditCard = creditCardService.findByAccountNumberOptional(accountNumber);
         if (creditCard.isPresent()) {
             return creditCard.get();
         } else {
