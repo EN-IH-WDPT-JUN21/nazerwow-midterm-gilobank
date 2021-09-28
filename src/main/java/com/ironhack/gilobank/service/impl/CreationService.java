@@ -32,7 +32,10 @@ public class CreationService implements ICreationService {
     private ISavingsAccountService savingsAccountService;
     @Autowired
     private IThirdPartyService thirdPartyService;
+    @Autowired
+    private IAdminService adminService;
 
+    // This will create a new address or update an existing one if found
     public Address newAddress(AddressDTO addressDTO) throws TransactionSystemException {
         Address address = new Address();
         if (addressDTO.getId() != null) {
@@ -60,6 +63,7 @@ public class CreationService implements ICreationService {
         return address;
     }
 
+    // This will create a new account holder or update an existing one if found
     public AccountHolder newAccountHolder(AccountHolderDTO accountHolderDTO) throws TransactionSystemException {
         AccountHolder accountHolder = new AccountHolder();
         if (accountHolderDTO.getId() != null) {
@@ -75,18 +79,22 @@ public class CreationService implements ICreationService {
             accountHolder.setDateOfBirth(accountHolderDTO.getDateOfBirth());
         }
         if (accountHolderDTO.getPrimaryAddress() != null) {
-            accountHolder.setPrimaryAddress(accountHolderDTO.getPrimaryAddress());
+            accountHolder.setPrimaryAddress(findOrCreateAddress(accountHolderDTO.getPrimaryAddress()));
         }
         if (accountHolderDTO.getMailingAddress() != null) {
-            accountHolder.setMailingAddress(accountHolderDTO.getMailingAddress());
+            accountHolder.setMailingAddress(findOrCreateAddress(accountHolderDTO.getMailingAddress()));
         }
         if (accountHolderDTO.getRole() != null) {
             accountHolder.setRole(accountHolderDTO.getRole());
+        }
+        if (accountHolderDTO.getLoginDetails() != null) {
+            accountHolder.setLoginDetails(findOrCreateLoginDetails(accountHolderDTO.getLoginDetails()));
         }
         accountHolderService.saveNewAccountHolder(accountHolder);
         return accountHolder;
     }
 
+    // This will create or update thirdparty
     public ThirdParty newThirdParty(ThirdPartyDTO thirdPartyDTO) {
         ThirdParty thirdParty = new ThirdParty();
         if (thirdPartyDTO.getId() != null) {
@@ -105,6 +113,7 @@ public class CreationService implements ICreationService {
         return thirdParty;
     }
 
+    // this will create or update login details
     public LoginDetails newLoginDetails(LoginDetailsDTO loginDetailsDTO) throws TransactionSystemException {
         LoginDetails loginDetails = new LoginDetails();
         if (loginDetailsDTO.getId() != null) {
@@ -123,32 +132,24 @@ public class CreationService implements ICreationService {
         return loginDetails;
     }
 
-    public CheckingAccount newCheckingAccount(CheckingAccountDTO checkingAccountDTO) throws TransactionSystemException {
+    // this will create or update checking account
+    public Account newCheckingAccount(CheckingAccountDTO checkingAccountDTO) throws TransactionSystemException {
         CheckingAccount checkingAccount = new CheckingAccount();
-        if (checkingAccountDTO.getPrimaryHolder() != null) {
-            if (!checkIfOver24(checkingAccountDTO.getPrimaryHolder())) {
-                newStudentAccount(checkingAccountDTO);
-            }
-            if (checkingAccountDTO.getSecondaryHolder() != null) {
-                if (!checkIfOver24(checkingAccountDTO.getPrimaryHolder()) &&
-                        !checkIfOver24(checkingAccountDTO.getSecondaryHolder()) ||
-                        !checkIfOver24(checkingAccountDTO.getPrimaryHolder()) && checkingAccountDTO.getSecondaryHolder() == null) {
-                    newStudentAccount(checkingAccountDTO);
-                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Student Account Opened Instead");
-                } else if (checkIfOver24(checkingAccountDTO.getPrimaryHolder()) != checkIfOver24(checkingAccountDTO.getSecondaryHolder())) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot open / edit due to 1 holder being a Student and One Holder Non-Student");
-                }
-            }
-        }
         if (checkingAccountDTO.getAccountNumber() != null) {
             checkingAccount = checkingAccountService.findByAccountNumberOptional(
                     checkingAccountDTO.getAccountNumber()).get();
         }
+        // This will check if holder is 24 or over
         if (checkingAccountDTO.getPrimaryHolder() != null) {
-            checkingAccount.setPrimaryHolder(checkingAccountDTO.getPrimaryHolder());
+            checkingAccount.setPrimaryHolder(findOrCreateHolder(checkingAccountDTO.getPrimaryHolder()));
+            if (!checkIfOver24(checkingAccount.getPrimaryHolder()))
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Primary Holder is Under 24");
         }
+        // This will check if holder is 24 or over
         if (checkingAccountDTO.getSecondaryHolder() != null) {
-            checkingAccount.setSecondaryHolder(checkingAccountDTO.getSecondaryHolder());
+            checkingAccount.setSecondaryHolder(findOrCreateHolder(checkingAccountDTO.getSecondaryHolder()));
+            if (!checkIfOver24(checkingAccount.getSecondaryHolder()))
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Secondary Holder is Under 24");
         }
         if (checkingAccountDTO.getSecretKey() != null) {
             checkingAccount.setSecretKey(checkingAccountDTO.getSecretKey());
@@ -179,49 +180,46 @@ public class CreationService implements ICreationService {
         return checkingAccount;
     }
 
-    public StudentAccount newStudentAccount(CheckingAccountDTO checkingAccountDTO) throws TransactionSystemException {
+    // This will create or update student account
+    public Account newStudentAccount(CheckingAccountDTO checkingAccountDTO) throws TransactionSystemException {
         StudentAccount studentAccount = new StudentAccount();
+        if (checkingAccountDTO.getAccountNumber() != null) {
+            studentAccount = studentAccountService.findByAccountNumberOptional(
+                    checkingAccountDTO.getAccountNumber()).get();
+        }
+        // This will check if holder is 24 or over
         if (checkingAccountDTO.getPrimaryHolder() != null) {
-            if (checkIfOver24(checkingAccountDTO.getPrimaryHolder()) &&
-                    checkIfOver24(checkingAccountDTO.getSecondaryHolder()) ||
-                    checkIfOver24(checkingAccountDTO.getPrimaryHolder()) && checkingAccountDTO.getSecondaryHolder() == null) {
-                newCheckingAccount(checkingAccountDTO);
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Student Account Opened Instead");
-            } else if (checkIfOver24(checkingAccountDTO.getPrimaryHolder()) != checkIfOver24(checkingAccountDTO.getSecondaryHolder())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot open / edit due to 1 holder being a Student and One Holder Non-Student");
-            }
-            if (checkingAccountDTO.getAccountNumber() != null) {
-                studentAccount = studentAccountService.findByAccountNumberOptional(
-                        checkingAccountDTO.getAccountNumber()).get();
-            }
-            if (checkingAccountDTO.getPrimaryHolder() != null) {
-                studentAccount.setPrimaryHolder(checkingAccountDTO.getPrimaryHolder());
-            }
-            if (checkingAccountDTO.getSecondaryHolder() != null) {
-                studentAccount.setSecondaryHolder(checkingAccountDTO.getSecondaryHolder());
-            }
-            if (checkingAccountDTO.getSecretKey() != null) {
-                studentAccount.setSecretKey(checkingAccountDTO.getSecretKey());
-            }
-            if (checkingAccountDTO.getBalance() != null) {
-                Money amountAsMoney = new Money(checkingAccountDTO.getBalance());
-                studentAccount.setBalance(amountAsMoney);
-            }
-            if (checkingAccountDTO.getPenaltyFee() != null) {
-                Money amountAsMoney = new Money(checkingAccountDTO.getPenaltyFee());
-                studentAccount.setPenaltyFee(amountAsMoney);
-            }
-            if (checkingAccountDTO.getOpenDate() != null) {
-                studentAccount.setOpenDate(checkingAccountDTO.getOpenDate());
-            }
-            if (checkingAccountDTO.getStatus() != null) {
-                studentAccount.setStatus(checkingAccountDTO.getStatus());
-            }
+            studentAccount.setPrimaryHolder(findOrCreateHolder(checkingAccountDTO.getPrimaryHolder()));
+            if (checkIfOver24(studentAccount.getPrimaryHolder()))
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Primary Holder is Over 24");
+        }
+        // This will check if holder is 24 or over
+        if (checkingAccountDTO.getSecondaryHolder() != null) {
+            studentAccount.setSecondaryHolder(findOrCreateHolder(checkingAccountDTO.getPrimaryHolder()));
+            if (checkIfOver24(studentAccount.getSecondaryHolder()))
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Secondary Holder is Over 24");
+        }
+        if (checkingAccountDTO.getSecretKey() != null) {
+            studentAccount.setSecretKey(checkingAccountDTO.getSecretKey());
+        }
+        if (checkingAccountDTO.getBalance() != null) {
+            Money amountAsMoney = new Money(checkingAccountDTO.getBalance());
+            studentAccount.setBalance(amountAsMoney);
+        }
+        if (checkingAccountDTO.getPenaltyFee() != null) {
+            Money amountAsMoney = new Money(checkingAccountDTO.getPenaltyFee());
+            studentAccount.setPenaltyFee(amountAsMoney);
+        }
+        if (checkingAccountDTO.getOpenDate() != null) {
+            studentAccount.setOpenDate(checkingAccountDTO.getOpenDate());
+        }
+        if (checkingAccountDTO.getStatus() != null) {
+            studentAccount.setStatus(checkingAccountDTO.getStatus());
         }
         studentAccountService.saveNewStudentAccount(studentAccount);
         return studentAccount;
     }
-
+    // this will create or update credit card
     public CreditCard newCreditCard(CreditCardDTO creditCardDTO) {
         CreditCard creditCard = new CreditCard();
         if (creditCardDTO.getAccountNumber() != null) {
@@ -229,10 +227,10 @@ public class CreationService implements ICreationService {
                     creditCardDTO.getAccountNumber()).get();
         }
         if (creditCardDTO.getPrimaryHolder() != null) {
-            creditCard.setPrimaryHolder(creditCardDTO.getPrimaryHolder());
+            creditCard.setPrimaryHolder(findOrCreateHolder(creditCardDTO.getPrimaryHolder()));
         }
         if (creditCardDTO.getSecondaryHolder() != null) {
-            creditCard.setSecondaryHolder(creditCardDTO.getSecondaryHolder());
+            creditCard.setSecondaryHolder(findOrCreateHolder(creditCardDTO.getSecondaryHolder()));
         }
         if (creditCardDTO.getSecretKey() != null) {
             creditCard.setSecretKey(creditCardDTO.getSecretKey());
@@ -261,7 +259,7 @@ public class CreationService implements ICreationService {
         creditCardService.saveNewCreditCard(creditCard);
         return creditCard;
     }
-
+    // This will update or create a savings account
     public SavingsAccount newSavingsAccount(SavingsAccountDTO savingsAccountDTO) {
         SavingsAccount savingsAccount = new SavingsAccount();
         if (savingsAccountDTO.getAccountNumber() != null) {
@@ -269,10 +267,10 @@ public class CreationService implements ICreationService {
                     savingsAccountDTO.getAccountNumber()).get();
         }
         if (savingsAccountDTO.getPrimaryHolder() != null) {
-            savingsAccount.setPrimaryHolder(savingsAccountDTO.getPrimaryHolder());
+            savingsAccount.setPrimaryHolder(findOrCreateHolder(savingsAccountDTO.getPrimaryHolder()));
         }
         if (savingsAccountDTO.getSecondaryHolder() != null) {
-            savingsAccount.setSecondaryHolder(savingsAccountDTO.getSecondaryHolder());
+            savingsAccount.setSecondaryHolder(findOrCreateHolder(savingsAccountDTO.getSecondaryHolder()));
         }
         if (savingsAccountDTO.getSecretKey() != null) {
             savingsAccount.setSecretKey(savingsAccountDTO.getSecretKey());
@@ -302,11 +300,93 @@ public class CreationService implements ICreationService {
         return savingsAccount;
     }
 
-
+    // This return true if accountholder is over 24
     public boolean checkIfOver24(AccountHolder accountHolder) {
         LocalDate dateOfBirth = accountHolder.getDateOfBirth();
         if (dateOfBirth == null) return true;
         LocalDate todaysDate = LocalDate.now();
         return !dateOfBirth.isAfter(todaysDate.minusYears(24));
+    }
+
+    // This will update or create an account holder automatically during account opening
+    public AccountHolder findOrCreateHolder(AccountHolder accountHolder) {
+        if (accountHolder.getId() != null) {
+            try {
+                return accountHolderService.findById(accountHolder.getId());
+            } catch (ResponseStatusException e) {
+            }
+        }
+        AccountHolderDTO accountHolderDTO = new AccountHolderDTO(
+                accountHolder.getFirstName(),
+                accountHolder.getSurname(),
+                accountHolder.getDateOfBirth(),
+                accountHolder.getPrimaryAddress(),
+                accountHolder.getMailingAddress()
+        );
+        return newAccountHolder(accountHolderDTO);
+    }
+    // This will update or create an address automatically during AccountHolder Creation
+    public Address findOrCreateAddress(Address address) {
+        if (address.getId() != null) {
+            try {
+                return addressService.findById(address.getId());
+            } catch (ResponseStatusException e) {
+            }
+        }
+        AddressDTO addressDTO = new AddressDTO(
+                address.getHouseNumber(),
+                address.getFlatNumber(),
+                address.getStreet(),
+                address.getTown(),
+                address.getCity(),
+                address.getPostcode()
+        );
+        return newAddress(addressDTO);
+    }
+
+    // This will update or create Login Details automatically during AccountHolder Creation
+    public LoginDetails findOrCreateLoginDetails(LoginDetails loginDetails) {
+        if (loginDetails.getId() != null) {
+            try {
+                return loginDetailsService.findById(loginDetails.getId());
+            } catch (ResponseStatusException e) {
+            }
+        }
+        LoginDetailsDTO loginDetailsDTO = new LoginDetailsDTO(
+                loginDetails.getUsername(),
+                loginDetails.getPassword(),
+                loginDetails.getUser()
+        );
+        return newLoginDetails(loginDetailsDTO);
+    }
+
+    // This will decide if a student or checking account should be opened based on age
+    public Account newStudentOrChecking(CheckingAccountDTO checkingAccountDTO) {
+        if (checkingAccountDTO.getPrimaryHolder() != null && checkingAccountDTO.getSecondaryHolder() != null) {
+            checkingAccountDTO.setPrimaryHolder(findOrCreateHolder(checkingAccountDTO.getPrimaryHolder()));
+            checkingAccountDTO.setSecondaryHolder(findOrCreateHolder(checkingAccountDTO.getSecondaryHolder()));
+            if (checkIfOver24(checkingAccountDTO.getPrimaryHolder()) && checkIfOver24(checkingAccountDTO.getSecondaryHolder())) {
+                return newCheckingAccount(checkingAccountDTO);
+            } else if (!checkIfOver24(checkingAccountDTO.getPrimaryHolder()) && !checkIfOver24(checkingAccountDTO.getSecondaryHolder())) {
+                return newStudentAccount(checkingAccountDTO);
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Both holders need to be over or under 24 to open a joint account");
+            }
+        } else if (checkingAccountDTO.getPrimaryHolder() != null) {
+            checkingAccountDTO.setPrimaryHolder(findOrCreateHolder(checkingAccountDTO.getPrimaryHolder()));
+            if (checkIfOver24(checkingAccountDTO.getPrimaryHolder())) {
+                return newCheckingAccount(checkingAccountDTO);
+            } else {
+                return newStudentAccount(checkingAccountDTO);
+            }
+        } else if (checkingAccountDTO.getSecondaryHolder() != null) {
+            checkingAccountDTO.setSecondaryHolder(findOrCreateHolder(checkingAccountDTO.getSecondaryHolder()));
+            if (checkIfOver24(checkingAccountDTO.getSecondaryHolder())) {
+                return newCheckingAccount(checkingAccountDTO);
+            } else {
+                return newStudentAccount(checkingAccountDTO);
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You need a primary holder to open a new account");
     }
 }

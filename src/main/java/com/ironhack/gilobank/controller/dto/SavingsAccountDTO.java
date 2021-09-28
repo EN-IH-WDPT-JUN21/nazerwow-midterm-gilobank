@@ -18,6 +18,7 @@ import javax.persistence.Enumerated;
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Digits;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -29,6 +30,7 @@ public class SavingsAccountDTO {
 
     private Long accountNumber;
 
+    @Size(min = 1, max = 255)
     private String secretKey;
 
     private AccountHolder primaryHolder;

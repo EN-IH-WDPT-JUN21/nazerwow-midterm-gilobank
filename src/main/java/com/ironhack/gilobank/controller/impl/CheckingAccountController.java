@@ -7,6 +7,7 @@ import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.controller.interfaces.ICheckingAccountController;
+import com.ironhack.gilobank.dao.Account;
 import com.ironhack.gilobank.dao.CheckingAccount;
 import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.service.interfaces.ICheckingAccountService;
@@ -90,13 +91,14 @@ public class CheckingAccountController implements ICheckingAccountController {
 
     @PutMapping("/new")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public CheckingAccount createCheckingAccount(@RequestBody CheckingAccountDTO checkingAccountDTO) {
-        return creationService.newCheckingAccount(checkingAccountDTO);
+    public Account createCheckingAccount(@RequestBody CheckingAccountDTO checkingAccountDTO) {
+        checkingAccountDTO.setAccountNumber(null);
+        return creationService.newStudentOrChecking(checkingAccountDTO);
     }
 
     @PutMapping("/{id}/update")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public CheckingAccount updateCheckingAccount(@PathVariable(name = "id") Long accountNumber,
+    public Account updateCheckingAccount(@PathVariable(name = "id") Long accountNumber,
                                                  @RequestBody CheckingAccountDTO checkingAccountDTO) {
         checkingAccountService.findByAccountNumber(accountNumber);
         checkingAccountDTO.setAccountNumber(accountNumber);

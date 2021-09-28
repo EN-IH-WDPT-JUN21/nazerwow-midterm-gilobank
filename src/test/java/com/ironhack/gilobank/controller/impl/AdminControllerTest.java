@@ -31,8 +31,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static java.util.Collections.singleton;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -168,6 +167,17 @@ class AdminControllerTest {
     }
 
     @Test
+    void getAdminById() throws Exception {
+        MvcResult result = mockMvc.perform(
+                        get("/api/admin/" + admin2.getId()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertTrue(result.getResponse().getContentAsString().contains("Admin2"));
+        assertFalse(result.getResponse().getContentAsString().contains("Admin3"));
+    }
+
+    @Test
     void getAll_ValidTest() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(adminLogin);
         MvcResult result = mockMvc.perform(
@@ -217,7 +227,7 @@ class AdminControllerTest {
         addressDTO.setHouseNumber("25");
         addressDTO.setStreet("New Street");
         addressDTO.setCity("New City");
-        addressDTO.setPostcode("New Postcode");
+        addressDTO.setPostcode("TF11 111");
         String body = objectMapper.writeValueAsString(addressDTO);
         MvcResult result = mockMvc.perform(
                         put("/api/admin/address/new")
@@ -236,7 +246,7 @@ class AdminControllerTest {
         addressDTO.setHouseNumber("25");
         addressDTO.setStreet("New Street");
         addressDTO.setCity("New City");
-        addressDTO.setPostcode("New Postcode");
+        addressDTO.setPostcode("TF11 111");
         String body = objectMapper.writeValueAsString(addressDTO);
         MvcResult result = mockMvc.perform(
                         put("/api/admin/address/update")

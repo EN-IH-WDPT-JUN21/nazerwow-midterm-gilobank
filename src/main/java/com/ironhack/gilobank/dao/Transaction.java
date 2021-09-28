@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Entity
@@ -28,6 +29,7 @@ public class Transaction {
     @JsonManagedReference
     private Account account;
 
+    @Size(min = 1, max = 255)
     private String name;
 
     @Embedded

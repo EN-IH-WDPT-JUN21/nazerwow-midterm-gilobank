@@ -76,6 +76,7 @@ public class SavingsAccountController implements ISavingsAccountController {
     @PutMapping("/new")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public SavingsAccount createSavingsAccount(@RequestBody SavingsAccountDTO savingsAccountDTO) {
+        savingsAccountDTO.setAccountNumber(null);
         return creationService.newSavingsAccount(savingsAccountDTO);
     }
 

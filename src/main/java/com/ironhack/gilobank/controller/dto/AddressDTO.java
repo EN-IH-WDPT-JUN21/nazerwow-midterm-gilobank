@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.Size;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,12 +15,18 @@ public class AddressDTO {
 
     private Long id;
 
+    @Size(min = 1, max = 10)
     private String houseNumber;
+    @Size(min = 1, max = 10)
     private String flatNumber;
 
+    @Size(min = 1, max = 255)
     private String street;
+    @Size(min = 1, max = 255)
     private String town;
+    @Size(min = 1, max = 255)
     private String city;
+    @Size(min = 4, max = 8)
     private String postcode;
 
     public AddressDTO(String houseNumber, String street, String city, String postcode) {

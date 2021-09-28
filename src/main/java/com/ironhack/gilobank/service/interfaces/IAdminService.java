@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface IAdminService {
 
+    Admin findById(Long id);
+
     List<Admin> findAll();
 
     ThirdParty newThirdParty(ThirdPartyDTO thirdPartyDTO);

@@ -3,6 +3,7 @@ package com.ironhack.gilobank.controller.interfaces;
 import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
+import com.ironhack.gilobank.dao.Account;
 import com.ironhack.gilobank.dao.CheckingAccount;
 import com.ironhack.gilobank.dao.Transaction;
 
@@ -23,9 +24,9 @@ public interface ICheckingAccountController {
 
     List<Transaction> getTransactionsByDateBetween(Long accountNumber, LocalDate startDate, LocalDate endDate);
 
-    CheckingAccount createCheckingAccount(CheckingAccountDTO checkingAccountDTO);
+    Account createCheckingAccount(CheckingAccountDTO checkingAccountDTO);
 
-    CheckingAccount updateCheckingAccount(Long accountNumber, CheckingAccountDTO checkingAccountDTO);
+    Account updateCheckingAccount(Long accountNumber, CheckingAccountDTO checkingAccountDTO);
 
     BalanceDTO getBalance(Long accountNumber);
 }

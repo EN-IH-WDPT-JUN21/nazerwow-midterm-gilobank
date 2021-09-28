@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.Size;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -16,10 +18,13 @@ public class ThirdPartyTransactionDTO {
 
     private Long creditAccountNumber;
 
+    @Size(min = 1, max = 28)
     private String creditAccountSecretKey;
 
+    @Size(min = 1, max = 28)
     private Long debitAccountNumber;
 
+    @Size(min = 1, max = 28)
     private String debitAccountSecretKey;
 
 

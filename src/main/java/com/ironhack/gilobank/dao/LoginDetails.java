@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 @Entity
 @Getter
@@ -21,7 +22,9 @@ public class LoginDetails {
     private Long id;
 
     @Column(unique = true)
+    @Size(min = 1, max = 28)
     private String username;
+    @Size(min = 1, max = 28)
     private String password;
 
     @OneToOne(fetch = FetchType.EAGER)

@@ -4,6 +4,7 @@ import com.ironhack.gilobank.controller.dto.BalanceDTO;
 import com.ironhack.gilobank.controller.dto.CheckingAccountDTO;
 import com.ironhack.gilobank.controller.dto.TransactionDTO;
 import com.ironhack.gilobank.controller.interfaces.IStudentAccountController;
+import com.ironhack.gilobank.dao.Account;
 import com.ironhack.gilobank.dao.StudentAccount;
 import com.ironhack.gilobank.dao.Transaction;
 import com.ironhack.gilobank.service.interfaces.ICreationService;
@@ -75,13 +76,14 @@ public class StudentAccountController implements IStudentAccountController {
 
     @PutMapping("/new")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public StudentAccount createStudentAccount(@RequestBody CheckingAccountDTO checkingAccountDTO) {
-        return creationService.newStudentAccount(checkingAccountDTO);
+    public Account createStudentAccount(@RequestBody CheckingAccountDTO checkingAccountDTO) {
+        checkingAccountDTO.setAccountNumber(null);
+        return creationService.newStudentOrChecking(checkingAccountDTO);
     }
 
     @PutMapping("/{id}/update")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public StudentAccount updateStudentAccount(@PathVariable(name = "id") Long accountNumber,
+    public Account updateStudentAccount(@PathVariable(name = "id") Long accountNumber,
                                                @RequestBody CheckingAccountDTO checkingAccountDTO) {
         studentAccountService.findByAccountNumber(accountNumber);
         checkingAccountDTO.setAccountNumber(accountNumber);

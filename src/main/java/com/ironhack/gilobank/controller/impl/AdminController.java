@@ -19,6 +19,12 @@ public class AdminController {
     @Autowired
     private IAdminService adminService;
 
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Admin getById(@PathVariable(name = "id") Long id) {
+        return adminService.findById(id);
+    }
+
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<Admin> getAll() {
@@ -28,6 +34,7 @@ public class AdminController {
     @PutMapping("/thirdparty/new")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ThirdParty createThirdParty(@RequestBody ThirdPartyDTO thirdPartyDTO) {
+        thirdPartyDTO.setId(null);
         return adminService.newThirdParty(thirdPartyDTO);
     }
 
@@ -40,6 +47,7 @@ public class AdminController {
     @PutMapping("/address/new")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public Address newAddress(@RequestBody AddressDTO addressDTO) {
+        addressDTO.setId(null);
         return adminService.newAddress(addressDTO);
     }
 
@@ -52,6 +60,7 @@ public class AdminController {
     @PutMapping("/accountholder/new")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public AccountHolder newAccountHolder(@RequestBody AccountHolderDTO accountHolderDTO) {
+        accountHolderDTO.setId(null);
         return adminService.newAccountHolder(accountHolderDTO);
     }
 
@@ -64,6 +73,7 @@ public class AdminController {
     @PutMapping("/logindetails/new")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public LoginDetails newLoginDetails(@RequestBody LoginDetailsDTO loginDetailsDTO) {
+        loginDetailsDTO.setId(null);
         return adminService.newLoginDetails(loginDetailsDTO);
     }
 

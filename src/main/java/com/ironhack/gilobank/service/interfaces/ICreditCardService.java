@@ -28,4 +28,6 @@ public interface ICreditCardService {
     void saveNewCreditCard(CreditCard creditCard);
 
     BalanceDTO getBalance(Long accountNumber);
+
+    boolean availableFunds(TransactionDTO transactionDTO);
 }

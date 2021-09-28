@@ -39,7 +39,7 @@ public interface ITransactionService {
 
     Account findAccountTypeAndReturn(Long accountNumber);
 
-    void checkAvailableFunds(Account account, BigDecimal amount);
+    void checkAvailableFunds(Account account, Money amount);
 
     Money penaltyCheck(Account account, Money minimumBalance, Money penaltyFee);
 

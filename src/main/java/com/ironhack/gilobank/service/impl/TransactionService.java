@@ -48,6 +48,9 @@ public class TransactionService implements ITransactionService {
     @Autowired
     private FraudDetection fraudDetection;
 
+
+    // This will create a transaction Log which includes Account Number, Amount in Dollars and Transaction Type
+    // Balance after the transaction and Date
     public Transaction createTransactionLog(Account account, TransactionDTO transactionDTO) {
         LocalDateTime transactionDate = LocalDateTime.now();
         if (transactionDTO.getTimeOfTrns() != null) transactionDate = transactionDTO.getTimeOfTrns();
@@ -57,6 +60,8 @@ public class TransactionService implements ITransactionService {
         return transaction;
     }
 
+    // This will create a transaction Log which includes Account Number, Amount in Dollars and Transaction Type
+    // Balance after the transaction and Date On Both the Sending and Receiving Accounts
     public List<Transaction> createTransactionLogTransfer(Account debitAccount, Money amount, Account creditAccount) {
         LocalDateTime transactionDate = LocalDateTime.now();
         String debitName = amount + " Transfer to Account Number: " + creditAccount.getAccountNumber();
@@ -67,6 +72,9 @@ public class TransactionService implements ITransactionService {
         return List.of(debit, credit);
     }
 
+    // This will create a transaction Log which includes Account Number, Amount in Dollars and Transaction Type
+    // Balance after the transaction and Date On Both the Sending and Receiving Accounts
+    // This one allows you to input a date if you wish
     public List<Transaction> createTransactionLogTransfer(Account debitAccount, Money amount, Account creditAccount, LocalDateTime transactionDate) {
         String debitName = amount + " Transfer to Account Number: " + creditAccount.getAccountNumber();
         String creditName = amount + " Transfer from Account Number: " + debitAccount.getAccountNumber();
@@ -76,6 +84,7 @@ public class TransactionService implements ITransactionService {
         return List.of(debit, credit);
     }
 
+    // This will find all transactions between the given date period
     public List<Transaction> findByDateTimeBetween(Account accountNumber, LocalDateTime startPoint, LocalDateTime endPoint) throws ResponseStatusException {
         List<Transaction> transactionList = transactionRepository.findByTimeOfTrnsBetween(accountNumber, startPoint, endPoint);
         if (transactionList.isEmpty())
@@ -84,6 +93,7 @@ public class TransactionService implements ITransactionService {
         return transactionList;
     }
 
+    // This credits funds - It completes a fraud and status check before crediting
     public Transaction creditFunds(TransactionDTO transactionDTO) {
         Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
         checkForFraud_CreditAccount(transactionDTO);
@@ -93,17 +103,18 @@ public class TransactionService implements ITransactionService {
         return createTransactionLog(creditAccount, transactionDTO);
     }
 
-
+    // This debits funds - It completes a fraud and status check before debiting
     public Transaction debitFunds(TransactionDTO transactionDTO) {
         Account debitAccount = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
         checkForFraud_DebitAccount(transactionDTO);
         checkAccountStatus(debitAccount);
+        checkAvailableFunds(debitAccount, transactionDTO.getAmount());
         debitAccount.getBalance().decreaseAmount(transactionDTO.getAmount().getAmount().abs());
         findAccountTypeAndSave(debitAccount);
         return createTransactionLog(debitAccount, transactionDTO);
     }
 
-
+    // This Transfers funds - It completes a fraud and status check before transfering
     public Transaction transferBetweenAccounts(TransactionDTO transactionDTO) {
         Account debitAccount = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
         Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
@@ -111,6 +122,7 @@ public class TransactionService implements ITransactionService {
         checkForFraud_DebitAccount(transactionDTO);
         checkAccountStatus(debitAccount);
         checkAccountStatus(creditAccount);
+        checkAvailableFunds(debitAccount, transactionDTO.getAmount());
         debitAccount.getBalance().decreaseAmount(transactionDTO.getAmount());
         creditAccount.getBalance().increaseAmount(transactionDTO.getAmount());
         findAccountTypeAndSave(debitAccount);
@@ -126,6 +138,7 @@ public class TransactionService implements ITransactionService {
         return findByDateTimeBetween(checkingAccount, convertedStartDate, convertedEndDate);
     }
 
+    // This calls the fraud detector on the credit account number - Will freeze account if detected
     public void checkForFraud_CreditAccount(TransactionDTO transactionDTO) {
         Account creditAccount = findAccountTypeAndReturn(transactionDTO.getCreditAccountNumber());
         if (fraudDetection.fraudDetector(creditAccount, transactionDTO.getAmount().getAmount())) {
@@ -134,7 +147,7 @@ public class TransactionService implements ITransactionService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
         }
     }
-
+    // This calls the fraud detector on the Debit account number - Will freeze account if detected
     public void checkForFraud_DebitAccount(TransactionDTO transactionDTO) {
         Account debitAccount = findAccountTypeAndReturn(transactionDTO.getDebitAccountNumber());
         if (fraudDetection.fraudDetector(debitAccount, transactionDTO.getAmount().getAmount())) {
@@ -144,12 +157,14 @@ public class TransactionService implements ITransactionService {
         }
     }
 
+    // Checks if account is frozen before proceeding.
     public void checkAccountStatus(Account checkingAccount) {
         if (checkingAccount.getStatus() == Status.FROZEN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Transaction Denied: Please contact us for details:");
         }
     }
 
+    // Finds type of account and then saves it
     public void findAccountTypeAndSave(Account account) {
         Optional<CheckingAccount> checkingAccount = checkingAccountService.findByAccountNumberOptional(account.getAccountNumber());
         if (checkingAccount.isPresent()) {
@@ -188,7 +203,7 @@ public class TransactionService implements ITransactionService {
             creditCardRepository.save(creditCard.get());
         }
     }
-
+    // Checks all account repositories and returns the account if found
     public Account findAccountTypeAndReturn(Long accountNumber) {
         Optional<CheckingAccount> checkingAccount = checkingAccountService.findByAccountNumberOptional(accountNumber);
         if (checkingAccount.isPresent()) {
@@ -210,12 +225,13 @@ public class TransactionService implements ITransactionService {
         }
     }
 
-    public void checkAvailableFunds(Account account, BigDecimal amount) {
-        if (account.getBalance().decreaseAmount(amount).compareTo(new BigDecimal("0.00")) < 0) {
+    // Checks if the account has sufficient funds before debiting account
+    public void checkAvailableFunds(Account account, Money amount) {
+        if (account.getBalance().getAmount().abs().subtract(amount.getAmount()).compareTo(new BigDecimal("0.00")) < 0) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Insufficient Funds");
         }
     }
-
+    // Checks if penalty should be applied
     public Money penaltyCheck(Account account, Money minimumBalance, Money penaltyFee) {
         if (account.getBalance().getAmount().compareTo(minimumBalance.getAmount()) < 0) {
             account.getBalance().decreaseAmount(penaltyFee);
@@ -225,6 +241,7 @@ public class TransactionService implements ITransactionService {
         return account.getBalance();
     }
 
+    // Checks if account is eligible for new monthly interest payment - Yes (True) or No (false)
     public boolean interestMonthlyCheck(Long accountNumber) {
         Account account = findAccountTypeAndReturn(accountNumber);
         List<Timestamp> interestPayments = transactionRepository.interestMonth(account);
@@ -236,7 +253,7 @@ public class TransactionService implements ITransactionService {
         LocalDate timeOfLastPayment = interestPayments.get(interestPayments.size() - 1).toLocalDateTime().toLocalDate();
         return timeOfLastPayment.isBefore(LocalDate.now().minusMonths(1));
     }
-
+    // Checks if account is eligible for new yearly interest payment - Yes (True) or No (false)
     public boolean interestYearlyCheck(Long accountNumber) {
         Account account = findAccountTypeAndReturn(accountNumber);
         List<Timestamp> interestPayments = transactionRepository.interestYear(account);
@@ -249,6 +266,7 @@ public class TransactionService implements ITransactionService {
         return timeOfLastPayment.isBefore(LocalDate.now().minusYears(1));
     }
 
+    // Applies yearly interest payment
     public void applyInterestYearly(Long accountNumber, Money balance, BigDecimal interestRate) {
         if (interestYearlyCheck(accountNumber)) {
             Money interestDue = new Money(balance.getAmount().multiply(interestRate));
@@ -262,6 +280,7 @@ public class TransactionService implements ITransactionService {
         }
     }
 
+    // Applies monthly interest payment
     public void applyInterestMonthly(Long accountNumber, Money balance, BigDecimal interestRate) {
         if (interestMonthlyCheck(accountNumber)) {
             Money interestDue = new Money(balance.getAmount().multiply((interestRate.divide(new BigDecimal("12"), RoundingMode.HALF_EVEN))));
@@ -275,6 +294,7 @@ public class TransactionService implements ITransactionService {
         }
     }
 
+    // Checks if logged in user is authorised to access the data
     public boolean checkAuthentication(Long accountNumber) {
         Account account = findAccountTypeAndReturn(accountNumber);
         Object loggedInUser = authenticationFacade.getPrincipal();
@@ -294,6 +314,7 @@ public class TransactionService implements ITransactionService {
         throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT, "How did you get here!?");
     }
 
+    // Verifies the logged in third party
     public boolean verifyThirdParty(String hashedKey) {
         Optional<ThirdParty> thirdParty = thirdPartyRepository.findByHashedKey(hashedKey);
         Object loggedInUser = authenticationFacade.getPrincipal();
@@ -310,6 +331,7 @@ public class TransactionService implements ITransactionService {
         return false;
     }
 
+    // Verifies whether inputted secret key matches the accounts secretkey
     public boolean verifySecretKey(String secretKey, Account account) {
         System.out.println(secretKey);
         System.out.println(account.getSecretKey());
@@ -321,6 +343,7 @@ public class TransactionService implements ITransactionService {
         }
     }
 
+    // Creates a balanctDTO and returns it
     public BalanceDTO getBalance(Account account) {
         BalanceDTO balanceDTO = new BalanceDTO();
         balanceDTO.setAccountNumber(account.getAccountNumber());

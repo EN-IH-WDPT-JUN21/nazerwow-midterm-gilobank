@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.validation.constraints.Size;
 
 @NoArgsConstructor
 @Getter
@@ -15,8 +16,10 @@ public class ThirdPartyDTO {
 
     private Long id;
 
+    @Size(min = 1, max = 28)
     private String name;
 
+    @Size(min = 1, max = 28)
     private String hashedKey;
 
     @Enumerated(EnumType.STRING)

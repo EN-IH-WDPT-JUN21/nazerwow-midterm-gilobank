@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -83,6 +84,15 @@ public class CreditCardService implements ICreditCardService {
     @Override
     public BalanceDTO getBalance(Long accountNumber) {
         return transactionService.getBalance(findByAccountNumber(accountNumber));
+    }
+
+    public boolean availableFunds(TransactionDTO transactionDTO){
+        CreditCard creditCard = findByAccountNumber(transactionDTO.getDebitAccountNumber());
+        BigDecimal amount = transactionDTO.getAmount().getAmount();
+        if(creditCard.remainingBalance().decreaseAmount(amount).compareTo(new BigDecimal("0.00")) < 0 ){
+            return false;
+        }
+        return true;
     }
 
 }

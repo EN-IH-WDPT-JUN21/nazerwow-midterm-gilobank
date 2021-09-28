@@ -12,6 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -30,6 +31,7 @@ public abstract class Account {
     private Long accountNumber;
 
     @NotNull
+    @Size(min = 1, max = 255)
     private String secretKey;
 
     @NotNull

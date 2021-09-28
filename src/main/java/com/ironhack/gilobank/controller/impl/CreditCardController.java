@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -52,12 +53,18 @@ public class CreditCardController implements ICreditCardController {
     @PutMapping("/debit")
     @ResponseStatus(HttpStatus.OK)
     public Transaction debitFunds(@RequestBody TransactionDTO transactionDTO) {
+        if(!creditCardService.availableFunds(transactionDTO)) {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Insufficient funds available");
+        }
         return creditCardService.debitFunds(transactionDTO);
     }
 
     @PutMapping("/transfer")
     @ResponseStatus(HttpStatus.OK)
     public Transaction transferFunds(@RequestBody TransactionDTO transactionDTO) {
+        if(!creditCardService.availableFunds(transactionDTO)) {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Insufficient funds available");
+        }
         return creditCardService.transferBetweenAccounts(transactionDTO);
     }
 
@@ -76,6 +83,7 @@ public class CreditCardController implements ICreditCardController {
     @PutMapping("/new")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public CreditCard createCreditCard(@RequestBody CreditCardDTO creditCardDTO) {
+        creditCardDTO.setAccountNumber(null);
         return creationService.newCreditCard(creditCardDTO);
     }
 

@@ -10,9 +10,12 @@ import com.ironhack.gilobank.service.interfaces.IAdminService;
 import com.ironhack.gilobank.service.interfaces.ICreationService;
 import com.ironhack.gilobank.service.interfaces.IThirdPartyService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AdminService implements IAdminService {
@@ -23,6 +26,13 @@ public class AdminService implements IAdminService {
     private ICreationService creationService;
     @Autowired
     private IThirdPartyService thirdPartyService;
+
+    public Admin findById(Long id){
+        Optional<Admin> admin = adminRepository.findById(id);
+        if (admin.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Admin found with id: " + id);
+        return admin.get();
+    }
 
     public List<Admin> findAll() {
         return adminRepository.findAll();

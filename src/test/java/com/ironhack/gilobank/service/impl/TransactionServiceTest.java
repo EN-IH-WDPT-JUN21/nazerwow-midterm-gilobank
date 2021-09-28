@@ -346,12 +346,12 @@ class TransactionServiceTest {
 
     @Test
     void checkAvailableFunds_ThrowsException() {
-        assertThrows(ResponseStatusException.class, () -> transactionService.checkAvailableFunds(testAccount1, testAccount1.getBalance().getAmount().multiply(new BigDecimal("10"))));
+        assertThrows(ResponseStatusException.class, () -> transactionService.checkAvailableFunds(testAccount1, new Money (testAccount1.getBalance().getAmount().multiply(new BigDecimal("10")))));
     }
 
     @Test
     void checkAvailableFunds_DoesNotThrow() {
-        assertDoesNotThrow(() -> transactionService.checkAvailableFunds(testAccount1, testAccount1.getBalance().getAmount()));
+        assertDoesNotThrow(() -> transactionService.checkAvailableFunds(testAccount1, testAccount1.getBalance()));
     }
 
     @Test

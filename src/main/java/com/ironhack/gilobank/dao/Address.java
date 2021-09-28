@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Set;
 
 @Entity
@@ -23,14 +24,20 @@ public class Address {
     private Long id;
 
     @NotNull
+    @Size(min = 1, max = 10)
     private String houseNumber;
+    @Size(min = 1, max = 10)
     private String flatNumber;
     @NotNull
+    @Size(min = 1, max = 255)
     private String street;
+    @Size(min = 1, max = 255)
     private String town;
     @NotNull
+    @Size(min = 1, max = 255)
     private String city;
     @NotNull
+    @Size(min = 4, max = 8)
     private String postcode;
 
     @OneToMany(mappedBy = "primaryAddress", fetch = FetchType.LAZY)

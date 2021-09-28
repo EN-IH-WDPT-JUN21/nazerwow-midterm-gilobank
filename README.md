@@ -38,7 +38,10 @@ For a more detailed look at what routes are available to your please visit local
   <li> <b> Testing </b> I continually created unit tests and once I added a new feature I would write the tests before moving on helping me to build a 
     robut and reliable API. </li>
   <li> <b> Authentication Checks </b> I found this aspect of the project quite challenging, I originally set up the authentication through SQL but, after 
-    reflection I changed my approach. I created a new component that was able to get the Authentication and principle and then return their unique details.
+    reflection I changed my approach. I created a new component that was able to get the Authentication and principle and then return their unique details.</li>
+<li><b> Account Creation </b> When passing a JSON body to create a new account, the system will automatically find the existing account holder details, or if 
+you are inputting a brand new customer details they will automatically be created including addresses (assuming it meets validation). This allows you to just 
+use the ID for existing account holders if they already exist when passing the body in JSON or Swagger. </li>
   </ul>
   
   <strong><em> What would I change? </em> </strong> 
@@ -47,14 +50,22 @@ For a more detailed look at what routes are available to your please visit local
     reorganise where some of these methods are.</li>
   <li> <b> ID types </b> I have used Long for the ID (accountNumbers) which could cause scaling issues. I think String's would have been a better choice. </li>
   <li> <b> Dirties Context </b> In order to get all my tests to work together I have had to utilise the "Dirties Context" due to the time I had available. 
-    I would like to find out if I could structure my tests in a different way to prevent the need for Dirties. </li> <br>
+    I would like to find out if I could structure my tests in a different way to prevent the need for Dirties. </li> 
   <br>
   I believe the project meets all the requirements and this can be tested with my unit tests, rather than manually having to use postman. To try it out for 
   yourself just download the project and run the GiloBankApplication (Or right click and run the tests). </ul>
-  
 
+<strong> // Helpful Tips // </strong>
 
-// SQL DATA //
+<ul>
+<li> You can create accounts by just passing a "secretKey" and "Primary Holder"  </li>
+<li> Addresses can be created with just a House Number, Street, City and PostCode</li>
+<li> Account Holders can be created with just a First Name, Surname, Date Of Birth and Primary Address</li>
+<li> Login Details Require a Username, Password and User(Admin, Third party or Account Holder)</li>
+<li> Accounts are automatically frozen when fraud is detected </li>
+</ul>
+
+<strong> // SQL DATA // </strong>
 
 INSERT INTO ADDRESS (house_number, street, city, postcode) VALUES <br>
 ('38', 'Mere Road', 'Stourbridge', 'DY8 2YY'),<br>
@@ -85,6 +96,7 @@ INSERT INTO checking_account (account_number, account_balance, open_date, penalt
 
 <br>
 INSERT INTO transaction (id, transaction_amount, balance_amount, name, time_of_trns, type, account_id) VALUES <br>
+-- Account 32165487<br>
 -- Day 1 - Total debit = 300.00 <br>
 (1, 100.00, 900.00, '250 Debit', '2021-09-17 08:00:00', 'DEBIT' ,32165487),<br>
 (2, 200.00, 700.00, '200 Debit', '2021-09-17 09:00:00', 'DEBIT' ,32165487),<br><br>
@@ -123,7 +135,6 @@ INSERT INTO transaction (id, transaction_amount, balance_amount, name, time_of_t
 (25, 500.00, 2000.00, '500 Debit', '2021-09-13 08:35:20', 'DEBIT' ,32165489),<br>
 (26, 500.00, 1500.00, '500 Debit', '2021-09-13 08:00:21', 'DEBIT' ,32165489),<br>
 (27, 500.00, 1000.00, '500 Debit', '2021-09-13 12:00:59', 'DEBIT' ,32165489),<br><br>
-
 -- Account 32165481<br>
 -- Day 1 - Total debit = 300.00<br>
 (28, 100.00, 900.00, '250 Debit', '2021-09-17 08:00:00', 'DEBIT' ,32165481),<br>

@@ -11,9 +11,9 @@ public interface ICreationService {
 
     LoginDetails newLoginDetails(LoginDetailsDTO loginDetailsDTO);
 
-    CheckingAccount newCheckingAccount(CheckingAccountDTO checkingAccountDTO);
+    Account newCheckingAccount(CheckingAccountDTO checkingAccountDTO);
 
-    StudentAccount newStudentAccount(CheckingAccountDTO checkingAccountDTO);
+    Account newStudentAccount(CheckingAccountDTO checkingAccountDTO);
 
     CreditCard newCreditCard(CreditCardDTO creditCardDTO);
 
@@ -23,6 +23,11 @@ public interface ICreationService {
 
 
     boolean checkIfOver24(AccountHolder accountHolder);
+
+    AccountHolder findOrCreateHolder(AccountHolder accountHolder);
+    Address findOrCreateAddress(Address address);
+    LoginDetails findOrCreateLoginDetails(LoginDetails loginDetails);
+    Account newStudentOrChecking(CheckingAccountDTO checkingAccountDTO);
 
 
 }

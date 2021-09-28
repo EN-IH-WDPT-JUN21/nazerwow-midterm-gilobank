@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -109,6 +110,7 @@ class CreationServiceTest {
         loginDetailsRepository.saveAll(List.of(loginDetails1, loginDetails2));
         checkingAccountRepository.saveAll(List.of(testAccount1, testAccount2));
         studentAccountRepository.save(testAccount3);
+
     }
 
     @AfterEach
@@ -126,7 +128,7 @@ class CreationServiceTest {
     @Test
     void newAddress_BrandNew() {
         addressDTO = new AddressDTO("13", "13", "Fake Street",
-                "Fake Town", "Fake City", "Fake Postcode");
+                "Fake Town", "Fake City", "pcode");
         var repoSizeBefore = addressRepository.findAll().size();
         creationService.newAddress(addressDTO);
         var repoSizeAfter = addressRepository.findAll().size();
@@ -136,12 +138,12 @@ class CreationServiceTest {
     @Test
     void newAddress_UpdateExisting() {
         addressDTO = new AddressDTO(testAddress1.getId(), "13", "13", "Fake Street",
-                "Fake Town", "Fake City", "Fake Postcode");
+                "Fake Town", "Fake City", "pcode");
         var repoSizeBefore = addressRepository.findAll().size();
         creationService.newAddress(addressDTO);
         var repoSizeAfter = addressRepository.findAll().size();
         assertEquals(repoSizeBefore, repoSizeAfter);
-        assertEquals("Fake Postcode", addressRepository.findById(testAddress1.getId()).get().getPostcode());
+        assertEquals("pcode", addressRepository.findById(testAddress1.getId()).get().getPostcode());
     }
 
     @Test
@@ -306,5 +308,138 @@ class CreationServiceTest {
         testHolder2.setDateOfBirth(LocalDate.now());
         assertTrue(creationService.checkIfOver24(testHolder1));
         assertFalse(creationService.checkIfOver24(testHolder2));
+    }
+
+    @Test
+    void findOrCreateHolder_CreatedNewHolder() {
+        AccountHolder accountHolder = new AccountHolder("testFirstName", "testSurname", LocalDate.parse("1990-01-01"), testAddress1, null);
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO();
+        checkingAccountDTO.setPrimaryHolder(accountHolder);
+        checkingAccountDTO.setSecretKey("secretKey");
+        checkingAccountDTO.setBalance(new BigDecimal("250.00"));
+        var repoBefore = accountHolderRepository.findAll().size();
+        creationService.findOrCreateHolder(checkingAccountDTO.getPrimaryHolder());
+        var repoAfter = accountHolderRepository.findAll().size();
+        assertEquals(repoBefore + 1, repoAfter);
+    }
+
+    @Test
+    void findOrCreateHolder_FoundExistingHolder() {
+        AccountHolder accountHolder = new AccountHolder( "testFirstName", "testSurname", LocalDate.parse("1990-01-01"), testAddress1, null);
+        accountHolder.setId(testHolder1.getId());
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO();
+        checkingAccountDTO.setPrimaryHolder(accountHolder);
+        checkingAccountDTO.setSecretKey("secretKey");
+        checkingAccountDTO.setBalance(new BigDecimal("250.00"));
+        var repoBefore = accountHolderRepository.findAll().size();
+        creationService.findOrCreateHolder(checkingAccountDTO.getPrimaryHolder());
+        var repoAfter = accountHolderRepository.findAll().size();
+        assertEquals(repoBefore, repoAfter);
+    }
+
+    @Test
+    void findOrCreateAddress_CreatedNewAddress() {
+        Address address = new Address();
+        address.setHouseNumber("20");
+        address.setStreet("The Street");
+        address.setCity("The City");
+        address.setPostcode("pcode");
+        testHolder1.setPrimaryAddress(address);
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO();
+        checkingAccountDTO.setPrimaryHolder(testHolder1);
+        var repoBefore = addressRepository.findAll().size();
+        creationService.findOrCreateAddress(checkingAccountDTO.getPrimaryHolder().getPrimaryAddress());
+        var repoAfter = addressRepository.findAll().size();
+        assertEquals(repoBefore + 1, repoAfter);
+    }
+
+    @Test
+    void findOrCreateAddress_FoundExistingAddress() {
+        Address address = new Address();
+        address.setHouseNumber("20");
+        address.setStreet("The Street");
+        address.setCity("The City");
+        address.setPostcode("pcode");
+        address.setId(testAddress1.getId());
+        testHolder1.setPrimaryAddress(address);
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO();
+        checkingAccountDTO.setPrimaryHolder(testHolder1);
+        var repoBefore = addressRepository.findAll().size();
+        creationService.findOrCreateAddress(checkingAccountDTO.getPrimaryHolder().getPrimaryAddress());
+        var repoAfter = addressRepository.findAll().size();
+        assertEquals(repoBefore, repoAfter);
+    }
+
+
+    @Test
+    void findOrCreateLoginDetails_CreateNewLogin() {
+        AccountHolder accountHolder = new AccountHolder( "testFirstName", "testSurname", LocalDate.parse("1990-01-01"), testAddress1, null);
+        accountHolderRepository.save(accountHolder);
+        LoginDetails loginDetails = new LoginDetails();
+        loginDetails.setUsername("theUserName");
+        loginDetails.setPassword("thePassword");
+        loginDetails.setUser(accountHolder);
+        accountHolder.setLoginDetails(loginDetails);
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO();
+        checkingAccountDTO.setPrimaryHolder(accountHolder);
+        var repoBefore = loginDetailsRepository.findAll().size();
+        creationService.findOrCreateLoginDetails(checkingAccountDTO.getPrimaryHolder().getLoginDetails());
+        var repoAfter = loginDetailsRepository.findAll().size();
+        assertEquals(repoBefore + 1, repoAfter);
+    }
+
+    @Test
+    void findOrCreateLoginDetails_UpdateLogin() {
+        LoginDetails loginDetails = new LoginDetails();
+        loginDetails.setId(loginDetails.getId());
+        loginDetails.setUsername("theUserName");
+        loginDetails.setPassword("thePassword");
+        loginDetails.setUser(testHolder1);
+        loginDetails.setId(loginDetails1.getId());
+        var repoBefore = loginDetailsRepository.findAll().size();
+        creationService.findOrCreateLoginDetails(loginDetails);
+        var repoAfter = loginDetailsRepository.findAll().size();
+        assertEquals(repoBefore, repoAfter);
+    }
+
+
+    @Test
+    void studentOrChecking_New_Checking() {
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO( "secreKey", testHolder1, testHolder2, new BigDecimal("999.00"),
+                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
+        var repoBefore = checkingAccountRepository.findAll().size();
+        creationService.newStudentOrChecking(checkingAccountDTO);
+        var repoAfter = checkingAccountRepository.findAll().size();
+        assertEquals(repoBefore + 1, repoAfter);
+        var repoBefore2 = studentAccountRepository.findAll().size();
+        creationService.newStudentOrChecking(checkingAccountDTO);
+        var repoAfter2 = studentAccountRepository.findAll().size();
+        assertEquals(repoBefore2, repoAfter2);
+    }
+
+    @Test
+    void studentOrChecking_New_Student() {
+        testHolder1.setDateOfBirth(LocalDate.now());
+        testHolder2.setDateOfBirth(LocalDate.now());
+        accountHolderRepository.saveAll(List.of(testHolder1, testHolder2));
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO( "secreKey", testHolder1, testHolder2, new BigDecimal("999.00"),
+                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
+        var repoBefore = checkingAccountRepository.findAll().size();
+        creationService.newStudentOrChecking(checkingAccountDTO);
+        var repoAfter = checkingAccountRepository.findAll().size();
+        assertEquals(repoBefore, repoAfter);
+        var repoBefore2 = studentAccountRepository.findAll().size();
+        creationService.newStudentOrChecking(checkingAccountDTO);
+        var repoAfter2 = studentAccountRepository.findAll().size();
+        assertEquals(repoBefore2 + 1, repoAfter2);
+    }
+
+    @Test
+    void studentOrChecking_New_Throws_Exeption() {
+        testHolder1.setDateOfBirth(LocalDate.now());
+        accountHolderRepository.saveAll(List.of(testHolder1));
+        CheckingAccountDTO checkingAccountDTO = new CheckingAccountDTO( "secreKey", testHolder1, testHolder2, new BigDecimal("999.00"),
+                new BigDecimal("40.00"), LocalDate.now(), Status.ACTIVE, new BigDecimal("12.00"), new BigDecimal("100.00"));
+        assertThrows(ResponseStatusException.class, () -> creationService.newStudentOrChecking(checkingAccountDTO));
     }
 }
